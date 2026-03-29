@@ -1,0 +1,1405 @@
+{
+  "info": {
+    "_postman_id": "hrms-platform-collection-v1",
+    "name": "HRMS Platform — Complete API Collection",
+    "description": "Complete Postman collection for the HRMS Platform. All services, all endpoints.\n\n**Setup:**\n1. Set collection variable `tenant_id` = `demo`\n2. Run '01 Login as Admin' first — access_token will auto-save\n3. All subsequent requests use {{access_token}} automatically\n\n**Base URLs:**\n- Via Gateway (recommended): http://localhost:8080\n- Auth direct: http://localhost:8081\n- Core HR direct: http://localhost:8082",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "gateway_url", "value": "http://localhost:8080", "type": "string" },
+    { "key": "auth_url", "value": "http://localhost:8081", "type": "string" },
+    { "key": "corehr_url", "value": "http://localhost:8082", "type": "string" },
+    { "key": "leave_url", "value": "http://localhost:8083", "type": "string" },
+    { "key": "payroll_url", "value": "http://localhost:8084", "type": "string" },
+    { "key": "recruitment_url", "value": "http://localhost:8085", "type": "string" },
+    { "key": "performance_url", "value": "http://localhost:8086", "type": "string" },
+    { "key": "tenant_id", "value": "demo", "type": "string" },
+    { "key": "access_token", "value": "", "type": "string" },
+    { "key": "refresh_token", "value": "", "type": "string" },
+    { "key": "employee_id", "value": "", "type": "string" },
+    { "key": "department_id", "value": "", "type": "string" },
+    { "key": "designation_id", "value": "", "type": "string" },
+    { "key": "location_id", "value": "", "type": "string" },
+    { "key": "leave_type_id", "value": "", "type": "string" },
+    { "key": "leave_application_id", "value": "", "type": "string" },
+    { "key": "salary_structure_id", "value": "", "type": "string" },
+    { "key": "payroll_run_id", "value": "", "type": "string" },
+    { "key": "job_id", "value": "", "type": "string" },
+    { "key": "candidate_id", "value": "", "type": "string" },
+    { "key": "review_cycle_id", "value": "", "type": "string" },
+    { "key": "goal_id", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth Service",
+      "item": [
+        {
+          "name": "Signup (Register New User)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.accessToken) {",
+            "  pm.collectionVariables.set('access_token', r.data.accessToken);",
+            "  pm.collectionVariables.set('refresh_token', r.data.refreshToken);",
+            "  console.log('Tokens saved from signup');",
+            "}"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@demo.com\",\n  \"password\": \"Admin@1234\",\n  \"fullName\": \"Rajesh Kumar\",\n  \"tenantId\": \"demo\"\n}" },
+            "url": { "raw": "{{auth_url}}/api/v1/auth/signup", "host": ["{{auth_url}}"], "path": ["api","v1","auth","signup"] }
+          }
+        },
+        {
+          "name": "Login as Admin",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.accessToken) {",
+            "  pm.collectionVariables.set('access_token', r.data.accessToken);",
+            "  pm.collectionVariables.set('refresh_token', r.data.refreshToken);",
+            "  console.log('Login success. Token saved.');",
+            "  pm.test('Login successful', () => pm.response.to.have.status(200));",
+            "}"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@demo.com\",\n  \"password\": \"Admin@1234\",\n  \"tenantId\": \"demo\"\n}" },
+            "url": { "raw": "{{auth_url}}/api/v1/auth/login", "host": ["{{auth_url}}"], "path": ["api","v1","auth","login"] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.accessToken) {",
+            "  pm.collectionVariables.set('access_token', r.data.accessToken);",
+            "  pm.collectionVariables.set('refresh_token', r.data.refreshToken);",
+            "}"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}" },
+            "url": { "raw": "{{auth_url}}/api/v1/auth/refresh", "host": ["{{auth_url}}"], "path": ["api","v1","auth","refresh"] }
+          }
+        },
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{auth_url}}/api/v1/users/me", "host": ["{{auth_url}}"], "path": ["api","v1","users","me"] }
+          }
+        },
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@demo.com\",\n  \"purpose\": \"LOGIN\"\n}" },
+            "url": { "raw": "{{auth_url}}/api/v1/auth/otp/send", "host": ["{{auth_url}}"], "path": ["api","v1","auth","otp","send"] }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.accessToken) {",
+            "  pm.collectionVariables.set('access_token', r.data.accessToken);",
+            "  pm.collectionVariables.set('refresh_token', r.data.refreshToken);",
+            "}"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@demo.com\",\n  \"otp\": \"123456\",\n  \"purpose\": \"LOGIN\",\n  \"tenantId\": \"demo\"\n}" },
+            "url": { "raw": "{{auth_url}}/api/v1/auth/otp/verify", "host": ["{{auth_url}}"], "path": ["api","v1","auth","otp","verify"] }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"Admin@1234\",\n  \"newPassword\": \"Admin@5678\"\n}" },
+            "url": { "raw": "{{auth_url}}/api/v1/auth/change-password", "host": ["{{auth_url}}"], "path": ["api","v1","auth","change-password"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}" },
+            "url": { "raw": "{{auth_url}}/api/v1/auth/logout", "host": ["{{auth_url}}"], "path": ["api","v1","auth","logout"] }
+          }
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{auth_url}}/api/v1/users?page=0&size=20", "host": ["{{auth_url}}"], "path": ["api","v1","users"], "query": [{"key":"page","value":"0"},{"key":"size","value":"20"}] }
+          }
+        },
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{auth_url}}/api/v1/roles", "host": ["{{auth_url}}"], "path": ["api","v1","roles"] }
+          }
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"HR Manager\",\n  \"code\": \"HR_MANAGER\",\n  \"description\": \"HR Manager role with employee management access\",\n  \"permissions\": [\"HR:READ:ALL\", \"HR:WRITE:ALL\"]\n}" },
+            "url": { "raw": "{{auth_url}}/api/v1/roles", "host": ["{{auth_url}}"], "path": ["api","v1","roles"] }
+          }
+        },
+        {
+          "name": "Assign Role to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{employee_id}}\",\n  \"roleId\": \"ROLE_UUID_HERE\"\n}" },
+            "url": { "raw": "{{auth_url}}/api/v1/roles/assign", "host": ["{{auth_url}}"], "path": ["api","v1","roles","assign"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏢 Core HR — Departments",
+      "item": [
+        {
+          "name": "Create Department",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) pm.collectionVariables.set('department_id', r.data.id);",
+            "pm.test('Department created', () => pm.response.to.have.status(201));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Engineering\",\n  \"code\": \"ENG\",\n  \"description\": \"Software Engineering Department\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/departments", "host": ["{{corehr_url}}"], "path": ["api","v1","departments"] }
+          }
+        },
+        {
+          "name": "List Departments",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/departments", "host": ["{{corehr_url}}"], "path": ["api","v1","departments"] }
+          }
+        },
+        {
+          "name": "Get Department by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/departments/{{department_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","departments","{{department_id}}"] }
+          }
+        },
+        {
+          "name": "Update Department",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Technology & Engineering\",\n  \"description\": \"Updated description\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/departments/{{department_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","departments","{{department_id}}"] }
+          }
+        },
+        {
+          "name": "Delete Department",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/departments/{{department_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","departments","{{department_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏷️ Core HR — Designations",
+      "item": [
+        {
+          "name": "Create Designation",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) pm.collectionVariables.set('designation_id', r.data.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Senior Software Engineer\",\n  \"code\": \"SSE\",\n  \"level\": \"L3\",\n  \"description\": \"Senior individual contributor\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/designations", "host": ["{{corehr_url}}"], "path": ["api","v1","designations"] }
+          }
+        },
+        {
+          "name": "List Designations",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/designations", "host": ["{{corehr_url}}"], "path": ["api","v1","designations"] }
+          }
+        },
+        {
+          "name": "Get Designation by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/designations/{{designation_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","designations","{{designation_id}}"] }
+          }
+        },
+        {
+          "name": "Update Designation",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Principal Engineer\",\n  \"level\": \"L4\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/designations/{{designation_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","designations","{{designation_id}}"] }
+          }
+        },
+        {
+          "name": "Delete Designation",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/designations/{{designation_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","designations","{{designation_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📍 Core HR — Locations",
+      "item": [
+        {
+          "name": "Create Location",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) pm.collectionVariables.set('location_id', r.data.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Mumbai HQ\",\n  \"code\": \"MUM\",\n  \"address\": \"BKC, Bandra East\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"country\": \"India\",\n  \"pincode\": \"400051\",\n  \"timezone\": \"Asia/Kolkata\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/locations", "host": ["{{corehr_url}}"], "path": ["api","v1","locations"] }
+          }
+        },
+        {
+          "name": "List Locations",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/locations", "host": ["{{corehr_url}}"], "path": ["api","v1","locations"] }
+          }
+        },
+        {
+          "name": "Get Location by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/locations/{{location_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","locations","{{location_id}}"] }
+          }
+        },
+        {
+          "name": "Update Location",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Mumbai Head Office\",\n  \"address\": \"BKC, Bandra East, Mumbai\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/locations/{{location_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","locations","{{location_id}}"] }
+          }
+        },
+        {
+          "name": "Delete Location",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/locations/{{location_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","locations","{{location_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Core HR — Employees",
+      "item": [
+        {
+          "name": "Create Employee (Full)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) {",
+            "  pm.collectionVariables.set('employee_id', r.data.id);",
+            "  console.log('Employee created:', r.data.id);",
+            "}",
+            "pm.test('Employee created', () => pm.response.to.have.status(201));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Priya\",\n  \"lastName\": \"Sharma\",\n  \"email\": \"priya.sharma@demo.com\",\n  \"phoneNumber\": \"+91-98765-43210\",\n  \"dateOfBirth\": \"1992-05-15\",\n  \"gender\": \"FEMALE\",\n  \"maritalStatus\": \"MARRIED\",\n  \"joiningDate\": \"2024-01-15\",\n  \"employmentType\": \"FULL_TIME\",\n  \"employeeCode\": \"EMP001\",\n  \"departmentId\": \"{{department_id}}\",\n  \"designationId\": \"{{designation_id}}\",\n  \"locationId\": \"{{location_id}}\",\n  \"bloodGroup\": \"B+\",\n  \"nationality\": \"Indian\",\n  \"panNumber\": \"ABCPS1234F\",\n  \"aadharNumber\": \"1234-5678-9012\",\n  \"uanNumber\": \"100123456789\",\n  \"bankName\": \"HDFC Bank\",\n  \"bankAccountNumber\": \"50100123456789\",\n  \"ifscCode\": \"HDFC0001234\",\n  \"bankAccountType\": \"SAVINGS\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/employees", "host": ["{{corehr_url}}"], "path": ["api","v1","employees"] }
+          }
+        },
+        {
+          "name": "List Employees",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees?page=0&size=20", "host": ["{{corehr_url}}"], "path": ["api","v1","employees"], "query": [{"key":"page","value":"0"},{"key":"size","value":"20"}] }
+          }
+        },
+        {
+          "name": "Search Employees",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees?search=Priya&departmentId={{department_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","employees"], "query": [{"key":"search","value":"Priya"},{"key":"departmentId","value":"{{department_id}}"}] }
+          }
+        },
+        {
+          "name": "Get Employee by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}"] }
+          }
+        },
+        {
+          "name": "Update Employee",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"phoneNumber\": \"+91-98765-43211\",\n  \"bloodGroup\": \"O+\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}"] }
+          }
+        },
+        {
+          "name": "Delete Employee",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}"] }
+          }
+        },
+        {
+          "name": "Employee Directory",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/directory", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","directory"] }
+          }
+        },
+        {
+          "name": "Org Chart",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/org-chart", "host": ["{{corehr_url}}"], "path": ["api","v1","org-chart"] }
+          }
+        },
+        {
+          "name": "Get Employee Team",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/team", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","team"] }
+          }
+        },
+        {
+          "name": "Add Lifecycle Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"eventType\": \"PROMOTION\",\n  \"effectiveDate\": \"2024-04-01\",\n  \"description\": \"Promoted from SSE to Principal Engineer\",\n  \"fromDesignation\": \"Senior Software Engineer\",\n  \"toDesignation\": \"Principal Engineer\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/lifecycle", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","lifecycle"] }
+          }
+        },
+        {
+          "name": "Get Employee Timeline",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/timeline", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","timeline"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Core HR — Employee Sub-Resources",
+      "item": [
+        {
+          "name": "Add Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"type\": \"CURRENT\",\n  \"addressLine1\": \"Flat 204, Sunrise Apartments\",\n  \"addressLine2\": \"Andheri West\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"country\": \"India\",\n  \"postalCode\": \"400058\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/addresses", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","addresses"] }
+          }
+        },
+        {
+          "name": "List Addresses",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/addresses", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","addresses"] }
+          }
+        },
+        {
+          "name": "Add Emergency Contact",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Vikram Sharma\",\n  \"relationship\": \"Spouse\",\n  \"phone\": \"+91-99988-77665\",\n  \"email\": \"vikram.sharma@gmail.com\",\n  \"isPrimary\": true\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/emergency-contacts", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","emergency-contacts"] }
+          }
+        },
+        {
+          "name": "List Emergency Contacts",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/emergency-contacts", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","emergency-contacts"] }
+          }
+        },
+        {
+          "name": "Add Family Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Arjun Sharma\",\n  \"relationship\": \"Son\",\n  \"dateOfBirth\": \"2018-03-10\",\n  \"gender\": \"MALE\",\n  \"isDependent\": true\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/family", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","family"] }
+          }
+        },
+        {
+          "name": "List Family Members",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/family", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","family"] }
+          }
+        },
+        {
+          "name": "Add Education",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"degree\": \"B.Tech\",\n  \"institution\": \"IIT Bombay\",\n  \"specialization\": \"Computer Science\",\n  \"startYear\": 2010,\n  \"endYear\": 2014,\n  \"grade\": \"8.5 CGPA\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/education", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","education"] }
+          }
+        },
+        {
+          "name": "List Education",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/education", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","education"] }
+          }
+        },
+        {
+          "name": "Add Work History",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"companyName\": \"Infosys Ltd\",\n  \"jobTitle\": \"Software Engineer\",\n  \"fromDate\": \"2014-07-01\",\n  \"toDate\": \"2018-12-31\",\n  \"location\": \"Pune\",\n  \"reasonForLeaving\": \"Better opportunity\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/work-history", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","work-history"] }
+          }
+        },
+        {
+          "name": "List Work History",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/work-history", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","work-history"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌴 Leave Management",
+      "item": [
+        {
+          "name": "Create Leave Type",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) pm.collectionVariables.set('leave_type_id', r.data.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Annual Leave\",\n  \"code\": \"AL\",\n  \"description\": \"Paid annual leave\",\n  \"isPaid\": true,\n  \"maxDaysPerYear\": 20,\n  \"carryForwardAllowed\": true,\n  \"maxCarryForward\": 5,\n  \"applicableGender\": \"ALL\"\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/leaves/types", "host": ["{{leave_url}}"], "path": ["api","v1","leaves","types"] }
+          }
+        },
+        {
+          "name": "List Leave Types",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{leave_url}}/api/v1/leaves/types", "host": ["{{leave_url}}"], "path": ["api","v1","leaves","types"] }
+          }
+        },
+        {
+          "name": "Apply Leave",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) pm.collectionVariables.set('leave_application_id', r.data.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"leaveTypeId\": \"{{leave_type_id}}\",\n  \"startDate\": \"2024-12-23\",\n  \"endDate\": \"2024-12-27\",\n  \"reason\": \"Family vacation\",\n  \"contactDuringLeave\": \"+91-98765-43210\"\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/leaves/applications", "host": ["{{leave_url}}"], "path": ["api","v1","leaves","applications"] }
+          }
+        },
+        {
+          "name": "Approve Leave",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"action\": \"APPROVE\",\n  \"comments\": \"Approved - enjoy your vacation!\"\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/leaves/applications/{{leave_application_id}}/action", "host": ["{{leave_url}}"], "path": ["api","v1","leaves","applications","{{leave_application_id}}","action"] }
+          }
+        },
+        {
+          "name": "Reject Leave",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"action\": \"REJECT\",\n  \"comments\": \"Critical project deadline - please reschedule\"\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/leaves/applications/{{leave_application_id}}/action", "host": ["{{leave_url}}"], "path": ["api","v1","leaves","applications","{{leave_application_id}}","action"] }
+          }
+        },
+        {
+          "name": "My Leave Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{leave_url}}/api/v1/leaves/balance", "host": ["{{leave_url}}"], "path": ["api","v1","leaves","balance"] }
+          }
+        },
+        {
+          "name": "Create Holiday",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Republic Day\",\n  \"date\": \"2025-01-26\",\n  \"type\": \"NATIONAL\",\n  \"description\": \"National holiday\"\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/holidays", "host": ["{{leave_url}}"], "path": ["api","v1","holidays"] }
+          }
+        },
+        {
+          "name": "List Holidays",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{leave_url}}/api/v1/holidays?year=2025", "host": ["{{leave_url}}"], "path": ["api","v1","holidays"], "query": [{"key":"year","value":"2025"}] }
+          }
+        },
+        {
+          "name": "Create Shift",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"General Shift\",\n  \"code\": \"GEN\",\n  \"startTime\": \"09:00\",\n  \"endTime\": \"18:00\",\n  \"graceMinutes\": 15,\n  \"weeklyOffDays\": [\"SATURDAY\", \"SUNDAY\"]\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/shifts", "host": ["{{leave_url}}"], "path": ["api","v1","shifts"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⏰ Attendance",
+      "item": [
+        {
+          "name": "Punch In",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"type\": \"IN\",\n  \"latitude\": 19.0596,\n  \"longitude\": 72.8295,\n  \"source\": \"WEB\"\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/attendance/punch", "host": ["{{leave_url}}"], "path": ["api","v1","attendance","punch"] }
+          }
+        },
+        {
+          "name": "Punch Out",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"type\": \"OUT\",\n  \"latitude\": 19.0596,\n  \"longitude\": 72.8295,\n  \"source\": \"WEB\"\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/attendance/punch", "host": ["{{leave_url}}"], "path": ["api","v1","attendance","punch"] }
+          }
+        },
+        {
+          "name": "My Attendance Log",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{leave_url}}/api/v1/attendance/my?month=2024-12", "host": ["{{leave_url}}"], "path": ["api","v1","attendance","my"], "query": [{"key":"month","value":"2024-12"}] }
+          }
+        },
+        {
+          "name": "Attendance Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{leave_url}}/api/v1/attendance/dashboard", "host": ["{{leave_url}}"], "path": ["api","v1","attendance","dashboard"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💰 Payroll",
+      "item": [
+        {
+          "name": "Create Salary Structure",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) pm.collectionVariables.set('salary_structure_id', r.data.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Software Engineer - L3\",\n  \"code\": \"SE-L3\",\n  \"description\": \"Salary structure for Senior Software Engineers\",\n  \"ctc\": 1500000,\n  \"basicPercentage\": 40,\n  \"hraPercentage\": 20\n}" },
+            "url": { "raw": "{{payroll_url}}/api/v1/salary/structures", "host": ["{{payroll_url}}"], "path": ["api","v1","salary","structures"] }
+          }
+        },
+        {
+          "name": "List Salary Structures",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{payroll_url}}/api/v1/salary/structures", "host": ["{{payroll_url}}"], "path": ["api","v1","salary","structures"] }
+          }
+        },
+        {
+          "name": "Assign Salary to Employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"employeeId\": \"{{employee_id}}\",\n  \"salaryStructureId\": \"{{salary_structure_id}}\",\n  \"ctc\": 1500000,\n  \"effectiveDate\": \"2024-01-01\"\n}" },
+            "url": { "raw": "{{payroll_url}}/api/v1/salary/assign", "host": ["{{payroll_url}}"], "path": ["api","v1","salary","assign"] }
+          }
+        },
+        {
+          "name": "Create Pay Run",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) pm.collectionVariables.set('payroll_run_id', r.data.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"month\": 12,\n  \"year\": 2024,\n  \"name\": \"December 2024 Payroll\"\n}" },
+            "url": { "raw": "{{payroll_url}}/api/v1/payroll/runs", "host": ["{{payroll_url}}"], "path": ["api","v1","payroll","runs"] }
+          }
+        },
+        {
+          "name": "Process Pay Run",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{payroll_url}}/api/v1/payroll/runs/{{payroll_run_id}}/process", "host": ["{{payroll_url}}"], "path": ["api","v1","payroll","runs","{{payroll_run_id}}","process"] }
+          }
+        },
+        {
+          "name": "View My Payslips",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{payroll_url}}/api/v1/payslips/my", "host": ["{{payroll_url}}"], "path": ["api","v1","payslips","my"] }
+          }
+        },
+        {
+          "name": "List Salary Components",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{payroll_url}}/api/v1/salary/components", "host": ["{{payroll_url}}"], "path": ["api","v1","salary","components"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 Recruitment",
+      "item": [
+        {
+          "name": "Create Job Requisition",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) pm.collectionVariables.set('job_id', r.data.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Senior Backend Engineer\",\n  \"departmentId\": \"{{department_id}}\",\n  \"designationId\": \"{{designation_id}}\",\n  \"locationId\": \"{{location_id}}\",\n  \"positionsCount\": 2,\n  \"description\": \"Looking for experienced Java backend engineers\",\n  \"requirements\": \"5+ years Java, Spring Boot, PostgreSQL\",\n  \"minExperience\": 5,\n  \"maxExperience\": 10,\n  \"minCtc\": 1200000,\n  \"maxCtc\": 2000000,\n  \"jobType\": \"FULL_TIME\",\n  \"workMode\": \"HYBRID\"\n}" },
+            "url": { "raw": "{{recruitment_url}}/api/v1/jobs", "host": ["{{recruitment_url}}"], "path": ["api","v1","jobs"] }
+          }
+        },
+        {
+          "name": "List Job Requisitions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "{{recruitment_url}}/api/v1/jobs", "host": ["{{recruitment_url}}"], "path": ["api","v1","jobs"] }
+          }
+        },
+        {
+          "name": "Add Candidate",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) pm.collectionVariables.set('candidate_id', r.data.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Amit\",\n  \"lastName\": \"Patel\",\n  \"email\": \"amit.patel@gmail.com\",\n  \"phone\": \"+91-97654-32109\",\n  \"currentCtc\": 1000000,\n  \"expectedCtc\": 1500000,\n  \"totalExperience\": 7,\n  \"currentCompany\": \"Wipro Ltd\",\n  \"currentDesignation\": \"Technical Lead\",\n  \"noticePeriod\": 60,\n  \"resumeUrl\": \"\",\n  \"source\": \"LINKEDIN\"\n}" },
+            "url": { "raw": "{{recruitment_url}}/api/v1/candidates", "host": ["{{recruitment_url}}"], "path": ["api","v1","candidates"] }
+          }
+        },
+        {
+          "name": "Apply Candidate to Job",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"requisitionId\": \"{{job_id}}\",\n  \"candidateId\": \"{{candidate_id}}\",\n  \"source\": \"REFERRAL\",\n  \"notes\": \"Strong Java background\"\n}" },
+            "url": { "raw": "{{recruitment_url}}/api/v1/applications", "host": ["{{recruitment_url}}"], "path": ["api","v1","applications"] }
+          }
+        },
+        {
+          "name": "Schedule Interview",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"applicationId\": \"APPLICATION_ID\",\n  \"scheduledAt\": \"2025-01-15T10:00:00\",\n  \"durationMinutes\": 60,\n  \"type\": \"TECHNICAL\",\n  \"mode\": \"VIDEO\",\n  \"meetingLink\": \"https://meet.google.com/abc-defg-hij\",\n  \"panelists\": []\n}" },
+            "url": { "raw": "{{recruitment_url}}/api/v1/interviews", "host": ["{{recruitment_url}}"], "path": ["api","v1","interviews"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎯 Performance",
+      "item": [
+        {
+          "name": "Create Review Cycle",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) pm.collectionVariables.set('review_cycle_id', r.data.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Annual Performance Review 2024\",\n  \"cycleType\": \"ANNUAL\",\n  \"fiscalYear\": 2024,\n  \"startDate\": \"2024-12-01\",\n  \"endDate\": \"2025-01-31\",\n  \"reviewPeriodStart\": \"2024-01-01\",\n  \"reviewPeriodEnd\": \"2024-12-31\"\n}" },
+            "url": { "raw": "{{performance_url}}/api/v1/performance/cycles", "host": ["{{performance_url}}"], "path": ["api","v1","performance","cycles"] }
+          }
+        },
+        {
+          "name": "Create Goal",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) pm.collectionVariables.set('goal_id', r.data.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Deliver Project Alpha\",\n  \"description\": \"Complete and launch Project Alpha by Q3 2024\",\n  \"category\": \"PROJECT\",\n  \"priority\": \"HIGH\",\n  \"targetDate\": \"2024-09-30\",\n  \"targetValue\": 100,\n  \"unit\": \"PERCENTAGE\",\n  \"reviewCycleId\": \"{{review_cycle_id}}\"\n}" },
+            "url": { "raw": "{{performance_url}}/api/v1/goals", "host": ["{{performance_url}}"], "path": ["api","v1","goals"] }
+          }
+        },
+        {
+          "name": "Update Goal Progress",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"progress\": 75,\n  \"currentValue\": 75,\n  \"updateNote\": \"Backend API complete, frontend in progress\"\n}" },
+            "url": { "raw": "{{performance_url}}/api/v1/goals/{{goal_id}}/progress", "host": ["{{performance_url}}"], "path": ["api","v1","goals","{{goal_id}}","progress"] }
+          }
+        },
+        {
+          "name": "Submit Self Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"reviewCycleId\": \"{{review_cycle_id}}\",\n  \"selfRemarks\": \"I delivered all projects on time and exceeded expectations in Q3.\",\n  \"strengths\": \"Problem solving, technical depth, team collaboration\",\n  \"areasForImprovement\": \"Public speaking, documentation\",\n  \"trainingRequests\": \"AWS certification, Leadership training\"\n}" },
+            "url": { "raw": "{{performance_url}}/api/v1/reviews/self", "host": ["{{performance_url}}"], "path": ["api","v1","reviews","self"] }
+          }
+        },
+        {
+          "name": "Give Feedback",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"toEmployeeId\": \"{{employee_id}}\",\n  \"reviewCycleId\": \"{{review_cycle_id}}\",\n  \"feedbackType\": \"PEER\",\n  \"content\": \"Great team player, always willing to help others. Excellent technical skills.\",\n  \"isAnonymous\": false\n}" },
+            "url": { "raw": "{{performance_url}}/api/v1/feedback", "host": ["{{performance_url}}"], "path": ["api","v1","feedback"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏗️ Scaffold Services",
+      "item": [
+        {
+          "name": "Onboarding — Create Template",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Engineering Onboarding\",\n  \"description\": \"Standard onboarding for engineering hires\"\n}" },
+            "url": { "raw": "http://localhost:8090/api/v1/onboarding/templates", "raw": "http://localhost:8090/api/v1/onboarding/templates" }
+          }
+        },
+        {
+          "name": "Documents — List My Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "http://localhost:8091/api/v1/documents", "raw": "http://localhost:8091/api/v1/documents" }
+          }
+        },
+        {
+          "name": "Notifications — List Mine",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "http://localhost:8092/api/v1/notifications", "raw": "http://localhost:8092/api/v1/notifications" }
+          }
+        },
+        {
+          "name": "Assets — List Assets",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "url": { "raw": "http://localhost:8094/api/v1/assets", "raw": "http://localhost:8094/api/v1/assets" }
+          }
+        },
+        {
+          "name": "Helpdesk — Create Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"subject\": \"Laptop not working\",\n  \"description\": \"My laptop screen flickered and shut down\",\n  \"priority\": \"HIGH\"\n}" },
+            "url": { "raw": "http://localhost:8095/api/v1/tickets", "raw": "http://localhost:8095/api/v1/tickets" }
+          }
+        },
+        {
+          "name": "Expense — Submit Expense Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Client Visit - Pune\",\n  \"description\": \"Travel and hotel expenses for client meeting\",\n  \"totalAmount\": 8500,\n  \"currency\": \"INR\",\n  \"expenseDate\": \"2024-12-10\"\n}" },
+            "url": { "raw": "http://localhost:8093/api/v1/expenses", "raw": "http://localhost:8093/api/v1/expenses" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚀 Testing Flow (Run In Order)",
+      "item": [
+        {
+          "name": "01 Login as Admin",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.accessToken) {",
+            "  pm.collectionVariables.set('access_token', r.data.accessToken);",
+            "  pm.collectionVariables.set('refresh_token', r.data.refreshToken);",
+            "  console.log('✅ Logged in successfully');",
+            "}",
+            "pm.test('Login successful', () => pm.response.to.have.status(200));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@demo.com\",\n  \"password\": \"Admin@1234\",\n  \"tenantId\": \"demo\"\n}" },
+            "url": { "raw": "{{auth_url}}/api/v1/auth/login", "host": ["{{auth_url}}"], "path": ["api","v1","auth","login"] }
+          }
+        },
+        {
+          "name": "02 Create Department",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) { pm.collectionVariables.set('department_id', r.data.id); console.log('✅ Dept:', r.data.id); }",
+            "pm.test('Department created', () => pm.response.to.have.status(201));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Engineering\",\n  \"code\": \"ENG\",\n  \"description\": \"Software Engineering\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/departments", "host": ["{{corehr_url}}"], "path": ["api","v1","departments"] }
+          }
+        },
+        {
+          "name": "03 Create Designation",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) { pm.collectionVariables.set('designation_id', r.data.id); console.log('✅ Desig:', r.data.id); }"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Senior Software Engineer\",\n  \"code\": \"SSE\",\n  \"level\": \"L3\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/designations", "host": ["{{corehr_url}}"], "path": ["api","v1","designations"] }
+          }
+        },
+        {
+          "name": "04 Create Location",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) { pm.collectionVariables.set('location_id', r.data.id); console.log('✅ Loc:', r.data.id); }"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Mumbai HQ\",\n  \"code\": \"MUM\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"country\": \"India\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/locations", "host": ["{{corehr_url}}"], "path": ["api","v1","locations"] }
+          }
+        },
+        {
+          "name": "05 Create Employee",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) { pm.collectionVariables.set('employee_id', r.data.id); console.log('✅ Employee:', r.data.id); }",
+            "pm.test('Employee created', () => pm.response.to.have.status(201));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Priya\",\n  \"lastName\": \"Sharma\",\n  \"email\": \"priya.sharma@demo.com\",\n  \"phoneNumber\": \"+91-98765-43210\",\n  \"dateOfBirth\": \"1992-05-15\",\n  \"gender\": \"FEMALE\",\n  \"joiningDate\": \"2024-01-15\",\n  \"employmentType\": \"FULL_TIME\",\n  \"employeeCode\": \"EMP001\",\n  \"departmentId\": \"{{department_id}}\",\n  \"designationId\": \"{{designation_id}}\",\n  \"locationId\": \"{{location_id}}\",\n  \"panNumber\": \"ABCPS1234F\",\n  \"aadharNumber\": \"1234-5678-9012\",\n  \"bankName\": \"HDFC Bank\",\n  \"bankAccountNumber\": \"50100123456789\",\n  \"ifscCode\": \"HDFC0001234\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/employees", "host": ["{{corehr_url}}"], "path": ["api","v1","employees"] }
+          }
+        },
+        {
+          "name": "06 Get Employee Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}"] }
+          }
+        },
+        {
+          "name": "07 Add Emergency Contact",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Vikram Sharma\",\n  \"relationship\": \"Spouse\",\n  \"phone\": \"+91-99988-77665\",\n  \"isPrimary\": true\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/emergency-contacts", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","emergency-contacts"] }
+          }
+        },
+        {
+          "name": "08 Add Education",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"degree\": \"B.Tech\",\n  \"institution\": \"IIT Bombay\",\n  \"specialization\": \"Computer Science\",\n  \"startYear\": 2010,\n  \"endYear\": 2014,\n  \"grade\": \"8.5 CGPA\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/education", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","education"] }
+          }
+        },
+        {
+          "name": "09 Add Lifecycle Event",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"eventType\": \"JOINING\",\n  \"effectiveDate\": \"2024-01-15\",\n  \"description\": \"Employee joined the organization\"\n}" },
+            "url": { "raw": "{{corehr_url}}/api/v1/employees/{{employee_id}}/lifecycle", "host": ["{{corehr_url}}"], "path": ["api","v1","employees","{{employee_id}}","lifecycle"] }
+          }
+        },
+        {
+          "name": "10 Get Org Chart",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "url": { "raw": "{{corehr_url}}/api/v1/org-chart", "host": ["{{corehr_url}}"], "path": ["api","v1","org-chart"] }
+          }
+        },
+        {
+          "name": "11 Create Leave Type",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) { pm.collectionVariables.set('leave_type_id', r.data.id); console.log('✅ Leave type:', r.data.id); }"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Annual Leave\",\n  \"code\": \"AL\",\n  \"isPaid\": true,\n  \"maxDaysPerYear\": 20\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/leaves/types", "host": ["{{leave_url}}"], "path": ["api","v1","leaves","types"] }
+          }
+        },
+        {
+          "name": "12 Apply Leave",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) { pm.collectionVariables.set('leave_application_id', r.data.id); console.log('✅ Leave app:', r.data.id); }"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"leaveTypeId\": \"{{leave_type_id}}\",\n  \"startDate\": \"2025-01-20\",\n  \"endDate\": \"2025-01-22\",\n  \"reason\": \"Personal work\"\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/leaves/applications", "host": ["{{leave_url}}"], "path": ["api","v1","leaves","applications"] }
+          }
+        },
+        {
+          "name": "13 Approve Leave",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"action\": \"APPROVE\",\n  \"comments\": \"Approved\"\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/leaves/applications/{{leave_application_id}}/action", "host": ["{{leave_url}}"], "path": ["api","v1","leaves","applications","{{leave_application_id}}","action"] }
+          }
+        },
+        {
+          "name": "14 Punch In",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"type\": \"IN\",\n  \"source\": \"WEB\"\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/attendance/punch", "host": ["{{leave_url}}"], "path": ["api","v1","attendance","punch"] }
+          }
+        },
+        {
+          "name": "15 Punch Out",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"type\": \"OUT\",\n  \"source\": \"WEB\"\n}" },
+            "url": { "raw": "{{leave_url}}/api/v1/attendance/punch", "host": ["{{leave_url}}"], "path": ["api","v1","attendance","punch"] }
+          }
+        },
+        {
+          "name": "16 Create Salary Structure",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) { pm.collectionVariables.set('salary_structure_id', r.data.id); console.log('✅ Salary structure:', r.data.id); }"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"SSE Salary Structure\",\n  \"code\": \"SSE-L3\",\n  \"ctc\": 1500000,\n  \"basicPercentage\": 40,\n  \"hraPercentage\": 20\n}" },
+            "url": { "raw": "{{payroll_url}}/api/v1/salary/structures", "host": ["{{payroll_url}}"], "path": ["api","v1","salary","structures"] }
+          }
+        },
+        {
+          "name": "17 Assign Salary to Employee",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"employeeId\": \"{{employee_id}}\",\n  \"salaryStructureId\": \"{{salary_structure_id}}\",\n  \"ctc\": 1500000,\n  \"effectiveDate\": \"2024-01-01\"\n}" },
+            "url": { "raw": "{{payroll_url}}/api/v1/salary/assign", "host": ["{{payroll_url}}"], "path": ["api","v1","salary","assign"] }
+          }
+        },
+        {
+          "name": "18 Create Pay Run",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var r = pm.response.json();",
+            "if (r.data && r.data.id) { pm.collectionVariables.set('payroll_run_id', r.data.id); console.log('✅ Pay run:', r.data.id); }"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"month\": 1,\n  \"year\": 2025,\n  \"name\": \"January 2025 Payroll\"\n}" },
+            "url": { "raw": "{{payroll_url}}/api/v1/payroll/runs", "host": ["{{payroll_url}}"], "path": ["api","v1","payroll","runs"] }
+          }
+        },
+        {
+          "name": "19 View My Payslip",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }],
+            "url": { "raw": "{{payroll_url}}/api/v1/payslips/my", "host": ["{{payroll_url}}"], "path": ["api","v1","payslips","my"] }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+target/
+*.jar
+.idea/
+*.iml
+.vscode/settings.json
+.DS_Store
+Thumbs.db
+.env
+*.log
+node_modules/
+dist/

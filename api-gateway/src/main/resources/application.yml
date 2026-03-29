@@ -1,0 +1,99 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: auth
+          uri: lb://service-auth
+          predicates:
+            - Path=/api/v1/auth/**, /api/v1/users/**, /api/v1/roles/**
+        - id: core-hr
+          uri: lb://service-core-hr
+          predicates:
+            - Path=/api/v1/employees/**, /api/v1/departments/**, /api/v1/designations/**, /api/v1/locations/**, /api/v1/org-chart/**
+        - id: leave-attendance
+          uri: lb://service-leave-attendance
+          predicates:
+            - Path=/api/v1/leaves/**, /api/v1/attendance/**, /api/v1/shifts/**, /api/v1/holidays/**
+        - id: payroll
+          uri: lb://service-payroll
+          predicates:
+            - Path=/api/v1/payroll/**, /api/v1/salary/**, /api/v1/payslips/**, /api/v1/tax/**
+        - id: recruitment
+          uri: lb://service-recruitment
+          predicates:
+            - Path=/api/v1/jobs/**, /api/v1/candidates/**, /api/v1/applications/**, /api/v1/interviews/**, /api/v1/offers/**
+        - id: performance
+          uri: lb://service-performance
+          predicates:
+            - Path=/api/v1/goals/**, /api/v1/reviews/**, /api/v1/feedback/**, /api/v1/performance/**, /api/v1/competencies/**
+        - id: onboarding
+          uri: lb://service-onboarding
+          predicates:
+            - Path=/api/v1/onboarding/**
+        - id: document
+          uri: lb://service-document
+          predicates:
+            - Path=/api/v1/documents/**, /api/v1/templates/**, /api/v1/policies/**
+        - id: notification
+          uri: lb://service-notification
+          predicates:
+            - Path=/api/v1/notifications/**, /api/v1/announcements/**
+        - id: expense
+          uri: lb://service-expense
+          predicates:
+            - Path=/api/v1/expenses/**, /api/v1/advances/**
+        - id: asset
+          uri: lb://service-asset
+          predicates:
+            - Path=/api/v1/assets/**
+        - id: helpdesk
+          uri: lb://service-helpdesk
+          predicates:
+            - Path=/api/v1/tickets/**, /api/v1/kb/**
+        - id: social
+          uri: lb://service-social
+          predicates:
+            - Path=/api/v1/posts/**, /api/v1/groups/**, /api/v1/messages/**, /api/v1/events/**
+        - id: compensation
+          uri: lb://service-compensation
+          predicates:
+            - Path=/api/v1/compensation/**, /api/v1/benefits/**, /api/v1/pay-grades/**
+        - id: compliance
+          uri: lb://service-compliance
+          predicates:
+            - Path=/api/v1/compliance/**, /api/v1/licenses/**
+        - id: offboarding
+          uri: lb://service-offboarding
+          predicates:
+            - Path=/api/v1/offboarding/**, /api/v1/separations/**, /api/v1/exit/**
+        - id: lms
+          uri: lb://service-lms
+          predicates:
+            - Path=/api/v1/courses/**, /api/v1/learning/**, /api/v1/certifications/**
+        - id: workflow
+          uri: lb://service-workflow
+          predicates:
+            - Path=/api/v1/workflows/**, /api/v1/approvals/**
+        - id: reports
+          uri: lb://service-reports
+          predicates:
+            - Path=/api/v1/reports/**, /api/v1/dashboards/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000,http://localhost:5173"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

@@ -1,0 +1,103 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: service-core-hr
+
+  # ── Database ─────────────────────────────────────────────────────────────────
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hrms_db
+    username: ${DB_USERNAME:hrms_user}
+    password: ${DB_PASSWORD:hrms_pass}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  # ── JPA / Hibernate ──────────────────────────────────────────────────────────
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        default_schema: public
+
+  # ── Flyway ───────────────────────────────────────────────────────────────────
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    validate-on-migrate: true
+
+  # ── Redis ────────────────────────────────────────────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 5000ms
+
+  # ── Kafka ────────────────────────────────────────────────────────────────────
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      retries: 3
+      acks: 1
+    consumer:
+      group-id: service-core-hr-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.hrms.*"
+
+# ── Eureka Discovery ─────────────────────────────────────────────────────────
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+    initial-instance-info-replication-interval-seconds: 10
+    registry-fetch-interval-seconds: 30
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+# ── JWT ───────────────────────────────────────────────────────────────────────
+jwt:
+  secret: ${JWT_SECRET:hrms-platform-jwt-secret-key-change-this-in-production-256bit!!}
+  access-token-expiry: 3600000
+  refresh-token-expiry: 604800000
+
+# ── Actuator ─────────────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# ── SpringDoc / Swagger UI ────────────────────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+logging:
+  level:
+    com.hrms: DEBUG
+    org.flywaydb: INFO
+    org.hibernate.SQL: WARN
+    org.springframework.security: WARN
