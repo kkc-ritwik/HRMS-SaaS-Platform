@@ -1,5 +1,9 @@
 package com.hrms.leave.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +14,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "comp_off_requests")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("CompOffRequest")
+@EntityListeners(AuditEntityListener.class)
 public class CompOffRequest extends BaseEntity {
 
     @Column(name = "employee_id", nullable = false)

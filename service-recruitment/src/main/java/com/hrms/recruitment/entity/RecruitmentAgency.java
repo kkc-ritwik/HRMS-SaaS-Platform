@@ -1,5 +1,9 @@
 package com.hrms.recruitment.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,6 +13,8 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "recruitment_agencies")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("RecruitmentAgency")
+@EntityListeners(AuditEntityListener.class)
 public class RecruitmentAgency extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 200)

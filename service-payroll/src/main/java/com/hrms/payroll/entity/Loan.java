@@ -1,5 +1,12 @@
 package com.hrms.payroll.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
+import com.hrms.events.annotation.PublishEvents;
+import com.hrms.events.listener.EntityLifecyclePublisher;
+import com.hrms.events.model.Topics;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,6 +18,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "loans")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("Loan")
+@PublishEvents(topic = Topics.PAYROLL, namespace = "payroll.loan")
+@EntityListeners({AuditEntityListener.class, EntityLifecyclePublisher.class})
 public class Loan extends BaseEntity {
 
     @Column(name = "employee_id", nullable = false)
@@ -47,7 +57,7 @@ public class Loan extends BaseEntity {
     @Column(name = "status", nullable = false, length = 20)
     private LoanStatus status = LoanStatus.ACTIVE;
 
-    // ── Enum ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum LoanStatus { ACTIVE, CLOSED, DEFAULTED }
 }

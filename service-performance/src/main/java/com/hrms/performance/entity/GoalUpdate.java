@@ -1,5 +1,9 @@
 package com.hrms.performance.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +14,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "goal_updates")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("GoalUpdate")
+@EntityListeners(AuditEntityListener.class)
 public class GoalUpdate extends BaseEntity {
 
     @Column(name = "goal_id", nullable = false)

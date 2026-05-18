@@ -1,5 +1,9 @@
 package com.hrms.leave.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,6 +16,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "attendance_records")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("AttendanceRecord")
+@EntityListeners(AuditEntityListener.class)
 public class AttendanceRecord extends BaseEntity {
 
     @Column(name = "employee_id", nullable = false)
@@ -63,7 +69,7 @@ public class AttendanceRecord extends BaseEntity {
     @Column(name = "is_regularized", nullable = false)
     private boolean regularized = false;
 
-    // ── Enum ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum AttendanceStatus {
         PRESENT, ABSENT, HALF_DAY, ON_LEAVE, HOLIDAY, WEEK_OFF

@@ -62,10 +62,10 @@ CREATE TABLE employee_benefits (
     updated_by       VARCHAR(100),
     created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    is_deleted       BOOLEAN     NOT NULL DEFAULT FALSE,
-    CONSTRAINT uq_employee_benefit UNIQUE (tenant_id, employee_id, benefit_id) WHERE is_deleted = FALSE
+    is_deleted       BOOLEAN     NOT NULL DEFAULT FALSE
 );
 
+CREATE UNIQUE INDEX uq_employee_benefit ON employee_benefits (tenant_id, employee_id, benefit_id) WHERE is_deleted = FALSE;
 CREATE INDEX idx_employee_benefits_tenant_id   ON employee_benefits (tenant_id);
 CREATE INDEX idx_employee_benefits_emp_tenant  ON employee_benefits (tenant_id, employee_id);
 

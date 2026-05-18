@@ -1,0 +1,9 @@
+apiVersion: v2
+name: hrms
+description: HRMS Platform Helm chart — deploys every microservice + Postgres/Redis/Kafka/MinIO
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords: [hrms, payroll, hr, multi-tenant]
+maintainers:
+  - name: HRMS Team

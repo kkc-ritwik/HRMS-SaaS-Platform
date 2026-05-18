@@ -1,5 +1,12 @@
 package com.hrms.performance.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
+import com.hrms.events.annotation.PublishEvents;
+import com.hrms.events.listener.EntityLifecyclePublisher;
+import com.hrms.events.model.Topics;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,6 +18,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "reviews")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("Review")
+@PublishEvents(topic = Topics.PERFORMANCE, namespace = "performance.review")
+@EntityListeners({AuditEntityListener.class, EntityLifecyclePublisher.class})
 public class Review extends BaseEntity {
 
     @Column(name = "cycle_id", nullable = false)
@@ -37,7 +47,7 @@ public class Review extends BaseEntity {
     @Column(name = "overall_rating", precision = 4, scale = 2)
     private BigDecimal overallRating;
 
-    /** 1–5; Y-axis on the 9-box grid. */
+    /** 1â€“5; Y-axis on the 9-box grid. */
     @Column(name = "potential_rating")
     private Integer potentialRating;
 
@@ -69,7 +79,7 @@ public class Review extends BaseEntity {
     @Column(name = "acknowledged_at")
     private Instant acknowledgedAt;
 
-    // ── Enums ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum ReviewType { SELF, MANAGER, PEER, SKIP_LEVEL }
 

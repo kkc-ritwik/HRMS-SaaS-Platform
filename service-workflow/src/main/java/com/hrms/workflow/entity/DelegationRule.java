@@ -1,5 +1,9 @@
 package com.hrms.workflow.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,6 +20,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Auditable("DelegationRule")
+@EntityListeners(AuditEntityListener.class)
 public class DelegationRule extends BaseEntity {
 
     public enum DelegationScope {

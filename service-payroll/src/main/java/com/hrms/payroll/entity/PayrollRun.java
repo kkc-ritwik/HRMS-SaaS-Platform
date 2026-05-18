@@ -1,5 +1,12 @@
 package com.hrms.payroll.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
+import com.hrms.events.annotation.PublishEvents;
+import com.hrms.events.listener.EntityLifecyclePublisher;
+import com.hrms.events.model.Topics;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +17,9 @@ import java.time.Instant;
 @Entity
 @Table(name = "payroll_runs")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("PayrollRun")
+@PublishEvents(topic = Topics.PAYROLL, namespace = "payroll.run")
+@EntityListeners({AuditEntityListener.class, EntityLifecyclePublisher.class})
 public class PayrollRun extends BaseEntity {
 
     @Column(name = "month", nullable = false)
@@ -56,7 +66,7 @@ public class PayrollRun extends BaseEntity {
     @Column(name = "locked_at")
     private Instant lockedAt;
 
-    // ── Enums ─────────────────────────────────────────────────────────────────
+    // â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum RunStatus {
         DRAFT, PROCESSING, PROCESSED, LOCKED, PAID

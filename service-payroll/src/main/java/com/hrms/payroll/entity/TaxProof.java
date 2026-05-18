@@ -1,5 +1,9 @@
 package com.hrms.payroll.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,11 +14,13 @@ import java.util.UUID;
 
 /**
  * Proof documents uploaded against a tax declaration section.
- * Not multi-tenanted at row level — tenant is implied via declaration.
+ * Not multi-tenanted at row level â€” tenant is implied via declaration.
  */
 @Entity
 @Table(name = "tax_proofs")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("TaxProof")
+@EntityListeners(AuditEntityListener.class)
 public class TaxProof {
 
     @Id
@@ -52,7 +58,7 @@ public class TaxProof {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    // ── Enum ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum ProofStatus { PENDING, APPROVED, REJECTED }
 }

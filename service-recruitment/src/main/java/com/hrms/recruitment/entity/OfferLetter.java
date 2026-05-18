@@ -1,5 +1,12 @@
 package com.hrms.recruitment.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
+import com.hrms.events.annotation.PublishEvents;
+import com.hrms.events.listener.EntityLifecyclePublisher;
+import com.hrms.events.model.Topics;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,6 +19,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "offer_letters")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("OfferLetter")
+@PublishEvents(topic = Topics.RECRUITMENT, namespace = "recruitment.offer")
+@EntityListeners({AuditEntityListener.class, EntityLifecyclePublisher.class})
 public class OfferLetter extends BaseEntity {
 
     @Column(name = "application_id", nullable = false)
@@ -50,7 +60,7 @@ public class OfferLetter extends BaseEntity {
     @Column(name = "response_notes", length = 500)
     private String responseNotes;
 
-    // ── Enum ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum OfferStatus { DRAFT, SENT, ACCEPTED, DECLINED, EXPIRED, REVOKED }
 }

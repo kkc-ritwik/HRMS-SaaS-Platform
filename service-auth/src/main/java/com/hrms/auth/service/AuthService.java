@@ -4,7 +4,9 @@ import com.hrms.auth.dto.AuthDto;
 import com.hrms.auth.entity.*;
 import com.hrms.auth.repository.*;
 import com.hrms.common.exception.*;
+import com.hrms.security.lockout.AccountLockoutPolicy;
 import com.hrms.security.model.UserPrincipal;
+import com.hrms.security.password.PasswordPolicy;
 import com.hrms.security.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +27,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private static final int MAX_FAILED_ATTEMPTS = 5;
-    private static final int LOCK_DURATION_MINUTES = 30;
-
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
@@ -38,6 +37,8 @@ public class AuthService {
     private final PasswordHistoryRepository passwordHistoryRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final AccountLockoutPolicy lockoutPolicy;
+    private final PasswordPolicy passwordPolicy;
 
     @Value("${jwt.access-token-expiry:3600000}")
     private long accessTokenExpiry;
@@ -278,15 +279,32 @@ public class AuthService {
         int failedCount = user.getFailedLoginCount() + 1;
         user.setFailedLoginCount(failedCount);
 
-        if (failedCount >= MAX_FAILED_ATTEMPTS) {
+        if (lockoutPolicy.isEnabled() && failedCount >= lockoutPolicy.getMaxFailedAttempts()) {
             user.setStatus(User.UserStatus.LOCKED);
-            user.setLockedUntil(Instant.now().plus(LOCK_DURATION_MINUTES, ChronoUnit.MINUTES));
-            log.warn("User {} locked after {} failed login attempts", user.getEmail(), failedCount);
+            user.setLockedUntil(Instant.now().plus(lockoutPolicy.getLockoutMinutes(), ChronoUnit.MINUTES));
+            log.warn("User {} locked after {} failed login attempts (policy max={})",
+                    user.getEmail(), failedCount, lockoutPolicy.getMaxFailedAttempts());
         }
         userRepository.save(user);
 
         recordLoginHistory(user, tenantId, ipAddress, userAgent,
                 LoginHistory.LoginStatus.FAILED, "Invalid password");
+    }
+
+    /** Validates the new password against the password policy + history. */
+    private void enforcePasswordPolicy(String newPassword, UUID userId) {
+        PasswordPolicy.PasswordValidation v = passwordPolicy.validate(newPassword);
+        if (!v.valid()) throw new BusinessException("PASSWORD_POLICY", v.reason());
+        if (userId != null) {
+            List<PasswordHistory> history = passwordHistoryRepository
+                    .findTop5ByUserIdOrderByCreatedAtDesc(userId);
+            for (PasswordHistory h : history) {
+                if (passwordEncoder.matches(newPassword, h.getPasswordHash())) {
+                    throw new BusinessException("PASSWORD_REUSED",
+                            "New password must not match any of the last " + passwordPolicy.getHistoryLookback() + " passwords");
+                }
+            }
+        }
     }
 
     private void recordLoginHistory(User user, String tenantId, String ipAddress,

@@ -16,19 +16,31 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>HRMS Platform</name>
-    <description>Complete HRMS SaaS Platform — Zoho People Clone</description>
+    <description>Complete HRMS SaaS Platform — Zoho People Parity</description>
 
-    <!-- ═══ All Modules ═══ -->
     <modules>
         <!-- Shared Libraries -->
         <module>common-lib</module>
         <module>common-security</module>
         <module>common-tenant</module>
+        <module>common-storage</module>
+        <module>common-mail</module>
+        <module>common-pdf</module>
+        <module>common-audit</module>
+        <module>common-events</module>
+        <module>common-clients</module>
+        <module>common-search</module>
+        <module>common-i18n</module>
+        <module>common-resilience</module>
+        <module>common-observability</module>
+        <module>common-esign</module>
+
         <!-- Infrastructure -->
         <module>service-discovery</module>
         <module>config-server</module>
         <module>api-gateway</module>
-        <!-- Business Services -->
+
+        <!-- Business Services (existing) -->
         <module>service-auth</module>
         <module>service-core-hr</module>
         <module>service-leave-attendance</module>
@@ -48,9 +60,19 @@
         <module>service-compensation</module>
         <module>service-compliance</module>
         <module>service-offboarding</module>
+
+        <!-- Business Services (new — Zoho parity) -->
+        <module>service-travel</module>
+        <module>service-timesheet</module>
+        <module>service-cases</module>
+        <module>service-files</module>
+        <module>service-forms</module>
+        <module>service-engagement</module>
+        <module>service-skills</module>
+        <module>service-integrations</module>
+        <module>service-workplace</module>
     </modules>
 
-    <!-- ═══ Version Management ═══ -->
     <properties>
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
@@ -63,9 +85,31 @@
         <lombok.version>1.18.32</lombok.version>
         <postgresql.version>42.7.3</postgresql.version>
         <flyway.version>10.12.0</flyway.version>
+
+        <!-- New foundation -->
+        <minio.version>8.5.10</minio.version>
+        <openpdf.version>2.0.2</openpdf.version>
+        <resilience4j.version>2.2.0</resilience4j.version>
+        <elasticsearch.version>8.14.0</elasticsearch.version>
+        <thymeleaf.version>3.1.2.RELEASE</thymeleaf.version>
+        <commons-csv.version>1.11.0</commons-csv.version>
+        <poi.version>5.2.5</poi.version>
+        <opencsv.version>5.9</opencsv.version>
+        <commons-io.version>2.16.1</commons-io.version>
+        <jsoup.version>1.17.2</jsoup.version>
+        <ical4j.version>4.0.1</ical4j.version>
+        <tika.version>2.9.2</tika.version>
+        <zxing.version>3.5.3</zxing.version>
+        <totp.version>1.7.1</totp.version>
+        <opensaml.version>4.3.2</opensaml.version>
+        <google-api-client.version>2.6.0</google-api-client.version>
+        <firebase-admin.version>9.3.0</firebase-admin.version>
+        <twilio.version>10.1.5</twilio.version>
+        <slack-api.version>1.40.3</slack-api.version>
+        <micrometer-tracing.version>1.2.5</micrometer-tracing.version>
+        <opentelemetry.version>1.37.0</opentelemetry.version>
     </properties>
 
-    <!-- ═══ Dependency Management (available to all children) ═══ -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -77,61 +121,84 @@
             </dependency>
 
             <!-- Our shared libs -->
-            <dependency>
-                <groupId>com.hrms</groupId>
-                <artifactId>common-lib</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.hrms</groupId>
-                <artifactId>common-security</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.hrms</groupId>
-                <artifactId>common-tenant</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-lib</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-security</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-tenant</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-storage</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-mail</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-pdf</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-audit</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-events</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-clients</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-search</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-i18n</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-resilience</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-observability</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hrms</groupId><artifactId>common-esign</artifactId><version>${project.version}</version></dependency>
 
             <!-- JWT -->
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-api</artifactId>
-                <version>${jjwt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-impl</artifactId>
-                <version>${jjwt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-jackson</artifactId>
-                <version>${jjwt.version}</version>
-            </dependency>
+            <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-api</artifactId><version>${jjwt.version}</version></dependency>
+            <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-impl</artifactId><version>${jjwt.version}</version></dependency>
+            <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-jackson</artifactId><version>${jjwt.version}</version></dependency>
 
             <!-- MapStruct -->
-            <dependency>
-                <groupId>org.mapstruct</groupId>
-                <artifactId>mapstruct</artifactId>
-                <version>${mapstruct.version}</version>
-            </dependency>
+            <dependency><groupId>org.mapstruct</groupId><artifactId>mapstruct</artifactId><version>${mapstruct.version}</version></dependency>
 
             <!-- Flyway -->
-            <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-core</artifactId>
-                <version>${flyway.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-database-postgresql</artifactId>
-                <version>${flyway.version}</version>
-            </dependency>
+            <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId><version>${flyway.version}</version></dependency>
+            <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-database-postgresql</artifactId><version>${flyway.version}</version></dependency>
+
+            <!-- MinIO / S3 -->
+            <dependency><groupId>io.minio</groupId><artifactId>minio</artifactId><version>${minio.version}</version></dependency>
+
+            <!-- PDF -->
+            <dependency><groupId>com.github.librepdf</groupId><artifactId>openpdf</artifactId><version>${openpdf.version}</version></dependency>
+
+            <!-- Resilience4j -->
+            <dependency><groupId>io.github.resilience4j</groupId><artifactId>resilience4j-spring-boot3</artifactId><version>${resilience4j.version}</version></dependency>
+            <dependency><groupId>io.github.resilience4j</groupId><artifactId>resilience4j-reactor</artifactId><version>${resilience4j.version}</version></dependency>
+
+            <!-- CSV / Excel -->
+            <dependency><groupId>org.apache.commons</groupId><artifactId>commons-csv</artifactId><version>${commons-csv.version}</version></dependency>
+            <dependency><groupId>com.opencsv</groupId><artifactId>opencsv</artifactId><version>${opencsv.version}</version></dependency>
+            <dependency><groupId>org.apache.poi</groupId><artifactId>poi</artifactId><version>${poi.version}</version></dependency>
+            <dependency><groupId>org.apache.poi</groupId><artifactId>poi-ooxml</artifactId><version>${poi.version}</version></dependency>
+
+            <!-- Commons IO -->
+            <dependency><groupId>commons-io</groupId><artifactId>commons-io</artifactId><version>${commons-io.version}</version></dependency>
+
+            <!-- HTML / Sanitization -->
+            <dependency><groupId>org.jsoup</groupId><artifactId>jsoup</artifactId><version>${jsoup.version}</version></dependency>
+
+            <!-- Calendar (ICS) -->
+            <dependency><groupId>org.mnode.ical4j</groupId><artifactId>ical4j</artifactId><version>${ical4j.version}</version></dependency>
+
+            <!-- Tika (OCR / file extraction) -->
+            <dependency><groupId>org.apache.tika</groupId><artifactId>tika-core</artifactId><version>${tika.version}</version></dependency>
+            <dependency><groupId>org.apache.tika</groupId><artifactId>tika-parsers-standard-package</artifactId><version>${tika.version}</version></dependency>
+
+            <!-- QR Codes / Barcodes -->
+            <dependency><groupId>com.google.zxing</groupId><artifactId>core</artifactId><version>${zxing.version}</version></dependency>
+            <dependency><groupId>com.google.zxing</groupId><artifactId>javase</artifactId><version>${zxing.version}</version></dependency>
+
+            <!-- TOTP (MFA) -->
+            <dependency><groupId>dev.samstevens.totp</groupId><artifactId>totp</artifactId><version>${totp.version}</version></dependency>
+
+            <!-- Firebase Cloud Messaging (push notifications) -->
+            <dependency><groupId>com.google.firebase</groupId><artifactId>firebase-admin</artifactId><version>${firebase-admin.version}</version></dependency>
+
+            <!-- Twilio SMS -->
+            <dependency><groupId>com.twilio.sdk</groupId><artifactId>twilio</artifactId><version>${twilio.version}</version></dependency>
+
+            <!-- Slack -->
+            <dependency><groupId>com.slack.api</groupId><artifactId>slack-api-client</artifactId><version>${slack-api.version}</version></dependency>
+
+            <!-- Tracing -->
+            <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-tracing-bridge-otel</artifactId><version>${micrometer-tracing.version}</version></dependency>
+            <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp</artifactId><version>${opentelemetry.version}</version></dependency>
         </dependencies>
     </dependencyManagement>
 
-    <!-- ═══ Dependencies inherited by ALL modules ═══ -->
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -145,7 +212,6 @@
         </dependency>
     </dependencies>
 
-    <!-- ═══ Build Configuration ═══ -->
     <build>
         <pluginManagement>
             <plugins>
@@ -173,24 +239,13 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.5.0</version>
-                <executions>
-                    <execution>
-                        <id>add-mapstruct-generated-sources</id>
-                        <phase>generate-sources</phase>
-                        <goals><goal>add-source</goal></goals>
-                        <configuration>
-                            <sources>
-                                <source>${project.build.directory}/generated-sources/annotations</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
+        <!--
+          NOTE: build-helper-maven-plugin add-source for target/generated-sources/annotations
+          was removed — maven-compiler-plugin's annotation processor already adds its output
+          to the source path automatically, and the extra add-source caused a race with the
+          IDE's Eclipse JDT compiler (it would write a partially-generated mapper file there
+          mid-build, breaking Maven). Annotation-processed sources are still picked up
+          correctly without this plugin.
+        -->
     </build>
 </project>

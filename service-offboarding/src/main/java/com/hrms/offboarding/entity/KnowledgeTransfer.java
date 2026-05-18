@@ -1,5 +1,9 @@
 package com.hrms.offboarding.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,6 +18,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Auditable("KnowledgeTransfer")
+@EntityListeners(AuditEntityListener.class)
 public class KnowledgeTransfer extends BaseEntity {
 
     public enum TransferStatus {

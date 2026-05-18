@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS pre_onboarding_portals (
+    id                        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id                 VARCHAR(100) NOT NULL,
+    candidate_id              UUID NOT NULL,
+    offer_id                  UUID,
+    access_token              VARCHAR(100) NOT NULL UNIQUE,
+    proposed_join_date        DATE,
+    status                    VARCHAR(30) NOT NULL,
+    uploaded_documents        JSONB,
+    personal_details          JSONB,
+    handbook_acknowledged_at  TIMESTAMPTZ,
+    invitation_sent_at        TIMESTAMPTZ,
+    completed_at              TIMESTAMPTZ,
+    created_by                VARCHAR(100),
+    updated_by                VARCHAR(100),
+    created_at                TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at                TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted                   BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE (tenant_id, candidate_id)
+);

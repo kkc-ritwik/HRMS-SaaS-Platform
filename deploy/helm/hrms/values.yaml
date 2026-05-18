@@ -1,0 +1,96 @@
+# Default values — override per environment (values-prod.yaml, values-staging.yaml).
+
+global:
+  imageRegistry: ghcr.io/your-org
+  imageTag: 1.0.0
+  imagePullPolicy: IfNotPresent
+  environment: prod
+  domain: hrms.yourcompany.com
+
+# Common env shared by every microservice.
+env:
+  DB_HOST: postgresql
+  DB_PORT: "5432"
+  DB_NAME: hrms_db
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  ELASTICSEARCH_URI: http://elasticsearch:9200
+  STORAGE_ENDPOINT: http://minio:9000
+  EUREKA_SERVER_URL: http://service-discovery:8761/eureka/
+  SPRING_PROFILES_ACTIVE: prod
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+  HRMS_RATELIMIT_ENABLED: "true"
+
+# Secrets — point to existing Kubernetes Secrets (created out-of-band).
+secrets:
+  smtp: hrms-smtp
+  storage: hrms-storage
+  jwt: hrms-jwt
+  twilio: hrms-twilio
+  fcm: hrms-fcm
+
+# Per-service config — port + replicas + resource limits.
+services:
+  api-gateway:        { port: 8080, replicas: 2, cpu: "200m", memory: "512Mi" }
+  service-discovery:  { port: 8761, replicas: 1, cpu: "100m", memory: "256Mi" }
+  config-server:      { port: 8888, replicas: 1, cpu: "100m", memory: "256Mi" }
+  service-auth:         { port: 8081, replicas: 2, cpu: "300m", memory: "768Mi" }
+  service-core-hr:      { port: 8082, replicas: 3, cpu: "500m", memory: "1Gi" }
+  service-leave-attendance: { port: 8083, replicas: 3, cpu: "500m", memory: "1Gi" }
+  service-payroll:      { port: 8084, replicas: 2, cpu: "1000m", memory: "1.5Gi" }
+  service-recruitment:  { port: 8085, replicas: 2, cpu: "400m", memory: "768Mi" }
+  service-compensation: { port: 8086, replicas: 1, cpu: "200m", memory: "512Mi" }
+  service-performance:  { port: 8087, replicas: 2, cpu: "400m", memory: "768Mi" }
+  service-onboarding:   { port: 8088, replicas: 2, cpu: "300m", memory: "512Mi" }
+  service-offboarding:  { port: 8089, replicas: 1, cpu: "300m", memory: "512Mi" }
+  service-expense:      { port: 8090, replicas: 2, cpu: "300m", memory: "512Mi" }
+  service-asset:        { port: 8091, replicas: 1, cpu: "200m", memory: "512Mi" }
+  service-document:     { port: 8092, replicas: 2, cpu: "400m", memory: "768Mi" }
+  service-workflow:     { port: 8093, replicas: 2, cpu: "300m", memory: "512Mi" }
+  service-notification: { port: 8094, replicas: 3, cpu: "400m", memory: "768Mi" }
+  service-compliance:   { port: 8095, replicas: 1, cpu: "200m", memory: "512Mi" }
+  service-reports:      { port: 8096, replicas: 2, cpu: "500m", memory: "1Gi" }
+  service-social:       { port: 8097, replicas: 2, cpu: "300m", memory: "512Mi" }
+  service-lms:          { port: 8098, replicas: 2, cpu: "300m", memory: "768Mi" }
+  service-helpdesk:     { port: 8099, replicas: 2, cpu: "300m", memory: "512Mi" }
+  service-travel:       { port: 8100, replicas: 1, cpu: "300m", memory: "512Mi" }
+  service-timesheet:    { port: 8101, replicas: 2, cpu: "300m", memory: "512Mi" }
+  service-cases:        { port: 8102, replicas: 1, cpu: "200m", memory: "512Mi" }
+  service-files:        { port: 8103, replicas: 2, cpu: "400m", memory: "768Mi" }
+  service-forms:        { port: 8104, replicas: 1, cpu: "200m", memory: "512Mi" }
+  service-engagement:   { port: 8105, replicas: 1, cpu: "200m", memory: "512Mi" }
+  service-skills:       { port: 8106, replicas: 1, cpu: "200m", memory: "512Mi" }
+  service-integrations: { port: 8107, replicas: 2, cpu: "300m", memory: "512Mi" }
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+
+postgresql:
+  enabled: true
+  auth:
+    database: hrms_db
+    username: hrms_user
+  primary:
+    persistence:
+      size: 50Gi
+
+redis:
+  enabled: true
+  master:
+    persistence:
+      size: 8Gi
+
+kafka:
+  enabled: true
+  persistence:
+    size: 20Gi
+
+minio:
+  enabled: true
+  persistence:
+    size: 100Gi

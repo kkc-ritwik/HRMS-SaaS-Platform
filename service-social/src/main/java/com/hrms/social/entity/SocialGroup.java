@@ -1,5 +1,9 @@
 package com.hrms.social.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,6 +16,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Auditable("SocialGroup")
+@EntityListeners(AuditEntityListener.class)
 public class SocialGroup extends BaseEntity {
 
     public enum GroupType {

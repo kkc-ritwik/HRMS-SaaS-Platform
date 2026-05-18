@@ -1,5 +1,9 @@
 package com.hrms.onboarding.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,6 +17,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Auditable("OnboardingDocument")
+@EntityListeners(AuditEntityListener.class)
 public class OnboardingDocument extends BaseEntity {
 
     public enum DocumentStatus {

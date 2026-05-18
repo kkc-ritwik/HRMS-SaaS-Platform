@@ -1,5 +1,9 @@
 package com.hrms.leave.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,6 +13,8 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "leave_types")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("LeaveType")
+@EntityListeners(AuditEntityListener.class)
 public class LeaveType extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 150)

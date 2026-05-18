@@ -1,5 +1,9 @@
 package com.hrms.compensation.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,6 +16,8 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Auditable("Benefit")
+@EntityListeners(AuditEntityListener.class)
 public class Benefit extends BaseEntity {
 
     public enum BenefitType {

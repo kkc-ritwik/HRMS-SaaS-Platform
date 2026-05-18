@@ -1,5 +1,9 @@
 package com.hrms.performance.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +14,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "role_competencies")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("RoleCompetency")
+@EntityListeners(AuditEntityListener.class)
 public class RoleCompetency extends BaseEntity {
 
     @Column(name = "competency_id", nullable = false)
@@ -23,7 +29,7 @@ public class RoleCompetency extends BaseEntity {
     @Column(name = "department_id")
     private UUID departmentId;
 
-    /** Expected proficiency level (1–5). */
+    /** Expected proficiency level (1â€“5). */
     @Column(name = "expected_level", nullable = false)
     private int expectedLevel = 3;
 

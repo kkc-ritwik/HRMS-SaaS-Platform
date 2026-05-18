@@ -1,5 +1,9 @@
 package com.hrms.asset.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,6 +15,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "asset_maintenance")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("AssetMaintenance")
+@EntityListeners(AuditEntityListener.class)
 public class AssetMaintenance extends BaseEntity {
 
     public enum MaintenanceType {

@@ -1,5 +1,12 @@
 package com.hrms.recruitment.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
+import com.hrms.events.annotation.PublishEvents;
+import com.hrms.events.listener.EntityLifecyclePublisher;
+import com.hrms.events.model.Topics;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,6 +20,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "candidates")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("Candidate")
+@PublishEvents(topic = Topics.RECRUITMENT, namespace = "recruitment.candidate")
+@EntityListeners({AuditEntityListener.class, EntityLifecyclePublisher.class})
 public class Candidate extends BaseEntity {
 
     @Column(name = "first_name", nullable = false, length = 100)

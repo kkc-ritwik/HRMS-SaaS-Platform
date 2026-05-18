@@ -1,5 +1,9 @@
 package com.hrms.corehr.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,6 +13,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "departments")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("Department")
+@EntityListeners(AuditEntityListener.class)
 public class Department extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 150)

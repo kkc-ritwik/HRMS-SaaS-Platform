@@ -1,5 +1,9 @@
 package com.hrms.performance.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,6 +18,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "one_on_ones")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("OneOnOne")
+@EntityListeners(AuditEntityListener.class)
 public class OneOnOne extends BaseEntity {
 
     @Column(name = "manager_id", nullable = false)
@@ -48,7 +54,7 @@ public class OneOnOne extends BaseEntity {
     @Column(name = "next_meeting_date")
     private LocalDate nextMeetingDate;
 
-    // ── Enum ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum MeetingStatus { SCHEDULED, COMPLETED, CANCELLED, RESCHEDULED }
 }

@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/hrms_db
+    url: jdbc:postgresql://localhost:5433/hrms_db
     username: hrms_user
     password: hrms_pass
   jpa:

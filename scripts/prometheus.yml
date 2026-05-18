@@ -1,0 +1,36 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'hrms-services'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - 'host.docker.internal:8081'   # service-auth
+          - 'host.docker.internal:8082'   # service-core-hr
+          - 'host.docker.internal:8083'   # service-leave-attendance
+          - 'host.docker.internal:8084'   # service-payroll
+          - 'host.docker.internal:8085'   # service-recruitment
+          - 'host.docker.internal:8086'   # service-compensation
+          - 'host.docker.internal:8087'   # service-performance
+          - 'host.docker.internal:8088'   # service-onboarding
+          - 'host.docker.internal:8089'   # service-offboarding
+          - 'host.docker.internal:8090'   # service-expense
+          - 'host.docker.internal:8091'   # service-asset
+          - 'host.docker.internal:8092'   # service-document
+          - 'host.docker.internal:8093'   # service-workflow
+          - 'host.docker.internal:8094'   # service-notification
+          - 'host.docker.internal:8095'   # service-compliance
+          - 'host.docker.internal:8096'   # service-reports
+          - 'host.docker.internal:8097'   # service-social
+          - 'host.docker.internal:8098'   # service-lms
+          - 'host.docker.internal:8099'   # service-helpdesk
+          - 'host.docker.internal:8100'   # service-travel
+          - 'host.docker.internal:8101'   # service-timesheet
+          - 'host.docker.internal:8102'   # service-cases
+          - 'host.docker.internal:8103'   # service-files
+          - 'host.docker.internal:8104'   # service-forms
+          - 'host.docker.internal:8105'   # service-engagement
+          - 'host.docker.internal:8106'   # service-skills
+          - 'host.docker.internal:8107'   # service-integrations
+          - 'host.docker.internal:8080'   # api-gateway

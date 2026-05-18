@@ -1,5 +1,9 @@
 package com.hrms.performance.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,6 +15,8 @@ import java.util.List;
 @Entity
 @Table(name = "competencies")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("Competency")
+@EntityListeners(AuditEntityListener.class)
 public class Competency extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 200)
@@ -24,7 +30,7 @@ public class Competency extends BaseEntity {
     private CompetencyCategory category = CompetencyCategory.CORE;
 
     /**
-     * Behavior descriptions indexed by proficiency level 1–5.
+     * Behavior descriptions indexed by proficiency level 1â€“5.
      * Index 0 = level 1, index 4 = level 5.
      */
     @JdbcTypeCode(SqlTypes.JSON)
@@ -34,7 +40,7 @@ public class Competency extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
-    // ── Enum ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum CompetencyCategory { CORE, FUNCTIONAL, LEADERSHIP, BEHAVIORAL }
 }

@@ -1,5 +1,9 @@
 package com.hrms.leave.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,6 +15,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "overtime_records")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("OvertimeRecord")
+@EntityListeners(AuditEntityListener.class)
 public class OvertimeRecord extends BaseEntity {
 
     @Column(name = "employee_id", nullable = false)

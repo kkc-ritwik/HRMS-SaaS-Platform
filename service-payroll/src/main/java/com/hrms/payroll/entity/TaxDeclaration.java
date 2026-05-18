@@ -1,5 +1,9 @@
 package com.hrms.payroll.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +14,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "tax_declarations")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("TaxDeclaration")
+@EntityListeners(AuditEntityListener.class)
 public class TaxDeclaration extends BaseEntity {
 
     @Column(name = "employee_id", nullable = false)
@@ -27,23 +33,23 @@ public class TaxDeclaration extends BaseEntity {
     @Column(name = "status", nullable = false, length = 20)
     private DeclarationStatus status = DeclarationStatus.DRAFT;
 
-    /** Investments under Section 80C — max exemption ₹1,50,000. */
+    /** Investments under Section 80C â€” max exemption â‚¹1,50,000. */
     @Column(name = "section_80c", nullable = false, precision = 12, scale = 2)
     private BigDecimal section80c = BigDecimal.ZERO;
 
-    /** Medical insurance premiums — max exemption ₹25,000 (self) + ₹50,000 (senior parents). */
+    /** Medical insurance premiums â€” max exemption â‚¹25,000 (self) + â‚¹50,000 (senior parents). */
     @Column(name = "section_80d", nullable = false, precision = 12, scale = 2)
     private BigDecimal section80d = BigDecimal.ZERO;
 
-    /** Education loan interest — no upper limit. */
+    /** Education loan interest â€” no upper limit. */
     @Column(name = "section_80e", nullable = false, precision = 12, scale = 2)
     private BigDecimal section80e = BigDecimal.ZERO;
 
-    /** Donations — as per applicable limits. */
+    /** Donations â€” as per applicable limits. */
     @Column(name = "section_80g", nullable = false, precision = 12, scale = 2)
     private BigDecimal section80g = BigDecimal.ZERO;
 
-    /** Home loan interest (self-occupied) — max ₹2,00,000. */
+    /** Home loan interest (self-occupied) â€” max â‚¹2,00,000. */
     @Column(name = "section_24b", nullable = false, precision = 12, scale = 2)
     private BigDecimal section24b = BigDecimal.ZERO;
 
@@ -67,7 +73,7 @@ public class TaxDeclaration extends BaseEntity {
     @Column(name = "previous_employer_tds", nullable = false, precision = 12, scale = 2)
     private BigDecimal previousEmployerTds = BigDecimal.ZERO;
 
-    // ── Enums ─────────────────────────────────────────────────────────────────
+    // â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum TaxRegime { OLD, NEW }
 

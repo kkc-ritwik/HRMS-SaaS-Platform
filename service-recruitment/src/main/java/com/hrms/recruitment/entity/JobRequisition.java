@@ -1,5 +1,12 @@
 package com.hrms.recruitment.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
+import com.hrms.events.annotation.PublishEvents;
+import com.hrms.events.listener.EntityLifecyclePublisher;
+import com.hrms.events.model.Topics;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,6 +19,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "job_requisitions")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("JobRequisition")
+@PublishEvents(topic = Topics.RECRUITMENT, namespace = "recruitment.requisition")
+@EntityListeners({AuditEntityListener.class, EntityLifecyclePublisher.class})
 public class JobRequisition extends BaseEntity {
 
     @Column(name = "title", nullable = false, length = 200)
@@ -71,7 +81,7 @@ public class JobRequisition extends BaseEntity {
     @Column(name = "approved_at")
     private Instant approvedAt;
 
-    // ── Enums ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum EmploymentType { FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP }
 

@@ -1,5 +1,12 @@
 package com.hrms.offboarding.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
+import com.hrms.events.annotation.PublishEvents;
+import com.hrms.events.listener.EntityLifecyclePublisher;
+import com.hrms.events.model.Topics;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,6 +20,9 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Auditable("Separation")
+@PublishEvents(topic = Topics.OFFBOARDING, namespace = "offboarding.separation")
+@EntityListeners({AuditEntityListener.class, EntityLifecyclePublisher.class})
 public class Separation extends BaseEntity {
 
     public enum SeparationType {

@@ -1,5 +1,9 @@
 package com.hrms.payroll.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,6 +17,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "salary_structure_components")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("SalaryStructureComponent")
+@EntityListeners(AuditEntityListener.class)
 public class SalaryStructureComponent {
 
     @Id

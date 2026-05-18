@@ -1,0 +1,81 @@
+CREATE TABLE IF NOT EXISTS salary_bands (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id       VARCHAR(100) NOT NULL,
+    pay_grade_id    UUID NOT NULL,
+    country         VARCHAR(2) NOT NULL,
+    currency        VARCHAR(3) NOT NULL,
+    min_amount      NUMERIC(14,2) NOT NULL,
+    mid_amount      NUMERIC(14,2) NOT NULL,
+    max_amount      NUMERIC(14,2) NOT NULL,
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+    created_by      VARCHAR(100),
+    updated_by      VARCHAR(100),
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted         BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE (tenant_id, pay_grade_id, country)
+);
+
+CREATE TABLE IF NOT EXISTS increment_cycles (
+    id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id                   VARCHAR(100) NOT NULL,
+    name                        VARCHAR(200) NOT NULL,
+    fiscal_year                 VARCHAR(9) NOT NULL,
+    effective_date              DATE NOT NULL,
+    manager_proposal_deadline   DATE,
+    hr_approval_deadline        DATE,
+    budget_percent_of_payroll   NUMERIC(5,2),
+    rating_to_hike_map          JSONB,
+    status                      VARCHAR(30) NOT NULL,
+    created_by                  VARCHAR(100),
+    updated_by                  VARCHAR(100),
+    created_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted                     BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE IF NOT EXISTS increment_proposals (
+    id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id              VARCHAR(100) NOT NULL,
+    cycle_id               UUID NOT NULL REFERENCES increment_cycles(id) ON DELETE CASCADE,
+    employee_id            UUID NOT NULL,
+    manager_id             UUID,
+    current_base           NUMERIC(14,2),
+    proposed_base          NUMERIC(14,2),
+    hike_percent           NUMERIC(6,2),
+    bonus_amount           NUMERIC(14,2),
+    equity_units           INTEGER,
+    rating                 NUMERIC(4,2),
+    compa_ratio_before     NUMERIC(5,4),
+    compa_ratio_after      NUMERIC(5,4),
+    justification          VARCHAR(2000),
+    status                 VARCHAR(30) NOT NULL,
+    approved_at            TIMESTAMPTZ,
+    approved_by            UUID,
+    letter_storage_uri     VARCHAR(1000),
+    created_by             VARCHAR(100),
+    updated_by             VARCHAR(100),
+    created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted                BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE (cycle_id, employee_id)
+);
+
+CREATE TABLE IF NOT EXISTS fbp_declarations (
+    id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id                VARCHAR(100) NOT NULL,
+    employee_id              UUID NOT NULL,
+    financial_year           VARCHAR(9) NOT NULL,
+    annual_pool              NUMERIC(14,2) NOT NULL,
+    allocations              JSONB NOT NULL,
+    total_allocated          NUMERIC(14,2),
+    unallocated_to_special   NUMERIC(14,2),
+    status                   VARCHAR(30) NOT NULL,
+    locked_at                TIMESTAMPTZ,
+    created_by               VARCHAR(100),
+    updated_by               VARCHAR(100),
+    created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted                  BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE (tenant_id, employee_id, financial_year)
+);

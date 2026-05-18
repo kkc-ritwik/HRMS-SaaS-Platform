@@ -1,5 +1,9 @@
 package com.hrms.recruitment.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +14,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "interviews")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("Interview")
+@EntityListeners(AuditEntityListener.class)
 public class Interview extends BaseEntity {
 
     @Column(name = "application_id", nullable = false)
@@ -52,7 +58,7 @@ public class Interview extends BaseEntity {
     @Column(name = "feedback", columnDefinition = "TEXT")
     private String feedback;
 
-    // ── Enums ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum InterviewType { PHONE_SCREEN, TECHNICAL, HR, PANEL, FINAL, CASE_STUDY }
 

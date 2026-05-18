@@ -1,5 +1,9 @@
 package com.hrms.payroll.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +14,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "salary_components")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("SalaryComponent")
+@EntityListeners(AuditEntityListener.class)
 public class SalaryComponent extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 200)
@@ -54,7 +60,7 @@ public class SalaryComponent extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
-    // ── Enums ─────────────────────────────────────────────────────────────────
+    // â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum ComponentType {
         EARNING, DEDUCTION, REIMBURSEMENT, EMPLOYER_CONTRIBUTION

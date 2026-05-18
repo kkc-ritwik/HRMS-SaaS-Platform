@@ -1,5 +1,9 @@
 package com.hrms.auth.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,6 +15,8 @@ import java.time.Instant;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Auditable("User")
+@EntityListeners(AuditEntityListener.class)
 public class User extends BaseEntity {
 
     @Column(name = "employee_id")

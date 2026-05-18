@@ -1,5 +1,9 @@
 package com.hrms.performance.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,6 +13,8 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "review_cycles")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("ReviewCycle")
+@EntityListeners(AuditEntityListener.class)
 public class ReviewCycle extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 200)
@@ -55,7 +61,7 @@ public class ReviewCycle extends BaseEntity {
     @Column(name = "rating_scale", nullable = false)
     private int ratingScale = 5;
 
-    // ── Enums ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum CycleType { ANNUAL, HALF_YEARLY, QUARTERLY, MONTHLY, PROBATION }
 

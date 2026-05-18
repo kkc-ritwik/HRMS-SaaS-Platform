@@ -1,5 +1,9 @@
 package com.hrms.performance.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,6 +16,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "feedback")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("Feedback")
+@EntityListeners(AuditEntityListener.class)
 public class Feedback extends BaseEntity {
 
     @Column(name = "from_employee_id", nullable = false)
@@ -44,7 +50,7 @@ public class Feedback extends BaseEntity {
     @Column(name = "is_anonymous", nullable = false)
     private boolean anonymous = false;
 
-    // ── Enums ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum FeedbackType { APPRECIATION, CONSTRUCTIVE, IMPROVEMENT, NEUTRAL }
 

@@ -1,5 +1,9 @@
 package com.hrms.payroll.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -14,6 +18,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "loan_repayments")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("LoanRepayment")
+@EntityListeners(AuditEntityListener.class)
 public class LoanRepayment {
 
     @Id

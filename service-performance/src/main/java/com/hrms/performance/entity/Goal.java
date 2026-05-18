@@ -1,5 +1,12 @@
 package com.hrms.performance.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
+import com.hrms.events.annotation.PublishEvents;
+import com.hrms.events.listener.EntityLifecyclePublisher;
+import com.hrms.events.model.Topics;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,6 +18,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "goals")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("Goal")
+@PublishEvents(topic = Topics.PERFORMANCE, namespace = "performance.goal")
+@EntityListeners({AuditEntityListener.class, EntityLifecyclePublisher.class})
 public class Goal extends BaseEntity {
 
     @Column(name = "employee_id", nullable = false)
@@ -65,7 +75,7 @@ public class Goal extends BaseEntity {
     @Column(name = "due_date")
     private LocalDate dueDate;
 
-    // ── Enums ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum GoalType { OBJECTIVE, KEY_RESULT, INDIVIDUAL, TEAM, DEPARTMENT, COMPANY }
 

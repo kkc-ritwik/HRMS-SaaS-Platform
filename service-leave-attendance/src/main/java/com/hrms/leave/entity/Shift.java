@@ -1,5 +1,9 @@
 package com.hrms.leave.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +14,8 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "shifts")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("Shift")
+@EntityListeners(AuditEntityListener.class)
 public class Shift extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 150)

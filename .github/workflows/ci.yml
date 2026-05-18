@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop, HRMSSAAS]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: hrms_db
+          POSTGRES_USER: hrms_user
+          POSTGRES_PASSWORD: hrms_pass
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U hrms_user -d hrms_db"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17', cache: maven }
+      - name: Build all modules
+        run: mvn -B -ntp -DskipTests=true install
+      - name: Run tests
+        run: mvn -B -ntp test
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: '**/target/surefire-reports/*.xml'

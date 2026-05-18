@@ -1,5 +1,9 @@
 package com.hrms.expense.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,6 +17,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Auditable("ExpensePolicy")
+@EntityListeners(AuditEntityListener.class)
 public class ExpensePolicy extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 200)

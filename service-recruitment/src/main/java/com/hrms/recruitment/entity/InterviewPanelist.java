@@ -1,5 +1,9 @@
 package com.hrms.recruitment.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +14,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "interview_panelists")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("InterviewPanelist")
+@EntityListeners(AuditEntityListener.class)
 public class InterviewPanelist extends BaseEntity {
 
     @Column(name = "interview_id", nullable = false)
@@ -23,7 +29,7 @@ public class InterviewPanelist extends BaseEntity {
     @Column(name = "role", nullable = false, length = 20)
     private PanelistRole role = PanelistRole.PANELIST;
 
-    /** Rating given by this panelist (1–5). */
+    /** Rating given by this panelist (1â€“5). */
     @Column(name = "rating")
     private Integer rating;
 
@@ -34,7 +40,7 @@ public class InterviewPanelist extends BaseEntity {
     @Column(name = "submitted_at")
     private Instant submittedAt;
 
-    // ── Enum ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum PanelistRole { LEAD, PANELIST, SHADOW }
 }

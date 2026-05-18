@@ -7,9 +7,21 @@
     <dependencies>
         <dependency><groupId>com.hrms</groupId><artifactId>common-lib</artifactId></dependency>
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-oauth2-resource-server</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-oauth2-client</artifactId></dependency>
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-redis</artifactId></dependency>
         <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-api</artifactId></dependency>
         <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-impl</artifactId><scope>runtime</scope></dependency>
         <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-jackson</artifactId><scope>runtime</scope></dependency>
+        <dependency><groupId>dev.samstevens.totp</groupId><artifactId>totp</artifactId></dependency>
+        <dependency><groupId>com.google.zxing</groupId><artifactId>core</artifactId></dependency>
+        <dependency><groupId>com.google.zxing</groupId><artifactId>javase</artifactId></dependency>
+        <!-- Provided: PiiEncryptedConverter uses jakarta.persistence; services that import it
+             must already have JPA on the classpath (all our service-* modules do). -->
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

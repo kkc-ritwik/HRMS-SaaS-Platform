@@ -1,5 +1,12 @@
 package com.hrms.payroll.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
+import com.hrms.events.annotation.PublishEvents;
+import com.hrms.events.listener.EntityLifecyclePublisher;
+import com.hrms.events.model.Topics;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,6 +21,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "payslips")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("Payslip")
+@PublishEvents(topic = Topics.PAYROLL, namespace = "payroll.payslip")
+@EntityListeners({AuditEntityListener.class, EntityLifecyclePublisher.class})
 public class Payslip extends BaseEntity {
 
     @Column(name = "payroll_run_id", nullable = false)
@@ -85,7 +95,7 @@ public class Payslip extends BaseEntity {
     @Column(name = "emailed_at")
     private Instant emailedAt;
 
-    // ── Enum ──────────────────────────────────────────────────────────────────
+    // â”€â”€ Enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum PayslipStatus {
         DRAFT, PROCESSED, LOCKED, PUBLISHED

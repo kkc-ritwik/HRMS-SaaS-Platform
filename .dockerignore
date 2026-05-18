@@ -1,0 +1,15 @@
+# Avoid sending these to the Docker daemon
+.git
+.gitignore
+.idea
+.vscode
+.claude
+**/target/
+**/*.iml
+**/node_modules/
+hrms-frontend/dist
+hrms-frontend/build
+logs/
+*.log
+.env
+README-local.*

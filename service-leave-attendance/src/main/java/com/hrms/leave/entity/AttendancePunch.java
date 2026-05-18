@@ -1,5 +1,12 @@
 package com.hrms.leave.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
+import com.hrms.events.annotation.PublishEvents;
+import com.hrms.events.listener.EntityLifecyclePublisher;
+import com.hrms.events.model.Topics;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,6 +18,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "attendance_punches")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("AttendancePunch")
+@PublishEvents(topic = Topics.ATTENDANCE, namespace = "attendance.punch")
+@EntityListeners({AuditEntityListener.class, EntityLifecyclePublisher.class})
 public class AttendancePunch extends BaseEntity {
 
     @Column(name = "employee_id", nullable = false)

@@ -4,7 +4,7 @@ spring:
   application:
     name: service-document
   datasource:
-    url: jdbc:postgresql://localhost:5432/hrms_db
+    url: jdbc:postgresql://localhost:5433/hrms_db
     username: hrms_user
     password: hrms_pass
   jpa:
@@ -16,6 +16,9 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    table: flyway_schema_history_document
+    baseline-on-migrate: true
+    baseline-version: 0
   kafka:
     bootstrap-servers: localhost:9092
     producer:

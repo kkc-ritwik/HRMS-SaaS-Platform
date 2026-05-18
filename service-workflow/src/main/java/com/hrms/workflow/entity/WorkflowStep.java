@@ -1,5 +1,9 @@
 package com.hrms.workflow.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,6 +16,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Auditable("WorkflowStep")
+@EntityListeners(AuditEntityListener.class)
 public class WorkflowStep extends BaseEntity {
 
     public enum StepType {
@@ -56,4 +62,23 @@ public class WorkflowStep extends BaseEntity {
 
     @Column(name = "required", nullable = false)
     private boolean required = true;
+
+    /**
+     * Steps with the same parallelGroup execute concurrently â€” the group's children must ALL
+     * resolve (per quorum policy) before the workflow advances to the next stepOrder.
+     * Null = sequential.
+     */
+    @Column(name = "parallel_group", length = 50)
+    private String parallelGroup;
+
+    /** ANY = first response decides; ALL = wait for every approver; MAJORITY = quorum. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "quorum_policy", length = 30)
+    private QuorumPolicy quorumPolicy;
+
+    /** For MAJORITY â€” minimum % of approvers needed (e.g. 60 = 60%). Default 51. */
+    @Column(name = "quorum_threshold_percent")
+    private Integer quorumThresholdPercent;
+
+    public enum QuorumPolicy { ANY, ALL, MAJORITY }
 }

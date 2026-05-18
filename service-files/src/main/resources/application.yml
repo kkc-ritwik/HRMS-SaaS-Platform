@@ -1,0 +1,34 @@
+server:
+  port: ${PORT:8103}
+spring:
+  application:
+    name: service-files
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:hrms_db}
+    username: ${DB_USER:hrms_user}
+    password: ${DB_PASSWORD:hrms_pass}
+  servlet.multipart.max-file-size: 100MB
+  servlet.multipart.max-request-size: 100MB
+  jpa:
+    open-in-view: false
+    hibernate.ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: flyway_schema_history_files
+    baseline-on-migrate: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer.group-id: service-files
+eureka:
+  client.service-url.defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+management:
+  endpoints.web.exposure.include: health,info,metrics,prometheus
+hrms:
+  storage:
+    endpoint: ${STORAGE_ENDPOINT:http://localhost:9000}
+    access-key: ${STORAGE_ACCESS_KEY:hrms_minio}
+    secret-key: ${STORAGE_SECRET_KEY:hrms_minio_secret}
+    region: ${STORAGE_REGION:us-east-1}
+    default-bucket: ${STORAGE_DEFAULT_BUCKET:hrms}
+    path-style-access: ${STORAGE_PATH_STYLE:true}

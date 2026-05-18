@@ -1,5 +1,12 @@
 package com.hrms.leave.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
+import com.hrms.events.annotation.PublishEvents;
+import com.hrms.events.listener.EntityLifecyclePublisher;
+import com.hrms.events.model.Topics;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,6 +19,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "leave_applications")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("LeaveApplication")
+@PublishEvents(topic = Topics.LEAVE, namespace = "leave.application")
+@EntityListeners({AuditEntityListener.class, EntityLifecyclePublisher.class})
 public class LeaveApplication extends BaseEntity {
 
     @Column(name = "employee_id", nullable = false)
@@ -52,7 +62,7 @@ public class LeaveApplication extends BaseEntity {
     @Column(name = "cancel_reason", columnDefinition = "TEXT")
     private String cancelReason;
 
-    // ── Enums ─────────────────────────────────────────────────────────────────
+    // â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum DayType {
         FULL, FIRST_HALF, SECOND_HALF

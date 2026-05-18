@@ -1,5 +1,12 @@
 package com.hrms.corehr.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import com.hrms.events.annotation.PublishEvents;
+import com.hrms.events.listener.EntityLifecyclePublisher;
+import com.hrms.events.model.Topics;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,6 +20,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "employees")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("Employee")
+@PublishEvents(topic = Topics.EMPLOYEE, namespace = "employee")
+@EntityListeners({AuditEntityListener.class, EntityLifecyclePublisher.class})
 public class Employee extends BaseEntity {
 
     @Column(name = "user_id")
@@ -92,26 +102,31 @@ public class Employee extends BaseEntity {
     @Column(name = "custom_fields", columnDefinition = "jsonb")
     private Map<String, Object> customFields;
 
-    // ── Statutory / compliance ─────────────────────────────────────────────────
+    // â”€â”€ Statutory / compliance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    @Column(name = "pan_number", length = 10)
+    @Column(name = "pan_number", length = 200)
+    @jakarta.persistence.Convert(converter = com.hrms.security.crypto.PiiEncryptedConverter.class)
     private String panNumber;
 
-    @Column(name = "aadhar_number", length = 12)
+    @Column(name = "aadhar_number", length = 200)
+    @jakarta.persistence.Convert(converter = com.hrms.security.crypto.PiiEncryptedConverter.class)
     private String aadharNumber;
 
-    @Column(name = "uan_number", length = 12)
+    @Column(name = "uan_number", length = 200)
+    @jakarta.persistence.Convert(converter = com.hrms.security.crypto.PiiEncryptedConverter.class)
     private String uanNumber;
 
-    @Column(name = "esi_number", length = 17)
+    @Column(name = "esi_number", length = 200)
+    @jakarta.persistence.Convert(converter = com.hrms.security.crypto.PiiEncryptedConverter.class)
     private String esiNumber;
 
-    // ── Banking ───────────────────────────────────────────────────────────────
+    // â”€â”€ Banking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Column(name = "bank_name", length = 100)
     private String bankName;
 
-    @Column(name = "bank_account_number", length = 30)
+    @Column(name = "bank_account_number", length = 200)
+    @jakarta.persistence.Convert(converter = com.hrms.security.crypto.PiiEncryptedConverter.class)
     private String bankAccountNumber;
 
     @Column(name = "ifsc_code", length = 11)
@@ -120,7 +135,7 @@ public class Employee extends BaseEntity {
     @Column(name = "bank_branch", length = 100)
     private String bankBranch;
 
-    // ── Supplemental profile ──────────────────────────────────────────────────
+    // â”€â”€ Supplemental profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Column(name = "blood_group", length = 5)
     private String bloodGroup;
@@ -134,7 +149,7 @@ public class Employee extends BaseEntity {
     @Column(name = "about_me", length = 1000)
     private String aboutMe;
 
-    // ── HR references ─────────────────────────────────────────────────────────
+    // â”€â”€ HR references â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Column(name = "secondary_manager_id")
     private UUID secondaryManagerId;
@@ -145,7 +160,7 @@ public class Employee extends BaseEntity {
     @Column(name = "pay_grade_id")
     private UUID payGradeId;
 
-    // ── Key dates ─────────────────────────────────────────────────────────────
+    // â”€â”€ Key dates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Column(name = "probation_end_date")
     private LocalDate probationEndDate;
@@ -156,7 +171,7 @@ public class Employee extends BaseEntity {
     @Column(name = "last_working_date")
     private LocalDate lastWorkingDate;
 
-    // ── Miscellaneous ─────────────────────────────────────────────────────────
+    // â”€â”€ Miscellaneous â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @Column(name = "cost_center_code", length = 50)
     private String costCenterCode;
@@ -164,7 +179,7 @@ public class Employee extends BaseEntity {
     @Column(name = "tags", columnDefinition = "TEXT")
     private String tags;
 
-    // ── Enums ─────────────────────────────────────────────────────────────────
+    // â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum Gender {
         MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY

@@ -1,5 +1,9 @@
 package com.hrms.auth.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.UUID;
@@ -11,6 +15,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Auditable("RolePermission")
+@EntityListeners(AuditEntityListener.class)
 public class RolePermission {
 
     @Id

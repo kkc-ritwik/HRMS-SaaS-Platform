@@ -58,6 +58,8 @@ CREATE TABLE payslips (
         CHECK (status IN ('DRAFT','PROCESSED','LOCKED','PUBLISHED')),
     pdf_url          VARCHAR(1000),
     emailed_at       TIMESTAMPTZ,
+    created_by       VARCHAR(100),
+    updated_by       VARCHAR(100),
     created_at       TIMESTAMPTZ   NOT NULL DEFAULT now(),
     updated_at       TIMESTAMPTZ   NOT NULL DEFAULT now(),
     is_deleted       BOOLEAN       NOT NULL DEFAULT false,

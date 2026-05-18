@@ -1,13 +1,24 @@
 version: '3.9'
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  HRMS local infrastructure stack.
+#  - All credentials in this file are dev-only defaults.
+#  - Override in production via .env (see .env.example).
+#  - Services consume infra via host:port; not all are wired to docker-compose
+#    networks since the Spring apps usually run on the host during dev.
+# ═══════════════════════════════════════════════════════════════════════════
+
 services:
   postgres:
     image: postgres:16-alpine
     container_name: hrms-postgres
+    command: postgres -c max_connections=300
     environment:
       POSTGRES_DB: hrms_db
       POSTGRES_USER: hrms_user
       POSTGRES_PASSWORD: hrms_pass
-    ports: ["5432:5432"]
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports: ["5433:5432"]
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
@@ -39,6 +50,15 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: hrms-kafka-ui
+    depends_on: [kafka]
+    ports: ["8090:8080"]
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
     container_name: hrms-elasticsearch
@@ -49,6 +69,14 @@ services:
     ports: ["9200:9200"]
     volumes: [esdata:/usr/share/elasticsearch/data]
 
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.14.0
+    container_name: hrms-kibana
+    depends_on: [elasticsearch]
+    ports: ["5601:5601"]
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+
   minio:
     image: minio/minio:latest
     container_name: hrms-minio
@@ -57,7 +85,50 @@ services:
       MINIO_ROOT_USER: hrms_minio
       MINIO_ROOT_PASSWORD: hrms_minio_secret
     ports: ["9000:9000", "9001:9001"]
+    volumes: [miniodata:/data]
+
+  # ─── Mail testing (MailHog: SMTP on 1025, UI on 8025) ─────────────────────
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: hrms-mailhog
+    ports: ["1025:1025", "8025:8025"]
+
+  # ─── Tracing (Jaeger all-in-one: OTLP on 4317, UI on 16686) ───────────────
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    container_name: hrms-jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"   # UI
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+
+  # ─── Metrics (Prometheus + Grafana) ───────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: hrms-prometheus
+    ports: ["9090:9090"]
+    volumes:
+      - ./scripts/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: hrms-grafana
+    ports: ["3001:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes: [grafanadata:/var/lib/grafana]
+
+  # ─── Log aggregation (Loki + Promtail) ────────────────────────────────────
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: hrms-loki
+    ports: ["3100:3100"]
+    command: -config.file=/etc/loki/local-config.yaml
 
 volumes:
   pgdata:
   esdata:
+  miniodata:
+  grafanadata:

@@ -1,5 +1,9 @@
 package com.hrms.leave.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +14,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "leave_balances")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("LeaveBalance")
+@EntityListeners(AuditEntityListener.class)
 public class LeaveBalance extends BaseEntity {
 
     @Column(name = "employee_id", nullable = false)
@@ -41,7 +47,7 @@ public class LeaveBalance extends BaseEntity {
 
     /**
      * Computed/stored column in DB: opening + accrued + carry_forward + adjusted - used - encashed.
-     * Marked insertable=false, updatable=false so JPA never writes it — Postgres manages it.
+     * Marked insertable=false, updatable=false so JPA never writes it â€” Postgres manages it.
      */
     @Column(name = "available", insertable = false, updatable = false, precision = 8, scale = 2)
     private BigDecimal available;

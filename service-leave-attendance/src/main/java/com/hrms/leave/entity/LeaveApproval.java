@@ -1,5 +1,9 @@
 package com.hrms.leave.entity;
 
+
+import com.hrms.audit.annotation.Auditable;
+import com.hrms.audit.listener.AuditEntityListener;
+import jakarta.persistence.EntityListeners;
 import com.hrms.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +14,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "leave_approvals")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Auditable("LeaveApproval")
+@EntityListeners(AuditEntityListener.class)
 public class LeaveApproval extends BaseEntity {
 
     @Column(name = "leave_application_id", nullable = false)
