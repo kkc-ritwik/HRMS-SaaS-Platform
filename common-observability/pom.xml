@@ -11,6 +11,8 @@
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId></dependency>
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-tracing-bridge-otel</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp</artifactId></dependency>
+        <dependency><groupId>org.apache.kafka</groupId><artifactId>kafka-clients</artifactId><optional>true</optional></dependency>
+        <dependency><groupId>org.springframework.data</groupId><artifactId>spring-data-redis</artifactId><optional>true</optional></dependency>
         <dependency><groupId>com.hrms</groupId><artifactId>common-lib</artifactId></dependency>
     </dependencies>
 </project>

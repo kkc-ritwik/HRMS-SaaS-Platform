@@ -1,9 +1,27 @@
 apiVersion: v2
 name: hrms
-description: HRMS Platform Helm chart — deploys every microservice + Postgres/Redis/Kafka/MinIO
+description: HRMS Platform Helm chart — deploys every microservice + Postgres HA / Redis Sentinel / Kafka cluster / MinIO distributed
 type: application
 version: 1.0.0
 appVersion: "1.0.0"
-keywords: [hrms, payroll, hr, multi-tenant]
+keywords: [hrms, payroll, hr, multi-tenant, zoho-parity]
 maintainers:
   - name: HRMS Team
+
+dependencies:
+  - name: postgresql
+    version: 15.5.20
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: 19.6.4
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: kafka
+    version: 31.0.0
+    repository: https://charts.bitnami.com/bitnami
+    condition: kafka.enabled
+  - name: minio
+    version: 14.7.0
+    repository: https://charts.bitnami.com/bitnami
+    condition: minio.enabled

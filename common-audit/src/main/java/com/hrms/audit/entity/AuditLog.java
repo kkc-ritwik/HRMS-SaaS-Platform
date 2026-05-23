@@ -65,6 +65,14 @@ public class AuditLog {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
+    /** SHA-256 of previous audit row's currentHash — null only for the genesis row. */
+    @Column(name = "prev_hash", length = 64)
+    private String prevHash;
+
+    /** SHA-256 of (prevHash || canonical(this row without hash)) — tamper-evidence. */
+    @Column(name = "current_hash", length = 64)
+    private String currentHash;
+
     @PrePersist
     void prePersist() { if (createdAt == null) createdAt = OffsetDateTime.now(); }
 }

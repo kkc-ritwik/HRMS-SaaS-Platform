@@ -1,0 +1,78 @@
+{
+  "title": "HRMS — JVM & Runtime",
+  "uid": "hrms-jvm",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "30s",
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(jvm_memory_used_bytes, application)",
+        "current": { "text": "All", "value": "$__all" },
+        "includeAll": true,
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat", "title": "Heap used (avg)",
+      "targets": [{ "expr": "avg(jvm_memory_used_bytes{area=\"heap\",application=~\"$service\"})" }],
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 }
+    },
+    {
+      "type": "stat", "title": "Heap max",
+      "targets": [{ "expr": "avg(jvm_memory_max_bytes{area=\"heap\",application=~\"$service\"})" }],
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 }
+    },
+    {
+      "type": "stat", "title": "Threads",
+      "targets": [{ "expr": "sum(jvm_threads_live_threads{application=~\"$service\"})" }],
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 }
+    },
+    {
+      "type": "stat", "title": "GC pause time (5m)",
+      "targets": [{ "expr": "rate(jvm_gc_pause_seconds_sum{application=~\"$service\"}[5m])" }],
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 }
+    },
+    {
+      "type": "timeseries", "title": "Heap memory by service",
+      "targets": [{ "expr": "jvm_memory_used_bytes{area=\"heap\",application=~\"$service\"}", "legendFormat": "{{application}}" }],
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries", "title": "Non-heap memory by service",
+      "targets": [{ "expr": "jvm_memory_used_bytes{area=\"nonheap\",application=~\"$service\"}", "legendFormat": "{{application}}" }],
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries", "title": "CPU usage",
+      "targets": [{ "expr": "process_cpu_usage{application=~\"$service\"}", "legendFormat": "{{application}}" }],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "max": 1 } },
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries", "title": "Open file descriptors",
+      "targets": [{ "expr": "process_files_open_files{application=~\"$service\"}", "legendFormat": "{{application}}" }],
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries", "title": "Hikari pool — active connections",
+      "targets": [{ "expr": "hikaricp_connections_active{application=~\"$service\"}", "legendFormat": "{{application}}/{{pool}}" }],
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries", "title": "Hikari pool — pending",
+      "targets": [{ "expr": "hikaricp_connections_pending{application=~\"$service\"}", "legendFormat": "{{application}}/{{pool}}" }],
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 }
+    }
+  ]
+}

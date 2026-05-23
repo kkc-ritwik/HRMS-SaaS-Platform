@@ -17,6 +17,7 @@
         <dependency><groupId>com.hrms</groupId><artifactId>common-audit</artifactId></dependency>
         <dependency><groupId>com.hrms</groupId><artifactId>common-events</artifactId></dependency>
         <dependency><groupId>com.hrms</groupId><artifactId>common-observability</artifactId></dependency>
+        <dependency><groupId>com.hrms</groupId><artifactId>common-resilience</artifactId></dependency>
         <dependency><groupId>com.google.zxing</groupId><artifactId>core</artifactId></dependency>
         <dependency><groupId>com.google.zxing</groupId><artifactId>javase</artifactId></dependency>
         <dependency><groupId>com.hrms</groupId><artifactId>common-esign</artifactId></dependency>

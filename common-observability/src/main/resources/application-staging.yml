@@ -1,0 +1,15 @@
+# Staging profile — same as prod but with debug-level logging + smaller pools.
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:10}
+      minimum-idle: 2
+logging:
+  level:
+    com.hrms: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+hrms:
+  resilience:
+    ratelimit:
+      requests-per-minute: 1000

@@ -1,0 +1,91 @@
+{{- if .Values.istio.enabled }}
+# Strict mTLS for all HRMS pods — only Istio-injected sidecars can talk to each other.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata: { name: hrms-strict-mtls }
+spec:
+  mtls: { mode: STRICT }
+---
+# Default-deny + explicit allow for service-to-service
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata: { name: hrms-default-deny }
+spec:
+  action: DENY
+  rules:
+    - to:
+        - operation: { hosts: ["*"] }
+      from:
+        - source: { notNamespaces: ["hrms", "istio-system", "monitoring"] }
+---
+# Allow gateway → any HRMS service
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata: { name: hrms-allow-from-gateway }
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/hrms/sa/hrms-app"]
+    - from:
+        - source:
+            namespaces: ["istio-system"]   # ingress gateway
+---
+# DestinationRule with outbound retries + circuit breaker at mesh level
+{{- range $name, $svc := .Values.services }}
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata: { name: {{ $name }} }
+spec:
+  host: {{ $name }}.{{ $.Release.Namespace | default "hrms" }}.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 5s
+      http:
+        http2MaxRequests: 1000
+        maxRequestsPerConnection: 10
+        h2UpgradePolicy: UPGRADE
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 50
+    loadBalancer:
+      simple: LEAST_REQUEST
+---
+{{- end }}
+# Istio gateway → public ingress
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata: { name: hrms-gateway }
+spec:
+  selector: { istio: ingressgateway }
+  servers:
+    - port: { number: 443, name: https, protocol: HTTPS }
+      tls: { mode: SIMPLE, credentialName: hrms-tls }
+      hosts: [{{ .Values.global.domain | quote }}]
+    - port: { number: 80, name: http, protocol: HTTP }
+      hosts: [{{ .Values.global.domain | quote }}]
+      tls: { httpsRedirect: true }
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata: { name: hrms-routes }
+spec:
+  hosts: [{{ .Values.global.domain | quote }}]
+  gateways: [hrms-gateway]
+  http:
+    - match: [{ uri: { prefix: "/" } }]
+      route:
+        - destination:
+            host: api-gateway.{{ .Release.Namespace | default "hrms" }}.svc.cluster.local
+            port: { number: 8080 }
+      retries:
+        attempts: 3
+        perTryTimeout: 5s
+        retryOn: 5xx,reset,connect-failure,refused-stream
+      timeout: 30s
+{{- end }}

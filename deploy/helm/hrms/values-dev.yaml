@@ -1,0 +1,26 @@
+# Dev / minikube overrides — single replica everywhere, in-cluster infra disabled.
+global:
+  environment: dev
+  imageTag: latest
+  imagePullPolicy: Always
+  domain: dev.hrms.local
+  tracingSampleRate: "1.0"
+
+# All services get single replica with relaxed limits
+services: {}     # use defaults but…
+
+prometheusOperator: { enabled: false }
+istio: { enabled: false }
+networkPolicy: { enabled: false }
+
+postgresql: { enabled: false }     # Use local postgres
+redis: { enabled: false }
+kafka: { enabled: false }
+minio: { enabled: false }
+
+env:
+  DB_HOST: host.docker.internal
+  REDIS_HOST: host.docker.internal
+  KAFKA_BOOTSTRAP_SERVERS: host.docker.internal:9092
+  STORAGE_ENDPOINT: http://host.docker.internal:9000
+  EUREKA_SERVER_URL: http://host.docker.internal:8761/eureka/

@@ -1,0 +1,64 @@
+# Production overrides — apply on top of values.yaml.
+# Hardware-class, multi-AZ-aware, with full HA toggles.
+
+global:
+  imageTag: 1.0.0
+  domain: hrms.yourcompany.com
+  region: us-east-1
+  tracingSampleRate: "0.05"
+
+prometheusOperator:
+  enabled: true
+  releaseLabel: kube-prometheus-stack
+
+istio:
+  enabled: true
+
+networkPolicy:
+  enabled: true
+
+services:
+  api-gateway:        { replicas: 5, maxReplicas: 30 }
+  service-auth:       { replicas: 5, maxReplicas: 30 }
+  service-core-hr:    { replicas: 5, maxReplicas: 50 }
+  service-payroll:    { replicas: 3, maxReplicas: 15, memory: "2Gi", memoryLimit: "4Gi", cpu: "1500m", cpuLimit: "3000m" }
+  service-notification: { replicas: 5, maxReplicas: 30 }
+  service-reports:    { replicas: 3, maxReplicas: 10, memory: "2Gi", memoryLimit: "4Gi" }
+
+postgresql:
+  architecture: replication
+  primary:
+    persistence: { size: 500Gi, storageClass: gp3 }
+    resources:
+      requests: { cpu: "4", memory: "16Gi" }
+      limits: { cpu: "8", memory: "32Gi" }
+  readReplicas:
+    replicaCount: 3
+    persistence: { size: 500Gi, storageClass: gp3 }
+  backup:
+    enabled: true
+    cronjob:
+      schedule: "0 1 * * *"
+
+redis:
+  architecture: replication
+  sentinel: { enabled: true, quorum: 2 }
+  master:
+    persistence: { size: 32Gi, storageClass: gp3 }
+  replica:
+    replicaCount: 3
+
+kafka:
+  replicaCount: 5
+  persistence: { size: 200Gi, storageClass: gp3 }
+  zookeeper: { replicaCount: 3, persistence: { size: 16Gi } }
+  defaultReplicationFactor: 3
+  offsetsTopicReplicationFactor: 3
+  transactionStateLogReplicationFactor: 3
+  transactionStateLogMinIsr: 2
+
+minio:
+  mode: distributed
+  statefulset:
+    replicaCount: 4
+  persistence: { size: 1Ti, storageClass: gp3 }

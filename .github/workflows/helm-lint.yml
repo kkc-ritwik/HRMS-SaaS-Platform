@@ -1,0 +1,21 @@
+name: Helm lint
+
+on:
+  pull_request:
+    paths: ['deploy/helm/**']
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+        with: { version: 'v3.14.0' }
+      - name: Helm dependencies
+        run: helm dependency update ./deploy/helm/hrms
+      - name: Helm lint
+        run: helm lint ./deploy/helm/hrms --strict
+      - name: Helm template
+        run: helm template hrms ./deploy/helm/hrms > /tmp/rendered.yaml
+      - uses: instrumenta/kubeval-action@master
+        with: { files: /tmp/rendered.yaml }

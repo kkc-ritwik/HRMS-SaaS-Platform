@@ -1,0 +1,34 @@
+# Staging overrides — smaller footprint, debug traces.
+global:
+  environment: staging
+  domain: staging.hrms.yourcompany.com
+  tracingSampleRate: "1.0"
+
+services:
+  api-gateway: { replicas: 2, maxReplicas: 4 }
+  service-core-hr: { replicas: 2, maxReplicas: 4 }
+  service-payroll: { replicas: 1, maxReplicas: 2 }
+  service-notification: { replicas: 2, maxReplicas: 4 }
+
+postgresql:
+  architecture: standalone
+  primary:
+    persistence: { size: 50Gi }
+  readReplicas:
+    replicaCount: 0
+
+redis:
+  architecture: standalone
+  master: { persistence: { size: 8Gi } }
+
+kafka:
+  replicaCount: 1
+  persistence: { size: 20Gi }
+  zookeeper: { replicaCount: 1 }
+  defaultReplicationFactor: 1
+  offsetsTopicReplicationFactor: 1
+  transactionStateLogReplicationFactor: 1
+
+minio:
+  mode: standalone
+  persistence: { size: 50Gi }

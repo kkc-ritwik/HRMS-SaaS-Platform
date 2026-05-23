@@ -1,0 +1,238 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  HRMS — Production single-host docker-compose.
+#  For small deployments / single VPS / staging-on-VM scenarios.
+#  All app images are pulled from GHCR; infra (Postgres/Redis/Kafka/MinIO)
+#  runs as containers with persistent volumes and resource limits.
+#
+#  Usage:
+#    cp .env.example .env && nano .env       # fill in real secrets
+#    docker compose -f docker-compose.prod.yml --env-file .env up -d
+# ═══════════════════════════════════════════════════════════════════════════
+
+x-app-defaults: &app-defaults
+  restart: unless-stopped
+  env_file: [.env]
+  environment:
+    SPRING_PROFILES_ACTIVE: prod
+    EUREKA_URI: http://service-discovery:8761/eureka/
+    DB_HOST: postgres
+    REDIS_HOST: redis
+    KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    STORAGE_ENDPOINT: http://minio:9000
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    JAVA_OPTS: "-XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
+  depends_on:
+    postgres: { condition: service_healthy }
+    redis:    { condition: service_started }
+    kafka:    { condition: service_started }
+  healthcheck:
+    test: ["CMD","wget","-q","-O","-","http://localhost:8080/actuator/health/liveness"]
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 90s
+  logging:
+    driver: json-file
+    options: { max-size: "20m", max-file: "5" }
+  deploy:
+    resources:
+      limits: { cpus: '1', memory: 1g }
+      reservations: { cpus: '0.25', memory: 384m }
+  networks: [hrms-net]
+
+services:
+  # ─── Infrastructure ──────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      retries: 5
+    command: >
+      postgres
+        -c max_connections=500
+        -c shared_buffers=1GB
+        -c effective_cache_size=3GB
+        -c maintenance_work_mem=256MB
+        -c work_mem=16MB
+        -c log_min_duration_statement=500
+        -c log_lock_waits=on
+    deploy: { resources: { limits: { cpus: '4', memory: 4g } } }
+    networks: [hrms-net]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "1gb", "--maxmemory-policy", "allkeys-lru"]
+    volumes: [redisdata:/data]
+    deploy: { resources: { limits: { cpus: '1', memory: 1g } } }
+    networks: [hrms-net]
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes: [zkdata:/var/lib/zookeeper]
+    networks: [hrms-net]
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    restart: unless-stopped
+    depends_on: [zookeeper]
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 72
+      KAFKA_HEAP_OPTS: "-Xmx2G -Xms2G"
+    volumes: [kafkadata:/var/lib/kafka/data]
+    deploy: { resources: { limits: { cpus: '2', memory: 2.5g } } }
+    networks: [hrms-net]
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_KEY}
+    volumes: [miniodata:/data]
+    deploy: { resources: { limits: { cpus: '1', memory: 1g } } }
+    networks: [hrms-net]
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    volumes: [esdata:/usr/share/elasticsearch/data]
+    networks: [hrms-net]
+
+  # ─── Observability ───────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    restart: unless-stopped
+    volumes:
+      - ./scripts/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - promdata:/prometheus
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=15d"]
+    networks: [hrms-net]
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-changeme}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ./scripts/grafana-dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["3001:3000"]
+    networks: [hrms-net]
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    restart: unless-stopped
+    environment: { COLLECTOR_OTLP_ENABLED: "true" }
+    ports: ["16686:16686"]
+    networks: [hrms-net]
+
+  loki:
+    image: grafana/loki:3.0.0
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes: [lokidata:/loki]
+    networks: [hrms-net]
+
+  # ─── Edge ────────────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/nginx/certs:/etc/nginx/certs:ro
+    depends_on: [api-gateway]
+    networks: [hrms-net]
+
+  # ─── HRMS Apps ───────────────────────────────────────────────────────────
+  service-discovery:
+    <<: *app-defaults
+    image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-discovery:${IMAGE_TAG:-latest}
+    depends_on: []
+    ports: ["8761:8761"]
+
+  config-server:
+    <<: *app-defaults
+    image: ghcr.io/${GHCR_NAMESPACE:-your-org}/config-server:${IMAGE_TAG:-latest}
+    depends_on: { service-discovery: { condition: service_started } }
+    ports: ["8888:8888"]
+
+  api-gateway:
+    <<: *app-defaults
+    image: ghcr.io/${GHCR_NAMESPACE:-your-org}/api-gateway:${IMAGE_TAG:-latest}
+    depends_on:
+      service-discovery: { condition: service_started }
+      redis: { condition: service_started }
+    ports: ["8080:8080"]
+
+  service-auth:        { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-auth:${IMAGE_TAG:-latest} }
+  service-core-hr:     { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-core-hr:${IMAGE_TAG:-latest} }
+  service-leave-attendance: { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-leave-attendance:${IMAGE_TAG:-latest} }
+  service-payroll:     { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-payroll:${IMAGE_TAG:-latest},
+                         deploy: { resources: { limits: { cpus: '2', memory: 2g } } } }
+  service-recruitment: { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-recruitment:${IMAGE_TAG:-latest} }
+  service-compensation: { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-compensation:${IMAGE_TAG:-latest} }
+  service-performance: { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-performance:${IMAGE_TAG:-latest} }
+  service-onboarding:  { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-onboarding:${IMAGE_TAG:-latest} }
+  service-offboarding: { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-offboarding:${IMAGE_TAG:-latest} }
+  service-expense:     { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-expense:${IMAGE_TAG:-latest} }
+  service-asset:       { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-asset:${IMAGE_TAG:-latest} }
+  service-document:    { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-document:${IMAGE_TAG:-latest} }
+  service-workflow:    { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-workflow:${IMAGE_TAG:-latest} }
+  service-notification: { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-notification:${IMAGE_TAG:-latest} }
+  service-compliance:  { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-compliance:${IMAGE_TAG:-latest} }
+  service-reports:     { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-reports:${IMAGE_TAG:-latest} }
+  service-social:      { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-social:${IMAGE_TAG:-latest} }
+  service-lms:         { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-lms:${IMAGE_TAG:-latest} }
+  service-helpdesk:    { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-helpdesk:${IMAGE_TAG:-latest} }
+  service-travel:      { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-travel:${IMAGE_TAG:-latest} }
+  service-timesheet:   { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-timesheet:${IMAGE_TAG:-latest} }
+  service-cases:       { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-cases:${IMAGE_TAG:-latest} }
+  service-files:       { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-files:${IMAGE_TAG:-latest} }
+  service-forms:       { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-forms:${IMAGE_TAG:-latest} }
+  service-engagement:  { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-engagement:${IMAGE_TAG:-latest} }
+  service-skills:      { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-skills:${IMAGE_TAG:-latest} }
+  service-integrations: { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-integrations:${IMAGE_TAG:-latest} }
+  service-workplace:   { <<: *app-defaults, image: ghcr.io/${GHCR_NAMESPACE:-your-org}/service-workplace:${IMAGE_TAG:-latest} }
+
+volumes:
+  pgdata:
+  redisdata:
+  zkdata:
+  kafkadata:
+  miniodata:
+  esdata:
+  promdata:
+  grafanadata:
+  lokidata:
+
+networks:
+  hrms-net:
+    driver: bridge

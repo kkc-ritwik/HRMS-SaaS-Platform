@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Default logback config shipped from common-observability. Services can override by
+  placing their own logback-spring.xml on their classpath; otherwise this file is picked
+  up because common-observability is on every service's classpath.
+
+  Profile: prod → structured JSON to stdout (one line per event) so Loki / ELK / CloudWatch
+  can parse without a custom log adaptor.
+  Profile: dev/test → human-readable colourised pattern.
+-->
+<configuration>
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="hrms-service"/>
+
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+
+    <springProfile name="dev,default,test">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr([${appName}]){blue} %clr([%X{requestId:-}]){magenta} %clr(%logger{36}){cyan} - %msg%n%wex</pattern>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod,staging">
+        <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>{"ts":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}","level":"%level","app":"${appName}","logger":"%logger","thread":"%thread","msg":"%replace(%msg){'\"','\\\"'}","traceId":"%X{requestId:-}","tenantId":"%X{tenantId:-}","userId":"%X{userId:-}","exception":"%replace(%wEx{full}){'[\r\n]+','\\\\n'}"}%n</pattern>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="JSON"/>
+        </root>
+        <logger name="com.hrms" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        <logger name="org.springframework.security" level="WARN"/>
+    </springProfile>
+</configuration>

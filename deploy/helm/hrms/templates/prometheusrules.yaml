@@ -1,0 +1,118 @@
+{{- if .Values.prometheusOperator.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: hrms-alerts
+  labels:
+    release: {{ .Values.prometheusOperator.releaseLabel | default "kube-prometheus-stack" }}
+spec:
+  groups:
+    - name: hrms.platform
+      interval: 30s
+      rules:
+        - alert: HrmsServiceDown
+          expr: up{job=~"hrms-.*"} == 0
+          for: 2m
+          labels: { severity: critical, team: platform }
+          annotations:
+            summary: "HRMS service {{ "{{" }} $labels.service {{ "}}" }} is down"
+            description: "No metrics scraped for 2 minutes. Check pod status: kubectl get pods -l app={{ "{{" }} $labels.service {{ "}}" }}"
+            runbook: "https://runbook.hrms.local/service-down"
+
+        - alert: HrmsHighErrorRate
+          expr: |
+            sum by (service) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+              /
+            sum by (service) (rate(http_server_requests_seconds_count[5m])) > 0.05
+          for: 5m
+          labels: { severity: critical, team: platform }
+          annotations:
+            summary: "5xx error rate >5% on {{ "{{" }} $labels.service {{ "}}" }}"
+
+        - alert: HrmsHighLatencyP99
+          expr: histogram_quantile(0.99, sum by (service, le) (rate(http_server_requests_seconds_bucket[5m]))) > 2
+          for: 10m
+          labels: { severity: warning, team: platform }
+          annotations:
+            summary: "p99 latency >2s on {{ "{{" }} $labels.service {{ "}}" }}"
+
+        - alert: HrmsPodRestartingFrequently
+          expr: rate(kube_pod_container_status_restarts_total{namespace="hrms"}[15m]) > 0
+          for: 15m
+          labels: { severity: warning, team: platform }
+          annotations:
+            summary: "Pod {{ "{{" }} $labels.pod {{ "}}" }} restarting"
+
+        - alert: HrmsJvmHeapHigh
+          expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.9
+          for: 10m
+          labels: { severity: warning, team: platform }
+          annotations:
+            summary: "JVM heap >90% on {{ "{{" }} $labels.service {{ "}}" }}"
+
+        - alert: HrmsHikariPoolExhausted
+          expr: hikaricp_connections_pending > 5
+          for: 5m
+          labels: { severity: warning, team: platform }
+          annotations:
+            summary: "Hikari pool exhausted on {{ "{{" }} $labels.service {{ "}}" }}"
+
+        - alert: HrmsKafkaConsumerLag
+          expr: kafka_consumer_records_lag_max > 1000
+          for: 10m
+          labels: { severity: warning, team: platform }
+          annotations:
+            summary: "Kafka lag >1000 on {{ "{{" }} $labels.consumergroup {{ "}}" }}"
+
+        - alert: HrmsCircuitBreakerOpen
+          expr: resilience4j_circuitbreaker_state{state="open"} == 1
+          for: 2m
+          labels: { severity: warning, team: platform }
+          annotations:
+            summary: "Circuit breaker OPEN — {{ "{{" }} $labels.name {{ "}}" }}"
+
+        - alert: HrmsRateLimitTriggered
+          expr: rate(http_server_requests_seconds_count{status="429"}[5m]) > 10
+          for: 5m
+          labels: { severity: info, team: platform }
+          annotations:
+            summary: "Rate limit hit on {{ "{{" }} $labels.service {{ "}}" }} >10/s"
+
+        - alert: HrmsDlqMessages
+          expr: rate(kafka_topic_partition_current_offset{topic=~".*\\.DLQ"}[10m]) > 0
+          for: 10m
+          labels: { severity: critical, team: platform }
+          annotations:
+            summary: "Messages flowing to DLQ {{ "{{" }} $labels.topic {{ "}}" }}"
+
+        - alert: HrmsDiskSpaceLow
+          expr: disk_free_bytes / disk_total_bytes < 0.15
+          for: 10m
+          labels: { severity: warning, team: platform }
+          annotations:
+            summary: "Disk free <15% on {{ "{{" }} $labels.service {{ "}}" }}"
+
+    - name: hrms.business
+      interval: 1m
+      rules:
+        - alert: HrmsLoginFailuresSpike
+          expr: increase(hrms_auth_login_failed_total[15m]) > 100
+          for: 5m
+          labels: { severity: warning, team: security }
+          annotations:
+            summary: "Login failures >100/15m — possible credential-stuffing attack"
+
+        - alert: HrmsPayrollRunStuck
+          expr: hrms_payroll_run_active_seconds > 3600
+          for: 5m
+          labels: { severity: critical, team: payroll }
+          annotations:
+            summary: "Payroll run has been running >1h"
+
+        - alert: HrmsOutboxBacklog
+          expr: hrms_events_outbox_pending > 10000
+          for: 10m
+          labels: { severity: warning, team: platform }
+          annotations:
+            summary: "Outbox backlog >10k events — event publisher may be down"
+{{- end }}

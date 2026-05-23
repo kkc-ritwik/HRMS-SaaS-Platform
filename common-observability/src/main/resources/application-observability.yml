@@ -1,0 +1,78 @@
+# Cross-cutting production defaults shipped from common-observability.
+# Services import via spring.config.import=optional:classpath:application-observability.yml
+# or simply have it auto-applied via the spring.factories activation context.
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers,env,threaddump,heapdump,scheduledtasks,caches,httpexchanges,mappings
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db,redisLatency,kafka
+        liveness:
+          include: livenessState,diskSpace,ping
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+    redis:
+      enabled: true
+    db:
+      enabled: true
+    kafka:
+      enabled: true
+    diskspace:
+      enabled: true
+      threshold: 100MB
+  metrics:
+    tags:
+      application: ${spring.application.name:hrms}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        http.client.requests: true
+        hrms: true
+      slo:
+        http.server.requests: 50ms,100ms,250ms,500ms,1s,2s,5s
+    enable:
+      jvm: true
+      process: true
+      hikaricp: true
+      tomcat: true
+      logback: true
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLE_RATE:0.1}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+
+# Graceful shutdown — stop accepting requests, then drain
+server:
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    accept-count: 100
+    max-connections: 10000
+    connection-timeout: 20s
+  forward-headers-strategy: framework
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  jackson:
+    default-property-inclusion: non_null
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: false

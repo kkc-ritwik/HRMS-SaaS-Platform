@@ -1,0 +1,90 @@
+{{- if .Values.backup.enabled }}
+# ─── Postgres logical backup → S3 ─────────────────────────────────────────
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  labels: { app.kubernetes.io/part-of: hrms, component: backup }
+spec:
+  schedule: {{ .Values.backup.postgres.schedule | default "0 1 * * *" | quote }}   # 01:00 daily
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 14
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: hrms-app
+          containers:
+            - name: dump
+              image: postgres:16-alpine
+              command: ["/bin/sh","-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  ts=$(date -u +%Y%m%d-%H%M%S)
+                  FILE="hrms-${ts}.sql.gz"
+                  echo "Dumping ${DB_NAME} → /tmp/${FILE}"
+                  PGPASSWORD="$DB_PASSWORD" pg_dump \
+                    -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" "$DB_NAME" \
+                    --format=custom --compress=9 --no-owner --no-privileges \
+                    -f "/tmp/${FILE}"
+                  echo "Uploading to s3://${S3_BUCKET}/postgres/${FILE}"
+                  apk add --no-cache aws-cli
+                  aws s3 cp "/tmp/${FILE}" "s3://${S3_BUCKET}/postgres/${FILE}" \
+                    --storage-class STANDARD_IA \
+                    --metadata "checksum=$(sha256sum /tmp/${FILE} | cut -d' ' -f1)"
+                  echo "Done. Old backups retained per S3 lifecycle policy ({{ .Values.backup.postgres.retentionDays | default 30 }} days)."
+              env:
+                - { name: DB_HOST,     valueFrom: { configMapKeyRef: { name: hrms-config, key: DB_HOST } } }
+                - { name: DB_PORT,     valueFrom: { configMapKeyRef: { name: hrms-config, key: DB_PORT } } }
+                - { name: DB_NAME,     valueFrom: { configMapKeyRef: { name: hrms-config, key: DB_NAME } } }
+                - { name: DB_USER,     valueFrom: { secretKeyRef:    { name: hrms-db,     key: username } } }
+                - { name: DB_PASSWORD, valueFrom: { secretKeyRef:    { name: hrms-db,     key: password } } }
+                - { name: S3_BUCKET,   valueFrom: { secretKeyRef:    { name: hrms-backup, key: bucket  } } }
+                - { name: AWS_ACCESS_KEY_ID,     valueFrom: { secretKeyRef: { name: hrms-backup, key: accessKey } } }
+                - { name: AWS_SECRET_ACCESS_KEY, valueFrom: { secretKeyRef: { name: hrms-backup, key: secretKey } } }
+                - { name: AWS_DEFAULT_REGION,    valueFrom: { secretKeyRef: { name: hrms-backup, key: region   } } }
+              volumeMounts:
+                - { name: tmp, mountPath: /tmp }
+          volumes:
+            - { name: tmp, emptyDir: { sizeLimit: 10Gi } }
+---
+# ─── MinIO bucket mirror → external S3 ────────────────────────────────────
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: minio-mirror
+  labels: { app.kubernetes.io/part-of: hrms, component: backup }
+spec:
+  schedule: {{ .Values.backup.minio.schedule | default "0 2 * * *" | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: mc
+              image: minio/mc:latest
+              command: ["/bin/sh","-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  mc alias set src "$STORAGE_ENDPOINT" "$MINIO_ACCESS" "$MINIO_SECRET"
+                  mc alias set dst "$S3_ENDPOINT" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY"
+                  mc mirror --overwrite --remove src/ dst/${S3_BUCKET}/minio/
+              env:
+                - { name: STORAGE_ENDPOINT, valueFrom: { configMapKeyRef: { name: hrms-config, key: STORAGE_ENDPOINT } } }
+                - { name: MINIO_ACCESS,     valueFrom: { secretKeyRef: { name: hrms-storage, key: accessKey } } }
+                - { name: MINIO_SECRET,     valueFrom: { secretKeyRef: { name: hrms-storage, key: secretKey } } }
+                - { name: S3_BUCKET,        valueFrom: { secretKeyRef: { name: hrms-backup, key: bucket } } }
+                - { name: S3_ENDPOINT,      valueFrom: { secretKeyRef: { name: hrms-backup, key: s3Endpoint } } }
+                - { name: AWS_ACCESS_KEY_ID,     valueFrom: { secretKeyRef: { name: hrms-backup, key: accessKey } } }
+                - { name: AWS_SECRET_ACCESS_KEY, valueFrom: { secretKeyRef: { name: hrms-backup, key: secretKey } } }
+{{- end }}

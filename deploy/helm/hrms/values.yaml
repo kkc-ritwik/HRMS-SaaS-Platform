@@ -1,4 +1,7 @@
-# Default values — override per environment (values-prod.yaml, values-staging.yaml).
+# ─────────────────────────────────────────────────────────────────────────────
+# HRMS Helm Chart — Default values
+# Override per environment with values-prod.yaml / values-staging.yaml / values-dev.yaml
+# ─────────────────────────────────────────────────────────────────────────────
 
 global:
   imageRegistry: ghcr.io/your-org
@@ -6,62 +9,69 @@ global:
   imagePullPolicy: IfNotPresent
   environment: prod
   domain: hrms.yourcompany.com
+  region: us-east-1
+  timezone: Asia/Kolkata
+  tracingSampleRate: "0.1"
 
 # Common env shared by every microservice.
 env:
   DB_HOST: postgresql
   DB_PORT: "5432"
   DB_NAME: hrms_db
-  REDIS_HOST: redis
+  REDIS_HOST: redis-master
   REDIS_PORT: "6379"
-  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  KAFKA_BOOTSTRAP_SERVERS: kafka-bootstrap:9092
   ELASTICSEARCH_URI: http://elasticsearch:9200
   STORAGE_ENDPOINT: http://minio:9000
   EUREKA_SERVER_URL: http://service-discovery:8761/eureka/
   SPRING_PROFILES_ACTIVE: prod
-  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.observability:4318
   HRMS_RATELIMIT_ENABLED: "true"
 
-# Secrets — point to existing Kubernetes Secrets (created out-of-band).
+# Secrets — point to existing Kubernetes Secrets (created out-of-band or via ExternalSecret).
 secrets:
   smtp: hrms-smtp
   storage: hrms-storage
   jwt: hrms-jwt
   twilio: hrms-twilio
   fcm: hrms-fcm
+  docusign: hrms-docusign
+  razorpay: hrms-razorpay
 
-# Per-service config — port + replicas + resource limits.
+# Per-service config — port, replicas, resource requests/limits, maxReplicas (HPA cap).
+# managementPort defaults to 8081 across all services (separated actuator listener).
 services:
-  api-gateway:        { port: 8080, replicas: 2, cpu: "200m", memory: "512Mi" }
-  service-discovery:  { port: 8761, replicas: 1, cpu: "100m", memory: "256Mi" }
-  config-server:      { port: 8888, replicas: 1, cpu: "100m", memory: "256Mi" }
-  service-auth:         { port: 8081, replicas: 2, cpu: "300m", memory: "768Mi" }
-  service-core-hr:      { port: 8082, replicas: 3, cpu: "500m", memory: "1Gi" }
-  service-leave-attendance: { port: 8083, replicas: 3, cpu: "500m", memory: "1Gi" }
-  service-payroll:      { port: 8084, replicas: 2, cpu: "1000m", memory: "1.5Gi" }
-  service-recruitment:  { port: 8085, replicas: 2, cpu: "400m", memory: "768Mi" }
-  service-compensation: { port: 8086, replicas: 1, cpu: "200m", memory: "512Mi" }
-  service-performance:  { port: 8087, replicas: 2, cpu: "400m", memory: "768Mi" }
-  service-onboarding:   { port: 8088, replicas: 2, cpu: "300m", memory: "512Mi" }
-  service-offboarding:  { port: 8089, replicas: 1, cpu: "300m", memory: "512Mi" }
-  service-expense:      { port: 8090, replicas: 2, cpu: "300m", memory: "512Mi" }
-  service-asset:        { port: 8091, replicas: 1, cpu: "200m", memory: "512Mi" }
-  service-document:     { port: 8092, replicas: 2, cpu: "400m", memory: "768Mi" }
-  service-workflow:     { port: 8093, replicas: 2, cpu: "300m", memory: "512Mi" }
-  service-notification: { port: 8094, replicas: 3, cpu: "400m", memory: "768Mi" }
-  service-compliance:   { port: 8095, replicas: 1, cpu: "200m", memory: "512Mi" }
-  service-reports:      { port: 8096, replicas: 2, cpu: "500m", memory: "1Gi" }
-  service-social:       { port: 8097, replicas: 2, cpu: "300m", memory: "512Mi" }
-  service-lms:          { port: 8098, replicas: 2, cpu: "300m", memory: "768Mi" }
-  service-helpdesk:     { port: 8099, replicas: 2, cpu: "300m", memory: "512Mi" }
-  service-travel:       { port: 8100, replicas: 1, cpu: "300m", memory: "512Mi" }
-  service-timesheet:    { port: 8101, replicas: 2, cpu: "300m", memory: "512Mi" }
-  service-cases:        { port: 8102, replicas: 1, cpu: "200m", memory: "512Mi" }
-  service-files:        { port: 8103, replicas: 2, cpu: "400m", memory: "768Mi" }
-  service-forms:        { port: 8104, replicas: 1, cpu: "200m", memory: "512Mi" }
-  service-engagement:   { port: 8105, replicas: 1, cpu: "200m", memory: "512Mi" }
-  service-skills:       { port: 8106, replicas: 1, cpu: "200m", memory: "512Mi" }
-  service-integrations: { port: 8107, replicas: 2, cpu: "300m", memory: "512Mi" }
+  api-gateway:        { port: 8080, managementPort: 8090, replicas: 3, cpu: "300m", cpuLimit: "1000m", memory: "512Mi", memoryLimit: "1Gi", maxReplicas: 10 }
+  service-discovery:  { port: 8761, managementPort: 8771, replicas: 2, cpu: "100m", memory: "384Mi", maxReplicas: 2 }
+  config-server:      { port: 8888, managementPort: 8898, replicas: 2, cpu: "100m", memory: "384Mi", maxReplicas: 2 }
+  service-auth:         { port: 8081, replicas: 3, cpu: "300m", cpuLimit: "1000m", memory: "768Mi", memoryLimit: "1.5Gi", maxReplicas: 10 }
+  service-core-hr:      { port: 8082, replicas: 3, cpu: "500m", cpuLimit: "1500m", memory: "1Gi", memoryLimit: "2Gi", maxReplicas: 15 }
+  service-leave-attendance: { port: 8083, replicas: 3, cpu: "500m", cpuLimit: "1500m", memory: "1Gi", memoryLimit: "2Gi", maxReplicas: 15 }
+  service-payroll:      { port: 8084, replicas: 2, cpu: "1000m", cpuLimit: "2000m", memory: "1.5Gi", memoryLimit: "3Gi", maxReplicas: 8 }
+  service-recruitment:  { port: 8085, replicas: 2, cpu: "400m", memory: "768Mi", maxReplicas: 8 }
+  service-compensation: { port: 8086, replicas: 2, cpu: "200m", memory: "512Mi", maxReplicas: 6 }
+  service-performance:  { port: 8087, replicas: 2, cpu: "400m", memory: "768Mi", maxReplicas: 8 }
+  service-onboarding:   { port: 8088, replicas: 2, cpu: "300m", memory: "512Mi", maxReplicas: 6 }
+  service-offboarding:  { port: 8089, replicas: 2, cpu: "300m", memory: "512Mi", maxReplicas: 4 }
+  service-expense:      { port: 8090, replicas: 2, cpu: "300m", memory: "512Mi", maxReplicas: 8 }
+  service-asset:        { port: 8091, replicas: 2, cpu: "200m", memory: "512Mi", maxReplicas: 4 }
+  service-document:     { port: 8092, replicas: 2, cpu: "400m", memory: "768Mi", maxReplicas: 8 }
+  service-workflow:     { port: 8093, replicas: 2, cpu: "300m", memory: "512Mi", maxReplicas: 6 }
+  service-notification: { port: 8094, replicas: 3, cpu: "400m", memory: "768Mi", maxReplicas: 12 }
+  service-compliance:   { port: 8095, replicas: 2, cpu: "200m", memory: "512Mi", maxReplicas: 4 }
+  service-reports:      { port: 8096, replicas: 2, cpu: "500m", cpuLimit: "1500m", memory: "1Gi", memoryLimit: "2Gi", maxReplicas: 6 }
+  service-social:       { port: 8097, replicas: 2, cpu: "300m", memory: "512Mi", maxReplicas: 6 }
+  service-lms:          { port: 8098, replicas: 2, cpu: "300m", memory: "768Mi", maxReplicas: 6 }
+  service-helpdesk:     { port: 8099, replicas: 2, cpu: "300m", memory: "512Mi", maxReplicas: 8 }
+  service-travel:       { port: 8100, replicas: 2, cpu: "300m", memory: "512Mi", maxReplicas: 4 }
+  service-timesheet:    { port: 8101, replicas: 2, cpu: "300m", memory: "512Mi", maxReplicas: 8 }
+  service-cases:        { port: 8102, replicas: 2, cpu: "200m", memory: "512Mi", maxReplicas: 4 }
+  service-files:        { port: 8103, replicas: 2, cpu: "400m", memory: "768Mi", maxReplicas: 8 }
+  service-forms:        { port: 8104, replicas: 2, cpu: "200m", memory: "512Mi", maxReplicas: 4 }
+  service-engagement:   { port: 8105, replicas: 2, cpu: "200m", memory: "512Mi", maxReplicas: 6 }
+  service-skills:       { port: 8106, replicas: 2, cpu: "200m", memory: "512Mi", maxReplicas: 4 }
+  service-integrations: { port: 8107, replicas: 2, cpu: "300m", memory: "512Mi", maxReplicas: 6 }
+  service-workplace:    { port: 8108, replicas: 2, cpu: "200m", memory: "512Mi", maxReplicas: 4 }
 
 ingress:
   enabled: true
@@ -69,28 +79,102 @@ ingress:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/enable-cors: "false"   # gateway handles CORS
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "Strict-Transport-Security: max-age=63072000; includeSubDomains; preload";
 
+# NetworkPolicy on by default in prod
+networkPolicy:
+  enabled: true
+
+# Set true if Prometheus Operator (kube-prometheus-stack) is installed
+prometheusOperator:
+  enabled: false
+  releaseLabel: kube-prometheus-stack
+
+# Set true to add Istio sidecar injection
+istio:
+  enabled: false
+
+# Backups — daily Postgres dump + nightly MinIO mirror to off-cluster S3
+backup:
+  enabled: true
+  postgres:
+    schedule: "0 1 * * *"
+    retentionDays: 30
+  minio:
+    schedule: "0 2 * * *"
+
+# External secrets (set true if external-secrets-operator + ClusterSecretStore are installed)
+externalSecrets:
+  enabled: false
+  secretStore: aws-secretsmanager
+  prefix: hrms/prod/
+
+# Bootstrap secrets — only for dev/minikube; production MUST use externalSecrets above.
+bootstrapSecrets:
+  enabled: false
+  dbPassword: ""
+  jwtSecret: ""
+  storageAccessKey: ""
+  storageSecretKey: ""
+
+# Subchart configs (Bitnami helm charts)
 postgresql:
   enabled: true
+  architecture: replication
   auth:
     database: hrms_db
     username: hrms_user
   primary:
     persistence:
-      size: 50Gi
+      size: 100Gi
+    resources:
+      requests: { cpu: "1", memory: "2Gi" }
+      limits: { cpu: "4", memory: "8Gi" }
+  readReplicas:
+    replicaCount: 2
+    persistence:
+      size: 100Gi
+  metrics:
+    enabled: true
 
 redis:
   enabled: true
+  architecture: replication
+  sentinel:
+    enabled: true
   master:
     persistence:
-      size: 8Gi
+      size: 16Gi
+  replica:
+    replicaCount: 2
+  metrics:
+    enabled: true
 
 kafka:
   enabled: true
+  replicaCount: 3
   persistence:
-    size: 20Gi
+    size: 50Gi
+  zookeeper:
+    replicaCount: 3
+  metrics:
+    kafka:
+      enabled: true
 
 minio:
   enabled: true
+  mode: distributed
+  statefulset:
+    replicaCount: 4
   persistence:
-    size: 100Gi
+    size: 200Gi
+  metrics:
+    serviceMonitor:
+      enabled: true

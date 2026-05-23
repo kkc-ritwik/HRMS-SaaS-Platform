@@ -1,0 +1,27 @@
+{{- if .Values.prometheusOperator.enabled }}
+{{- range $name, $svc := .Values.services }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ $name }}
+  labels:
+    app: {{ $name }}
+    release: {{ $.Values.prometheusOperator.releaseLabel | default "kube-prometheus-stack" }}
+spec:
+  selector:
+    matchLabels: { app: {{ $name }} }
+  endpoints:
+    - port: management
+      path: /actuator/prometheus
+      interval: 30s
+      scrapeTimeout: 10s
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_app]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+{{- end }}
+{{- end }}
