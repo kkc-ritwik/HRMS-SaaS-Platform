@@ -6,11 +6,12 @@ interface EmptyStateProps {
   icon?: React.ReactNode
   title: string
   description?: string
-  action?: {
-    label: string
-    onClick: () => void
-  }
+  action?: { label: string; onClick: () => void } | React.ReactNode
   className?: string
+}
+
+function isLabelledAction(a: unknown): a is { label: string; onClick: () => void } {
+  return !!a && typeof a === 'object' && 'label' in (a as Record<string, unknown>) && 'onClick' in (a as Record<string, unknown>)
 }
 
 export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
@@ -26,9 +27,9 @@ export function EmptyState({ icon, title, description, action, className }: Empt
         <p className="text-sm text-slate-500 max-w-xs mb-6">{description}</p>
       )}
       {action && (
-        <Button onClick={action.onClick} size="sm">
-          {action.label}
-        </Button>
+        isLabelledAction(action)
+          ? <Button onClick={action.onClick} size="sm">{action.label}</Button>
+          : <>{action}</>
       )}
     </div>
   )

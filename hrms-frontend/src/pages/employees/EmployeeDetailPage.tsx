@@ -85,7 +85,9 @@ export function EmployeeDetailPage() {
     },
   })
 
-  const employee = data?.data || DEMO_EMPLOYEE
+  const employee = (data && typeof data === 'object' && 'data' in (data as Record<string, unknown>)
+    ? (data as { data: typeof DEMO_EMPLOYEE }).data
+    : (data as typeof DEMO_EMPLOYEE | undefined)) || DEMO_EMPLOYEE
 
   if (isLoading) {
     return (

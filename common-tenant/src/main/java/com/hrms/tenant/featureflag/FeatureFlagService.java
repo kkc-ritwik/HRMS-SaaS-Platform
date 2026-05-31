@@ -2,6 +2,7 @@ package com.hrms.tenant.featureflag;
 
 import com.hrms.security.model.TenantContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * topic and listen across replicas.
  */
 @Service
+@ConditionalOnProperty(name = "hrms.tenant.platform.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class FeatureFlagService {
 

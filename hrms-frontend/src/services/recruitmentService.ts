@@ -1,4 +1,4 @@
-import { recruitmentClient } from '@/lib/api'
+import { api, unwrap } from '@/lib/api'
 
 export interface Job {
   id: string
@@ -53,49 +53,55 @@ export interface Application {
   rating?: number
 }
 
+/** Backend: JobController @ /api/v1/jobs, CandidateController @ /api/v1/candidates,
+ *  ApplicationController @ /api/v1/applications, InterviewController @ /api/v1/interviews,
+ *  OfferController @ /api/v1/offers */
 export const recruitmentService = {
-  // Jobs
-  listJobs: async (params?: { status?: string; search?: string; page?: number; pageSize?: number }) => {
-    const response = await recruitmentClient.get('/api/v1/jobs', { params })
-    return response.data
-  },
-  getJob: async (id: string) => {
-    const response = await recruitmentClient.get(`/api/v1/jobs/${id}`)
-    return response.data
-  },
-  createJob: async (payload: Partial<Job>) => {
-    const response = await recruitmentClient.post('/api/v1/jobs', payload)
-    return response.data
-  },
-  updateJob: async (id: string, payload: Partial<Job>) => {
-    const response = await recruitmentClient.put(`/api/v1/jobs/${id}`, payload)
-    return response.data
-  },
-  deleteJob: async (id: string) => {
-    await recruitmentClient.delete(`/api/v1/jobs/${id}`)
-  },
+  // ── Jobs / Requisitions (/api/v1/jobs) ──────────────────────────────────
+  listJobs: async (params?: { status?: string; search?: string; page?: number; size?: number }) =>
+    unwrap<Job[]>(await api.get('/api/v1/jobs', { params })),
+  getJob: async (id: string) => unwrap<Job>(await api.get(`/api/v1/jobs/${id}`)),
+  createJob: async (payload: Partial<Job>) => unwrap<Job>(await api.post('/api/v1/jobs', payload)),
+  updateJob: async (id: string, payload: Partial<Job>) => unwrap<Job>(await api.put(`/api/v1/jobs/${id}`, payload)),
+  submitJob: async (id: string) => unwrap<Job>(await api.post(`/api/v1/jobs/${id}/submit`)),
+  approveJob: async (id: string) => unwrap<Job>(await api.post(`/api/v1/jobs/${id}/approve`)),
+  activateJob: async (id: string) => unwrap<Job>(await api.post(`/api/v1/jobs/${id}/activate`)),
+  holdJob: async (id: string) => unwrap<Job>(await api.post(`/api/v1/jobs/${id}/hold`)),
+  closeJob: async (id: string) => unwrap<Job>(await api.post(`/api/v1/jobs/${id}/close`)),
+  cancelJob: async (id: string) => unwrap<Job>(await api.post(`/api/v1/jobs/${id}/cancel`)),
 
-  // Candidates
-  listCandidates: async (params?: { search?: string; page?: number; pageSize?: number }) => {
-    const response = await recruitmentClient.get('/api/v1/candidates', { params })
-    return response.data
-  },
-  getCandidate: async (id: string) => {
-    const response = await recruitmentClient.get(`/api/v1/candidates/${id}`)
-    return response.data
-  },
-  createCandidate: async (payload: Partial<Candidate>) => {
-    const response = await recruitmentClient.post('/api/v1/candidates', payload)
-    return response.data
-  },
+  // ── Candidates (/api/v1/candidates) ──────────────────────────────────────
+  listCandidates: async (params?: { search?: string; page?: number; size?: number }) =>
+    unwrap<Candidate[]>(await api.get('/api/v1/candidates', { params })),
+  getCandidate: async (id: string) => unwrap<Candidate>(await api.get(`/api/v1/candidates/${id}`)),
+  createCandidate: async (payload: Partial<Candidate>) => unwrap<Candidate>(await api.post('/api/v1/candidates', payload)),
+  updateCandidate: async (id: string, payload: Partial<Candidate>) => unwrap<Candidate>(await api.put(`/api/v1/candidates/${id}`, payload)),
+  deleteCandidate: async (id: string) => { await api.delete(`/api/v1/candidates/${id}`) },
 
-  // Applications
-  listApplications: async (params?: { jobId?: string; candidateId?: string; stage?: string; page?: number; pageSize?: number }) => {
-    const response = await recruitmentClient.get('/api/v1/applications', { params })
-    return response.data
-  },
-  updateApplicationStage: async (id: string, stage: string) => {
-    const response = await recruitmentClient.patch(`/api/v1/applications/${id}/stage`, { stage })
-    return response.data
-  },
+  // ── Applications (/api/v1/applications) ──────────────────────────────────
+  apply: async (payload: Partial<Application>) => unwrap<Application>(await api.post('/api/v1/applications', payload)),
+  getApplication: async (id: string) => unwrap<Application>(await api.get(`/api/v1/applications/${id}`)),
+  applicationsByJob: async (jobId: string) => unwrap<Application[]>(await api.get(`/api/v1/applications/job/${jobId}`)),
+  applicationsByCandidate: async (candidateId: string) => unwrap<Application[]>(await api.get(`/api/v1/applications/candidate/${candidateId}`)),
+  applicationsByStage: async (stage: string) => unwrap<Application[]>(await api.get(`/api/v1/applications/stage/${stage}`)),
+  pipeline: async (jobId: string) => unwrap<Array<{ stage: string; count: number }>>(await api.get(`/api/v1/applications/job/${jobId}/pipeline`)),
+  moveStage: async (id: string, stage: string, opts?: { rejectionReason?: string; notes?: string }) =>
+    unwrap<Application>(await api.post(`/api/v1/applications/${id}/move`, { stage, ...opts })),
+
+  // ── Interviews (/api/v1/interviews) ──────────────────────────────────────
+  interviewsForApplication: async (applicationId: string) =>
+    unwrap(await api.get(`/api/v1/interviews/application/${applicationId}`)),
+  getInterview: async (id: string) => unwrap(await api.get(`/api/v1/interviews/${id}`)),
+  scheduleInterview: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/interviews', payload)),
+  setInterviewStatus: async (id: string, status: string) => unwrap(await api.patch(`/api/v1/interviews/${id}/status`, { status })),
+  submitInterviewFeedback: async (id: string, payload: Record<string, unknown>) =>
+    unwrap(await api.post(`/api/v1/interviews/${id}/feedback`, payload)),
+
+  // ── Offers (/api/v1/offers) ──────────────────────────────────────────────
+  offersForApplication: async (applicationId: string) => unwrap(await api.get(`/api/v1/offers/application/${applicationId}`)),
+  getOffer: async (id: string) => unwrap(await api.get(`/api/v1/offers/${id}`)),
+  createOffer: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/offers', payload)),
+  sendOffer: async (id: string) => unwrap(await api.post(`/api/v1/offers/${id}/send`)),
+  respondOffer: async (id: string, payload: { accepted: boolean; notes?: string }) => unwrap(await api.post(`/api/v1/offers/${id}/respond`, payload)),
+  revokeOffer: async (id: string) => unwrap(await api.post(`/api/v1/offers/${id}/revoke`)),
 }

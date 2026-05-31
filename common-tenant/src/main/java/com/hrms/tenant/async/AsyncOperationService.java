@@ -3,6 +3,7 @@ package com.hrms.tenant.async;
 import com.hrms.security.model.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,10 +22,12 @@ import java.util.UUID;
  *   2. Update progress while the worker churns.
  *   3. Mark complete/failed with a final artefact location.
  *
+ * Opt-in: enable with hrms.tenant.platform.enabled=true (and run the matching Flyway migration).
  * Concurrent updates use the @Version field — repeat with backoff on OptimisticLock.
  */
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "hrms.tenant.platform.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class AsyncOperationService {
 

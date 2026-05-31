@@ -5,11 +5,12 @@ interface PageHeaderProps {
   title: string
   description?: string
   children?: React.ReactNode
+  action?: React.ReactNode
   className?: string
   breadcrumbs?: Array<{ label: string; href?: string }>
 }
 
-export function PageHeader({ title, description, children, className, breadcrumbs }: PageHeaderProps) {
+export function PageHeader({ title, description, children, action, className, breadcrumbs }: PageHeaderProps) {
   return (
     <div className={cn('flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6', className)}>
       <div className="space-y-1 min-w-0">
@@ -34,8 +35,9 @@ export function PageHeader({ title, description, children, className, breadcrumb
           <p className="text-sm text-slate-500">{description}</p>
         )}
       </div>
-      {children && (
+      {(children || action) && (
         <div className="flex items-center gap-2 flex-shrink-0">
+          {action}
           {children}
         </div>
       )}

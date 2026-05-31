@@ -16,7 +16,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>HRMS Platform</name>
-    <description>Complete HRMS SaaS Platform — Zoho People Parity</description>
+    <description>Enterprise multi-tenant HRMS platform with end-to-end lifecycle, payroll, analytics, and integrations</description>
 
     <modules>
         <!-- Shared Libraries -->

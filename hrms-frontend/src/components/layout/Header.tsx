@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Bell, Search, Settings, LogOut, User, ChevronDown, HelpCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { Avatar } from '@/components/ui/avatar'
 import {
@@ -14,26 +15,50 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { notificationService, type Notification } from '@/services/notificationService'
+import { useNotificationStream } from '@/lib/realtime'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { LocaleSwitcher } from '@/components/ui/locale-switcher'
+import { CommandPalette } from '@/components/ui/command-palette'
+import { useEffect } from 'react'
+import { toast } from 'sonner'
 
 interface HeaderProps {
   sidebarCollapsed: boolean
 }
 
-const mockNotifications = [
-  { id: 1, title: 'Leave request approved', time: '2 min ago', read: false, type: 'success' },
-  { id: 2, title: 'New job application received', time: '1 hr ago', read: false, type: 'info' },
-  { id: 3, title: 'Performance review due', time: '2 hrs ago', read: true, type: 'warning' },
-  { id: 4, title: 'Payroll processed for March', time: '1 day ago', read: true, type: 'success' },
-]
-
 export function Header({ sidebarCollapsed }: HeaderProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const [showSearch, setShowSearch] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
+  const qc = useQueryClient()
   const [notifOpen, setNotifOpen] = useState(false)
 
-  const unreadCount = mockNotifications.filter(n => !n.read).length
+  const [paletteOpen, setPaletteOpen] = useState(false)
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setPaletteOpen(o => !o)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
+  const inbox = useQuery({ queryKey: ['notifications', 'inbox-top'], queryFn: () => notificationService.listInbox({ size: 8 }) })
+  const unread = useQuery({ queryKey: ['notifications', 'unread'], queryFn: notificationService.unreadCount, refetchInterval: 30000 })
+
+  useNotificationStream(msg => {
+    toast.info(typeof msg.payload === 'object' && msg.payload && 'title' in msg.payload
+      ? String((msg.payload as { title?: string }).title)
+      : msg.type)
+    qc.invalidateQueries({ queryKey: ['notifications'] })
+  })
+
+  const items: Notification[] = (inbox.data as { content?: Notification[] } | undefined)?.content
+    || (Array.isArray(inbox.data) ? inbox.data : [])
+  const unreadCount = (unread.data as { count?: number } | undefined)?.count ?? items.filter(n => !n.read).length
 
   return (
     <header
@@ -48,35 +73,24 @@ export function Header({ sidebarCollapsed }: HeaderProps) {
     >
       {/* Left: Breadcrumb / Page title area */}
       <div className="flex items-center gap-4">
-        {showSearch ? (
-          <div className="relative flex items-center">
-            <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
-            <input
-              autoFocus
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              onBlur={() => { setShowSearch(false); setSearchQuery('') }}
-              placeholder="Search employees, leaves, reports..."
-              className="h-9 w-72 rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all"
-            />
-          </div>
-        ) : (
-          <button
-            onClick={() => setShowSearch(true)}
-            className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-sm hover:bg-slate-100 transition-colors"
-          >
-            <Search className="h-4 w-4" />
-            <span className="hidden sm:inline">Search...</span>
-            <span className="hidden sm:flex items-center gap-0.5 ml-2 text-xs text-slate-300">
-              <kbd className="rounded bg-slate-200 px-1 text-xs text-slate-400">⌘</kbd>
-              <kbd className="rounded bg-slate-200 px-1 text-xs text-slate-400">K</kbd>
-            </span>
-          </button>
-        )}
+        <button
+          onClick={() => setPaletteOpen(true)}
+          className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-sm hover:bg-slate-100 transition-colors"
+        >
+          <Search className="h-4 w-4" />
+          <span className="hidden sm:inline">Search anything...</span>
+          <span className="hidden sm:flex items-center gap-0.5 ml-2 text-xs text-slate-300">
+            <kbd className="rounded bg-slate-200 px-1 text-xs text-slate-400">⌘</kbd>
+            <kbd className="rounded bg-slate-200 px-1 text-xs text-slate-400">K</kbd>
+          </span>
+        </button>
+        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       </div>
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
+        <LocaleSwitcher />
+        <ThemeToggle />
         {/* Help */}
         <Button variant="ghost" size="icon" className="text-slate-500 hover:text-slate-700">
           <HelpCircle className="h-5 w-5" />
@@ -102,28 +116,28 @@ export function Header({ sidebarCollapsed }: HeaderProps) {
               )}
             </div>
             <div className="max-h-80 overflow-y-auto">
-              {mockNotifications.map(n => (
-                <div
-                  key={n.id}
-                  className={cn(
-                    'flex items-start gap-3 px-3 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors',
-                    !n.read && 'bg-brand-50/50'
-                  )}
-                >
-                  <div className={cn(
-                    'mt-0.5 h-2 w-2 rounded-full flex-shrink-0',
-                    n.type === 'success' && 'bg-green-400',
-                    n.type === 'info' && 'bg-blue-400',
-                    n.type === 'warning' && 'bg-amber-400',
-                  )} />
-                  <div className="flex-1 min-w-0">
-                    <p className={cn('text-sm leading-snug', n.read ? 'text-slate-600' : 'text-slate-800 font-medium')}>
-                      {n.title}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-0.5">{n.time}</p>
+              {items.length === 0 ? (
+                <p className="px-3 py-6 text-center text-sm text-slate-400">All caught up</p>
+              ) : (
+                items.map(n => (
+                  <div
+                    key={n.id}
+                    className={cn(
+                      'flex items-start gap-3 px-3 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors',
+                      !n.read && 'bg-brand-50/50'
+                    )}
+                    onClick={() => { if (n.link) navigate(n.link); setNotifOpen(false) }}
+                  >
+                    <div className={cn('mt-0.5 h-2 w-2 rounded-full flex-shrink-0', !n.read ? 'bg-brand-500' : 'bg-slate-300')} />
+                    <div className="flex-1 min-w-0">
+                      <p className={cn('text-sm leading-snug', n.read ? 'text-slate-600' : 'text-slate-800 font-medium')}>
+                        {n.title}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-0.5">{n.body}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
             <div className="px-3 py-2 border-t border-slate-100">
               <button

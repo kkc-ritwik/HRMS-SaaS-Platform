@@ -6,6 +6,7 @@ import { Toaster } from 'sonner'
 import './index.css'
 import App from './App.tsx'
 import { queryClient } from './lib/queryClient'
+import './store/themeStore' // initialise theme on boot
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

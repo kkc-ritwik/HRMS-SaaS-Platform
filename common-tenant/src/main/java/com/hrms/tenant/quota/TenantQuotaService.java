@@ -3,6 +3,7 @@ package com.hrms.tenant.quota;
 import com.hrms.security.model.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "hrms.tenant.platform.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class TenantQuotaService {
 

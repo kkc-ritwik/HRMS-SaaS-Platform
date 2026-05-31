@@ -1,0 +1,10 @@
+src/pages/employees/EmployeeDetailPage.tsx(88,26): error TS2339: Property 'data' does not exist on type 'Employee | { data: { id: string; employeeId: string; firstName: string; lastName: string; fullName: string; email: string; phone: string; departmentName: string; designationName: string; ... 18 more ...; updatedAt: string; }; }'.
+  Property 'data' does not exist on type 'Employee'.
+src/pages/employees/EmployeeListPage.tsx(69,11): error TS2353: Object literal may only specify known properties, and 'pageSize' does not exist in type 'EmployeeListParams'.
+src/pages/employees/EmployeeListPage.tsx(98,27): error TS2339: Property 'data' does not exist on type '{}'.
+src/pages/employees/EmployeeListPage.tsx(99,23): error TS2339: Property 'data' does not exist on type '{}'.
+src/pages/employees/EmployeeListPage.tsx(101,46): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/pages/employees/EmployeeListPage.tsx(199,40): error TS7006: Parameter 'emp' implicitly has an 'any' type.
+src/pages/leave/LeaveApplicationPage.tsx(81,48): error TS2554: Expected 0 arguments, but got 1.
+src/pages/leave/LeaveBalancePage.tsx(34,48): error TS2554: Expected 0 arguments, but got 1.
+EXIT:2

@@ -1,0 +1,21 @@
+{
+  "name": "HRMS Platform",
+  "short_name": "HRMS",
+  "description": "Human Resource Management System — multi-tenant SaaS, Zoho-parity backend",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1020",
+  "theme_color": "#1e1b4b",
+  "icons": [
+    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Apply leave", "short_name": "Leave", "url": "/leave/apply" },
+    { "name": "My timesheet", "short_name": "Timesheet", "url": "/timesheet" },
+    { "name": "My payslips", "short_name": "Payslips", "url": "/payslips" },
+    { "name": "Pulse check-in", "short_name": "Pulse", "url": "/pulse" }
+  ],
+  "categories": ["business", "productivity"]
+}

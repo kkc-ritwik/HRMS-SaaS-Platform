@@ -24,7 +24,7 @@ export interface PayRun {
   period: string
   month: number
   year: number
-  status: 'DRAFT' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
+  status: 'DRAFT' | 'PROCESSING' | 'COMPLETED' | 'LOCKED' | 'PAID' | 'FAILED'
   employeeCount: number
   totalGross: number
   totalDeductions: number
@@ -38,7 +38,6 @@ export interface Payslip {
   payRunId: string
   employeeId: string
   employeeName: string
-  employeeId_code: string
   period: string
   month: number
   year: number
@@ -53,55 +52,32 @@ export interface Payslip {
   createdAt: string
 }
 
+/** Backend: PayrollRunController @ /api/v1/payroll/runs, PayslipController @ /api/v1/payslips,
+ *  SalaryStructureController @ /api/v1/salary/structures */
 export const payrollService = {
-  // Salary Structures
-  listSalaryStructures: async () => {
-    const response = await payrollClient.get('/api/v1/salary-structures')
-    return response.data
-  },
-  createSalaryStructure: async (payload: Partial<SalaryStructure>) => {
-    const response = await payrollClient.post('/api/v1/salary-structures', payload)
-    return response.data
-  },
-  updateSalaryStructure: async (id: string, payload: Partial<SalaryStructure>) => {
-    const response = await payrollClient.put(`/api/v1/salary-structures/${id}`, payload)
-    return response.data
-  },
-  deleteSalaryStructure: async (id: string) => {
-    await payrollClient.delete(`/api/v1/salary-structures/${id}`)
-  },
+  // ── Salary Structures (/api/v1/salary/structures) ───────────────────────
+  listSalaryStructures: async () => (await payrollClient.get('/api/v1/salary/structures')).data,
+  listActiveStructures: async () => (await payrollClient.get('/api/v1/salary/structures/active')).data,
+  createSalaryStructure: async (payload: Partial<SalaryStructure>) => (await payrollClient.post('/api/v1/salary/structures', payload)).data,
+  updateSalaryStructure: async (id: string, payload: Partial<SalaryStructure>) => (await payrollClient.put(`/api/v1/salary/structures/${id}`, payload)).data,
+  addComponent: async (id: string, payload: Partial<SalaryComponent>) => (await payrollClient.post(`/api/v1/salary/structures/${id}/components`, payload)).data,
+  deleteSalaryStructure: async (id: string) => { await payrollClient.delete(`/api/v1/salary/structures/${id}`) },
 
-  // Pay Runs
-  listPayRuns: async (params?: { page?: number; pageSize?: number; year?: number }) => {
-    const response = await payrollClient.get('/api/v1/pay-runs', { params })
-    return response.data
-  },
-  createPayRun: async (payload: { month: number; year: number; name?: string }) => {
-    const response = await payrollClient.post('/api/v1/pay-runs', payload)
-    return response.data
-  },
-  processPayRun: async (id: string) => {
-    const response = await payrollClient.post(`/api/v1/pay-runs/${id}/process`)
-    return response.data
-  },
-  getPayRun: async (id: string) => {
-    const response = await payrollClient.get(`/api/v1/pay-runs/${id}`)
-    return response.data
-  },
+  // ── Pay Runs (/api/v1/payroll/runs) ─────────────────────────────────────
+  listPayRuns: async (params?: { year?: number }) => (await payrollClient.get('/api/v1/payroll/runs', { params })).data,
+  getPayRun: async (id: string) => (await payrollClient.get(`/api/v1/payroll/runs/${id}`)).data,
+  createPayRun: async (payload: { month: number; year: number; name?: string }) => (await payrollClient.post('/api/v1/payroll/runs', payload)).data,
+  processPayRun: async (id: string) => (await payrollClient.post(`/api/v1/payroll/runs/${id}/process`)).data,
+  lockPayRun: async (id: string) => (await payrollClient.post(`/api/v1/payroll/runs/${id}/lock`)).data,
+  markPaid: async (id: string) => (await payrollClient.post(`/api/v1/payroll/runs/${id}/mark-paid`)).data,
 
-  // Payslips
-  listPayslips: async (params?: { employeeId?: string; page?: number; pageSize?: number; year?: number }) => {
-    const response = await payrollClient.get('/api/v1/payslips', { params })
-    return response.data
-  },
-  getPayslip: async (id: string) => {
-    const response = await payrollClient.get(`/api/v1/payslips/${id}`)
-    return response.data
-  },
-  downloadPayslip: async (id: string) => {
-    const response = await payrollClient.get(`/api/v1/payslips/${id}/download`, {
-      responseType: 'blob',
-    })
-    return response.data
+  // ── Payslips (/api/v1/payslips) ─────────────────────────────────────────
+  listPayslips: async () => (await payrollClient.get('/api/v1/payslips/me')).data,
+  payslipsForRun: async (runId: string) => (await payrollClient.get(`/api/v1/payslips/run/${runId}`)).data,
+  getPayslip: async (id: string) => (await payrollClient.get(`/api/v1/payslips/${id}`)).data,
+  getMyPayslip: async (id: string) => (await payrollClient.get(`/api/v1/payslips/me/${id}`)).data,
+  downloadPayslip: async (id: string): Promise<Blob> => {
+    const res = await payrollClient.get(`/api/v1/payslips/me/${id}/pdf`, { responseType: 'blob' })
+    return res.data
   },
 }

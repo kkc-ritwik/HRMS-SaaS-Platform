@@ -95,10 +95,26 @@ export function EmployeeListPage() {
     },
   })
 
-  const employees = data?.data?.employees || DEMO_EMPLOYEES
-  const total = data?.data?.total || DEMO_EMPLOYEES.length
+  type EmpRow = typeof DEMO_EMPLOYEES[number]
+  const raw = data as unknown
+  let employees: EmpRow[] = DEMO_EMPLOYEES
+  let total: number = DEMO_EMPLOYEES.length
+  if (raw && typeof raw === 'object') {
+    const obj = raw as Record<string, unknown>
+    const inner = (obj.data && typeof obj.data === 'object') ? obj.data as Record<string, unknown> : obj
+    if (Array.isArray(inner.employees)) {
+      employees = inner.employees as EmpRow[]
+      total = (typeof inner.total === 'number' ? inner.total : employees.length)
+    } else if (Array.isArray(inner.content)) {
+      employees = inner.content as EmpRow[]
+      total = (typeof inner.totalElements === 'number' ? inner.totalElements : employees.length)
+    } else if (Array.isArray(raw)) {
+      employees = raw as EmpRow[]
+      total = employees.length
+    }
+  }
 
-  const filteredEmployees = employees.filter(e => {
+  const filteredEmployees = employees.filter((e: EmpRow) => {
     const matchSearch = !debouncedSearch ||
       e.fullName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
       e.email.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -196,7 +212,7 @@ export function EmployeeListPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredEmployees.map(emp => (
+                {filteredEmployees.map((emp: EmpRow) => (
                   <TableRow
                     key={emp.id}
                     className="cursor-pointer"

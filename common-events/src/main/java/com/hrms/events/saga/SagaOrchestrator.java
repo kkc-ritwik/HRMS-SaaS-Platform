@@ -6,6 +6,7 @@ import com.hrms.events.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ import java.util.*;
  */
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "hrms.saga.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class SagaOrchestrator {
 

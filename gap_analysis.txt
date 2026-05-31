@@ -1,0 +1,637 @@
+BACKEND=647 FE=294 MISSING=502
+
+=== MISSING endpoints grouped by module ===
+
+## recruitment  (23)
+  /api/recruitment/alumni/{x}/mark-rejoined
+  /api/recruitment/analytics/advanced/cost-per-hire
+  /api/recruitment/analytics/advanced/offer-acceptance-rate
+  /api/recruitment/analytics/advanced/quality-of-hire
+  /api/recruitment/analytics/advanced/req-aging
+  /api/recruitment/analytics/advanced/time-to-fill
+  /api/recruitment/hiring-loops/{x}/complete
+  /api/recruitment/internal/requisition/{x}/applicants
+  /api/recruitment/internal/{x}/decide
+  /api/recruitment/psychometric/webhook/{x}
+  /api/recruitment/scorecards
+  /api/recruitment/scorecards/application/{x}/summary
+  /api/v1/recruitment/agencies/{x}
+  /api/v1/recruitment/analytics/dashboard
+  /api/v1/recruitment/analytics/funnel/{x}
+  /api/v1/recruitment/analytics/pipeline
+  /api/v1/recruitment/analytics/time-to-hire/{x}
+  /api/v1/recruitment/bgv/candidate/{x}
+  /api/v1/recruitment/bgv/webhook/{x}
+  /api/v1/recruitment/bgv/{x}/refresh
+  /api/v1/recruitment/references/candidate/{x}
+  /api/v1/recruitment/references/respond/{x}
+  /api/v1/recruitment/references/{x}/invite
+
+## courses  (18)
+  /api/v1/courses/assessments/course/{x}
+  /api/v1/courses/assessments/{x}
+  /api/v1/courses/certifications
+  /api/v1/courses/certifications/employee/{x}
+  /api/v1/courses/certifications/{x}
+  /api/v1/courses/certifications/{x}/revoke
+  /api/v1/courses/enrollments
+  /api/v1/courses/enrollments/course/{x}
+  /api/v1/courses/enrollments/employee/{x}
+  /api/v1/courses/enrollments/{x}
+  /api/v1/courses/enrollments/{x}/progress
+  /api/v1/courses/mandatory
+  /api/v1/courses/modules/course/{x}
+  /api/v1/courses/modules/{x}
+  /api/v1/courses/status/{x}
+  /api/v1/courses/{x}
+  /api/v1/courses/{x}/archive
+  /api/v1/courses/{x}/publish
+
+## employees  (17)
+  /api/v1/employees
+  /api/v1/employees/directory
+  /api/v1/employees/{x}
+  /api/v1/employees/{x}/addresses
+  /api/v1/employees/{x}/addresses/{x}
+  /api/v1/employees/{x}/education
+  /api/v1/employees/{x}/education/{x}
+  /api/v1/employees/{x}/emergency-contacts
+  /api/v1/employees/{x}/emergency-contacts/{x}
+  /api/v1/employees/{x}/family
+  /api/v1/employees/{x}/family/{x}
+  /api/v1/employees/{x}/lifecycle
+  /api/v1/employees/{x}/lifecycle-event
+  /api/v1/employees/{x}/team
+  /api/v1/employees/{x}/timeline
+  /api/v1/employees/{x}/work-history
+  /api/v1/employees/{x}/work-history/{x}
+
+## expenses  (17)
+  /api/v1/expenses/advances/employee/{x}
+  /api/v1/expenses/advances/{x}
+  /api/v1/expenses/advances/{x}/approve
+  /api/v1/expenses/categories/all
+  /api/v1/expenses/categories/{x}
+  /api/v1/expenses/items
+  /api/v1/expenses/items/report/{x}
+  /api/v1/expenses/items/{x}
+  /api/v1/expenses/ocr/by-uri
+  /api/v1/expenses/policies/all
+  /api/v1/expenses/policies/{x}
+  /api/v1/expenses/reports
+  /api/v1/expenses/reports/employee/{x}
+  /api/v1/expenses/reports/{x}
+  /api/v1/expenses/reports/{x}/approve
+  /api/v1/expenses/reports/{x}/reject
+  /api/v1/expenses/reports/{x}/submit
+
+## offboarding  (17)
+  /api/v1/offboarding/checklists/assignee/{x}
+  /api/v1/offboarding/checklists/separation/{x}
+  /api/v1/offboarding/checklists/{x}
+  /api/v1/offboarding/checklists/{x}/complete
+  /api/v1/offboarding/exit-interviews/separation/{x}
+  /api/v1/offboarding/exit-interviews/{x}
+  /api/v1/offboarding/exit-interviews/{x}/complete
+  /api/v1/offboarding/knowledge-transfers/from/{x}
+  /api/v1/offboarding/knowledge-transfers/separation/{x}
+  /api/v1/offboarding/knowledge-transfers/{x}
+  /api/v1/offboarding/knowledge-transfers/{x}/complete
+  /api/v1/offboarding/separations
+  /api/v1/offboarding/separations/employee/{x}
+  /api/v1/offboarding/separations/status/{x}
+  /api/v1/offboarding/separations/{x}
+  /api/v1/offboarding/separations/{x}/approve
+  /api/v1/offboarding/separations/{x}/complete
+
+## reports  (16)
+  /api/reports/dei/headcount
+  /api/v1/reports/dashboards/me
+  /api/v1/reports/dashboards/shared
+  /api/v1/reports/dashboards/{x}/set-default
+  /api/v1/reports/definitions
+  /api/v1/reports/definitions/active
+  /api/v1/reports/definitions/category/{x}
+  /api/v1/reports/definitions/{x}
+  /api/v1/reports/saved/definition/{x}
+  /api/v1/reports/saved/me
+  /api/v1/reports/saved/user/{x}
+  /api/v1/reports/saved/{x}
+  /api/v1/reports/saved/{x}/complete
+  /api/v1/reports/saved/{x}/fail
+  /api/v1/reports/widgets/dashboard/{x}
+  /api/v1/reports/widgets/{x}
+
+## assets  (16)
+  /api/v1/assets/all
+  /api/v1/assets/assignments
+  /api/v1/assets/assignments/asset/{x}
+  /api/v1/assets/assignments/employee/{x}
+  /api/v1/assets/assignments/{x}
+  /api/v1/assets/assignments/{x}/return
+  /api/v1/assets/categories/all
+  /api/v1/assets/categories/{x}
+  /api/v1/assets/category/{x}
+  /api/v1/assets/maintenance/asset/{x}
+  /api/v1/assets/maintenance/{x}
+  /api/v1/assets/requests/employee/{x}
+  /api/v1/assets/requests/{x}
+  /api/v1/assets/requests/{x}/reject
+  /api/v1/assets/status/{x}
+  /api/v1/assets/{x}
+
+## tickets  (16)
+  /api/v1/tickets/assignee/{x}
+  /api/v1/tickets/categories/all
+  /api/v1/tickets/categories/{x}
+  /api/v1/tickets/comments
+  /api/v1/tickets/comments/ticket/{x}
+  /api/v1/tickets/comments/{x}
+  /api/v1/tickets/kb-articles
+  /api/v1/tickets/kb-articles/published
+  /api/v1/tickets/kb-articles/{x}
+  /api/v1/tickets/kb-articles/{x}/publish
+  /api/v1/tickets/kb-articles/{x}/view
+  /api/v1/tickets/requester/{x}
+  /api/v1/tickets/status/{x}
+  /api/v1/tickets/{x}
+  /api/v1/tickets/{x}/close
+  /api/v1/tickets/{x}/resolve
+
+## workflows  (16)
+  /api/v1/workflows/definitions/entity/{x}
+  /api/v1/workflows/definitions/{x}
+  /api/v1/workflows/definitions/{x}/activate
+  /api/v1/workflows/definitions/{x}/deactivate
+  /api/v1/workflows/delegations/delegate/{x}
+  /api/v1/workflows/delegations/delegator/{x}
+  /api/v1/workflows/delegations/{x}
+  /api/v1/workflows/delegations/{x}/deactivate
+  /api/v1/workflows/instances/entity/{x}
+  /api/v1/workflows/instances/initiator/{x}
+  /api/v1/workflows/instances/status/{x}
+  /api/v1/workflows/instances/{x}/approve
+  /api/v1/workflows/instances/{x}/cancel
+  /api/v1/workflows/instances/{x}/reject
+  /api/v1/workflows/steps/workflow/{x}
+  /api/v1/workflows/steps/{x}
+
+## engagement  (15)
+  /api/engagement/pulse/me
+  /api/engagement/rewards/budgets/{x}/spend
+  /api/engagement/rewards/redemptions/{x}/fulfill
+  /api/engagement/stay/employee/{x}
+  /api/engagement/suggestions/{x}/de-anonymise
+  /api/v1/engagement/kudos
+  /api/v1/engagement/kudos/feed
+  /api/v1/engagement/kudos/received
+  /api/v1/engagement/polls
+  /api/v1/engagement/polls/{x}/tally
+  /api/v1/engagement/polls/{x}/vote
+  /api/v1/engagement/surveys
+  /api/v1/engagement/surveys/{x}/enps
+  /api/v1/engagement/surveys/{x}/launch
+  /api/v1/engagement/surveys/{x}/responses
+
+## documents  (15)
+  /api/v1/documents/employee/{x}
+  /api/v1/documents/files
+  /api/v1/documents/files/download
+  /api/v1/documents/files/presigned-download
+  /api/v1/documents/letters
+  /api/v1/documents/letters/employee/{x}
+  /api/v1/documents/letters/{x}
+  /api/v1/documents/policies
+  /api/v1/documents/policies/all
+  /api/v1/documents/policies/{x}
+  /api/v1/documents/templates/all
+  /api/v1/documents/templates/{x}
+  /api/v1/documents/types/all
+  /api/v1/documents/types/{x}
+  /api/v1/documents/{x}/versions/{x}/revert
+
+## leaves  (15)
+  /api/v1/leaves/apply
+  /api/v1/leaves/balance/adjust
+  /api/v1/leaves/balance/init
+  /api/v1/leaves/balance/my
+  /api/v1/leaves/balance/{x}
+  /api/v1/leaves/my
+  /api/v1/leaves/policies/{x}
+  /api/v1/leaves/team
+  /api/v1/leaves/team-calendar
+  /api/v1/leaves/types
+  /api/v1/leaves/types/active
+  /api/v1/leaves/types/{x}
+  /api/v1/leaves/{x}/approve
+  /api/v1/leaves/{x}/cancel
+  /api/v1/leaves/{x}/reject
+
+## onboarding  (15)
+  /api/v1/onboarding/buddy-assignments/employee/{x}
+  /api/v1/onboarding/buddy-assignments/{x}
+  /api/v1/onboarding/documents/{x}
+  /api/v1/onboarding/preboard/invite
+  /api/v1/onboarding/preboard/portal/{x}
+  /api/v1/onboarding/preboard/portal/{x}/complete
+  /api/v1/onboarding/preboard/portal/{x}/details
+  /api/v1/onboarding/preboard/portal/{x}/documents
+  /api/v1/onboarding/preboard/portal/{x}/handbook-ack
+  /api/v1/onboarding/probation-reviews/employee/{x}
+  /api/v1/onboarding/probation-reviews/{x}
+  /api/v1/onboarding/tasks/employee/{x}
+  /api/v1/onboarding/tasks/template/{x}
+  /api/v1/onboarding/tasks/{x}
+  /api/v1/onboarding/templates/{x}
+
+## salary  (15)
+  /api/v1/salary/components/active
+  /api/v1/salary/components/{x}
+  /api/v1/salary/employee/{x}
+  /api/v1/salary/employee/{x}/current
+  /api/v1/salary/employee/{x}/history
+  /api/v1/salary/employee/{x}/salary/{x}
+  /api/v1/salary/structures
+  /api/v1/salary/structures/active
+  /api/v1/salary/structures/{x}
+  /api/v1/salary/structures/{x}/components
+  /api/v1/salary/structures/{x}/components/{x}
+  /api/v1/salary/tax-config/esi
+  /api/v1/salary/tax-config/pf
+  /api/v1/salary/tax-config/pt
+  /api/v1/salary/tax-config/pt/{x}
+
+## payroll  (14)
+  /api/payroll/investment-proofs
+  /api/payroll/investment-proofs/me
+  /api/payroll/investment-proofs/queue
+  /api/v1/payroll/loans/employee/{x}
+  /api/v1/payroll/loans/me
+  /api/v1/payroll/loans/me/{x}/schedule
+  /api/v1/payroll/loans/{x}
+  /api/v1/payroll/loans/{x}/close
+  /api/v1/payroll/loans/{x}/schedule
+  /api/v1/payroll/runs
+  /api/v1/payroll/runs/{x}
+  /api/v1/payroll/runs/{x}/lock
+  /api/v1/payroll/runs/{x}/mark-paid
+  /api/v1/payroll/runs/{x}/process
+
+## performance  (13)
+  /api/performance/goals/cascade
+  /api/performance/goals/cascade/{x}/rollup
+  /api/performance/goals/cascade/{x}/subtree
+  /api/v1/performance/analytics/cycles/{x}/my-team-summary
+  /api/v1/performance/analytics/cycles/{x}/nine-box
+  /api/v1/performance/analytics/cycles/{x}/team-summary/{x}
+  /api/v1/performance/cycles/{x}
+  /api/v1/performance/cycles/{x}/activate
+  /api/v1/performance/cycles/{x}/close
+  /api/v1/performance/cycles/{x}/finalize
+  /api/v1/performance/cycles/{x}/start-calibration
+  /api/v1/performance/cycles/{x}/start-manager-review
+  /api/v1/performance/cycles/{x}/start-self-review
+
+## compliance  (12)
+  /api/v1/compliance/items/owner/{x}
+  /api/v1/compliance/items/status/{x}
+  /api/v1/compliance/items/{x}
+  /api/v1/compliance/items/{x}/mark-compliant
+  /api/v1/compliance/licenses/employee/{x}
+  /api/v1/compliance/licenses/status/{x}
+  /api/v1/compliance/licenses/{x}
+  /api/v1/compliance/reports/audit
+  /api/v1/compliance/statutory-returns/form24q
+  /api/v1/compliance/tasks/assignee/{x}
+  /api/v1/compliance/tasks/item/{x}
+  /api/v1/compliance/tasks/{x}
+
+## travel  (12)
+  /api/v1/travel/advances
+  /api/v1/travel/advances/{x}/disburse
+  /api/v1/travel/itinerary
+  /api/v1/travel/itinerary/{x}
+  /api/v1/travel/mileage
+  /api/v1/travel/per-diem/{x}
+  /api/v1/travel/trips
+  /api/v1/travel/trips/me
+  /api/v1/travel/trips/{x}
+  /api/v1/travel/trips/{x}/approve
+  /api/v1/travel/trips/{x}/reject
+  /api/v1/travel/trips/{x}/submit
+
+## attendance  (11)
+  /api/v1/attendance/biometric/punch
+  /api/v1/attendance/biometric/punch/bulk
+  /api/v1/attendance/dashboard
+  /api/v1/attendance/my-log
+  /api/v1/attendance/my-records
+  /api/v1/attendance/punch
+  /api/v1/attendance/regularize
+  /api/v1/attendance/regularize/pending
+  /api/v1/attendance/regularize/{x}/approve
+  /api/v1/attendance/regularize/{x}/reject
+  /api/v1/attendance/team
+
+## compensation  (10)
+  /api/compensation/benchmark/bulk-upload
+  /api/v1/compensation/benefits
+  /api/v1/compensation/benefits/active
+  /api/v1/compensation/benefits/type/{x}
+  /api/v1/compensation/benefits/{x}
+  /api/v1/compensation/employee-benefits/{x}
+  /api/v1/compensation/pay-grades
+  /api/v1/compensation/pay-grades/active
+  /api/v1/compensation/pay-grades/{x}
+  /api/v1/compensation/plans/{x}
+
+## reviews  (10)
+  /api/v1/reviews
+  /api/v1/reviews/cycle/{x}
+  /api/v1/reviews/cycle/{x}/team/{x}
+  /api/v1/reviews/employee/{x}
+  /api/v1/reviews/me
+  /api/v1/reviews/me/pending
+  /api/v1/reviews/{x}
+  /api/v1/reviews/{x}/acknowledge
+  /api/v1/reviews/{x}/calibrate
+  /api/v1/reviews/{x}/submit
+
+## workplace  (10)
+  /api/v1/workplace/bookings
+  /api/v1/workplace/bookings/room/{x}
+  /api/v1/workplace/cabs
+  /api/v1/workplace/cabs/mine
+  /api/v1/workplace/rooms
+  /api/v1/workplace/rooms/at/{x}
+  /api/v1/workplace/visitors
+  /api/v1/workplace/visitors/in-building
+  /api/v1/workplace/visitors/{x}/check-in
+  /api/v1/workplace/visitors/{x}/check-out
+
+## notifications  (9)
+  /api/notifications/sse/dashboard
+  /api/v1/notifications/announcements/{x}
+  /api/v1/notifications/channels
+  /api/v1/notifications/email-templates/code/{x}
+  /api/v1/notifications/email-templates/{x}
+  /api/v1/notifications/employee/{x}
+  /api/v1/notifications/preferences/employee/{x}
+  /api/v1/notifications/preferences/{x}
+  /api/v1/notifications/{x}
+
+## groups  (9)
+  /api/v1/groups/events/group/{x}
+  /api/v1/groups/events/organizer/{x}
+  /api/v1/groups/events/{x}
+  /api/v1/groups/members/employee/{x}
+  /api/v1/groups/members/group/{x}
+  /api/v1/groups/members/join
+  /api/v1/groups/members/leave/{x}
+  /api/v1/groups/members/{x}
+  /api/v1/groups/{x}
+
+## posts  (9)
+  /api/v1/posts
+  /api/v1/posts/author/{x}
+  /api/v1/posts/comments
+  /api/v1/posts/comments/post/{x}
+  /api/v1/posts/comments/{x}
+  /api/v1/posts/likes
+  /api/v1/posts/likes/post/{x}
+  /api/v1/posts/likes/{x}
+  /api/v1/posts/{x}
+
+## jobs  (8)
+  /api/v1/jobs
+  /api/v1/jobs/{x}
+  /api/v1/jobs/{x}/activate
+  /api/v1/jobs/{x}/approve
+  /api/v1/jobs/{x}/cancel
+  /api/v1/jobs/{x}/close
+  /api/v1/jobs/{x}/hold
+  /api/v1/jobs/{x}/submit
+
+## applications  (7)
+  /api/v1/applications
+  /api/v1/applications/candidate/{x}
+  /api/v1/applications/job/{x}
+  /api/v1/applications/job/{x}/pipeline
+  /api/v1/applications/stage/{x}
+  /api/v1/applications/{x}
+  /api/v1/applications/{x}/move
+
+## auth  (7)
+  /api/v1/auth/change-password
+  /api/v1/auth/login
+  /api/v1/auth/logout
+  /api/v1/auth/logout-all
+  /api/v1/auth/otp/send
+  /api/v1/auth/otp/verify
+  /api/v1/auth/signup
+
+## goals  (7)
+  /api/v1/goals
+  /api/v1/goals/cycle/{x}
+  /api/v1/goals/employee/{x}
+  /api/v1/goals/me
+  /api/v1/goals/{x}
+  /api/v1/goals/{x}/progress
+  /api/v1/goals/{x}/updates
+
+## me  (7)
+  /api/v1/me/approvals
+  /api/v1/me/consent
+  /api/v1/me/dashboard
+  /api/v1/me/data
+  /api/v1/me/erase
+  /api/v1/me/restrict
+  /api/v1/me/team
+
+## one-on-ones  (7)
+  /api/v1/one-on-ones/between
+  /api/v1/one-on-ones/employee/{x}
+  /api/v1/one-on-ones/manager/{x}
+  /api/v1/one-on-ones/me/as-employee
+  /api/v1/one-on-ones/me/as-manager
+  /api/v1/one-on-ones/{x}
+  /api/v1/one-on-ones/{x}/complete
+
+## tax  (7)
+  /api/v1/tax/declarations
+  /api/v1/tax/declarations/me
+  /api/v1/tax/declarations/me/{x}
+  /api/v1/tax/declarations/{x}/proofs
+  /api/v1/tax/declarations/{x}/proofs/{x}/approve
+  /api/v1/tax/declarations/{x}/proofs/{x}/reject
+  /api/v1/tax/declarations/{x}/verify
+
+## timesheet  (7)
+  /api/v1/timesheet/entries
+  /api/v1/timesheet/projects
+  /api/v1/timesheet/reports/job-cost/project/{x}
+  /api/v1/timesheet/reports/job-cost/tenant-summary
+  /api/v1/timesheet/tasks
+  /api/v1/timesheet/weeks/submit
+  /api/v1/timesheet/weeks/{x}/approve
+
+## file-vault  (6)
+  /api/v1/file-vault/folders
+  /api/v1/file-vault/folders/children
+  /api/v1/file-vault/mine
+  /api/v1/file-vault/upload
+  /api/v1/file-vault/{x}/download
+  /api/v1/file-vault/{x}/share
+
+## competencies  (5)
+  /api/v1/competencies/active
+  /api/v1/competencies/role-mappings
+  /api/v1/competencies/role-mappings/role/{x}
+  /api/v1/competencies/role-mappings/{x}
+  /api/v1/competencies/{x}
+
+## feedback  (5)
+  /api/v1/feedback/employee/{x}/received
+  /api/v1/feedback/me/given
+  /api/v1/feedback/me/received
+  /api/v1/feedback/wall
+  /api/v1/feedback/{x}
+
+## interviews  (5)
+  /api/v1/interviews/application/{x}
+  /api/v1/interviews/{x}/panelists
+  /api/v1/interviews/{x}/panelists/{x}
+  /api/v1/interviews/{x}/panelists/{x}/feedback
+  /api/v1/interviews/{x}/status
+
+## payslips  (5)
+  /api/v1/payslips/me
+  /api/v1/payslips/me/{x}
+  /api/v1/payslips/me/{x}/pdf
+  /api/v1/payslips/run/{x}
+  /api/v1/payslips/{x}
+
+## skills  (5)
+  /api/v1/skills/employees
+  /api/v1/skills/employees/{x}
+  /api/v1/skills/experts
+  /api/v1/skills/gap
+  /api/v1/skills/role-requirements
+
+## files  (4)
+  /api/v1/files/download
+  /api/v1/files/metadata
+  /api/v1/files/presigned-download
+  /api/v1/files/presigned-upload
+
+## offers  (4)
+  /api/v1/offers/application/{x}
+  /api/v1/offers/{x}/respond
+  /api/v1/offers/{x}/revoke
+  /api/v1/offers/{x}/send
+
+## pip-plans  (4)
+  /api/v1/pip-plans/employee/{x}
+  /api/v1/pip-plans/me
+  /api/v1/pip-plans/{x}
+  /api/v1/pip-plans/{x}/activate
+
+## roles  (4)
+  /api/v1/roles/assign
+  /api/v1/roles/users/{x}
+  /api/v1/roles/users/{x}/roles/{x}
+  /api/v1/roles/{x}
+
+## audit  (3)
+  /api/v1/audit/actor
+  /api/v1/audit/entity
+  /api/v1/audit/range
+
+## departments  (3)
+  /api/v1/departments
+  /api/v1/departments/active
+  /api/v1/departments/{x}
+
+## designations  (3)
+  /api/v1/designations
+  /api/v1/designations/active
+  /api/v1/designations/{x}
+
+## locations  (3)
+  /api/v1/locations
+  /api/v1/locations/active
+  /api/v1/locations/{x}
+
+## shifts  (3)
+  /api/v1/shifts/active
+  /api/v1/shifts/{x}
+  /api/v1/shifts/{x}/assign
+
+## users  (3)
+  /api/v1/users/me
+  /api/v1/users/{x}
+  /api/v1/users/{x}/status
+
+## workflow  (3)
+  /api/v1/workflow/ooo/user/{x}
+  /api/v1/workflow/ooo/user/{x}/delegate
+  /api/v1/workflow/ooo/{x}/cancel
+
+## scim  (3)
+  /scim/v2/ServiceProviderConfig
+  /scim/v2/Users
+  /scim/v2/Users/{x}
+
+## workspace  (2)
+  /api/asset/workspace/bookings/{x}/check-in
+  /api/asset/workspace/floors/{x}
+
+## api-keys  (2)
+  /api/v1/api-keys/{x}/revoke
+  /api/v1/api-keys/{x}/rotate
+
+## candidates  (2)
+  /api/v1/candidates
+  /api/v1/candidates/{x}
+
+## cases  (2)
+  /api/v1/cases/{x}/notes
+  /api/v1/cases/{x}/status
+
+## custom-fields  (2)
+  /api/v1/custom-fields/by-entity/{x}
+  /api/v1/custom-fields/{x}
+
+## forms  (2)
+  /api/v1/forms/by-code/{x}
+  /api/v1/forms/{x}/publish
+
+## holidays  (2)
+  /api/v1/holidays
+  /api/v1/holidays/by-location
+
+## integrations  (2)
+  /api/v1/integrations/slack/inbound/commands
+  /api/v1/integrations/teams/inbound/messages
+
+## legal-entities  (2)
+  /api/v1/legal-entities/{x}
+  /api/v1/legal-entities/{x}/children
+
+## visitors  (1)
+  /api/asset/visitors/host/{x}
+
+## cost-centers  (1)
+  /api/corehr/cost-centers/allocations
+
+## careers  (1)
+  /api/public/v1/careers/{x}/resume/parse
+
+## letters  (1)
+  /api/v1/letters/employment/{x}
+
+## org-chart  (1)
+  /api/v1/org-chart
+
+## tenants  (1)
+  /api/v1/tenants
