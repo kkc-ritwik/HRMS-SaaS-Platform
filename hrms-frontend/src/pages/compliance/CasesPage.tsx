@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { AlertTriangle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { DataList } from '@/components/ui/data-list'
@@ -7,6 +8,7 @@ import { casesService } from '@/services/extendedServices'
 interface HrCase { id: string; caseNumber: string; type: string; title: string; status: string; severity?: string; isAnonymous?: boolean }
 
 export function CasesPage() {
+  const navigate = useNavigate()
   const { data, isLoading } = useQuery({ queryKey: ['cases'], queryFn: () => casesService.list() })
   const items: HrCase[] = (data as { content?: HrCase[] } | undefined)?.content
     || (Array.isArray(data) ? data as HrCase[] : [])
@@ -14,6 +16,7 @@ export function CasesPage() {
     <DataList<HrCase>
       title="HR Cases" description="Grievance, POSH, ethics, whistleblower"
       data={items} isLoading={isLoading}
+      onRowClick={c => navigate(`/cases/${c.id}`)}
       emptyIcon={<AlertTriangle className="h-10 w-10" />} emptyTitle="No active cases"
       columns={[
         { key: 'caseNumber', label: '#' },

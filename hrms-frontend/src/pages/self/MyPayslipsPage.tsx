@@ -5,7 +5,18 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/ui/page-header'
-import { payrollService } from '@/services/payrollService'
+import { Catalog } from '@/services/catalog'
+import { toast } from 'sonner'
+
+async function downloadPayslipPdf(id: string, period: string) {
+  try {
+    const blob = await Catalog.payslips.myPdf(id)
+    const url = URL.createObjectURL(blob as unknown as Blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = `payslip-${period}.pdf`; a.click()
+    URL.revokeObjectURL(url)
+  } catch { toast.error('Could not download payslip') }
+}
 
 interface Payslip {
   id: string
@@ -20,7 +31,7 @@ interface Payslip {
 export function MyPayslipsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['payslips', 'me'],
-    queryFn: () => payrollService.listPayslips(),
+    queryFn: () => Catalog.payslips.mine(),
   })
   const items: Payslip[] = ((data as { data?: Payslip[]; content?: Payslip[] } | undefined)?.data
     || (data as { content?: Payslip[] } | undefined)?.content
@@ -54,13 +65,9 @@ export function MyPayslipsPage() {
                     <td className="p-3 text-right">₹{p.netSalary?.toLocaleString()}</td>
                     <td className="p-3"><Badge>{p.status}</Badge></td>
                     <td className="p-3 text-right">
-                      {p.downloadUrl && (
-                        <Button variant="ghost" size="sm" asChild>
-                          <a href={p.downloadUrl} target="_blank" rel="noreferrer">
-                            <Download className="h-4 w-4" />
-                          </a>
-                        </Button>
-                      )}
+                      <Button variant="ghost" size="sm" onClick={() => downloadPayslipPdf(p.id, p.payPeriod)}>
+                        <Download className="h-4 w-4" />
+                      </Button>
                     </td>
                   </tr>
                 ))}

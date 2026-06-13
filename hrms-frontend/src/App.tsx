@@ -13,6 +13,10 @@ import { AssetDetailPage } from '@/pages/assets/AssetDetailPage'
 import { TicketDetailPage } from '@/pages/helpdesk/TicketDetailPage'
 import { PipelineKanbanPage } from '@/pages/recruitment/PipelineKanbanPage'
 import { OnboardingDetailPage } from '@/pages/onboarding/OnboardingDetailPage'
+import { SeparationDetailPage } from '@/pages/offboarding/SeparationDetailPage'
+import { CourseDetailPage } from '@/pages/lms/CourseDetailPage'
+import { CaseDetailPage } from '@/pages/compliance/CaseDetailPage'
+import { MyTeamPage } from '@/pages/self/MyTeamPage'
 import { LeaveCalendarPage } from '@/pages/leave/LeaveCalendarPage'
 import { WorkflowDesignerPage } from '@/pages/workflows/WorkflowDesignerPage'
 import { FormBuilderPage } from '@/pages/forms/FormBuilderPage'
@@ -33,19 +37,19 @@ import {
 
 // Bulk depth pages (40+ remaining controllers)
 import {
-  StatutoryReturnsPage, ComplianceTasksPage, CourseModulesPage, AssessmentsPage,
-  ExpensePoliciesPage, ReceiptOcrPage, PerformanceAnalyticsPage, ContinuousFeedbackPage,
-  RecruitmentAgenciesPage, RecruitmentAnalyticsPage, BgvPage, GroupsPage, EventsPage,
-  DashboardsPage, SavedReportsPage, AnnouncementsAdminPage, EmailTemplatesPage,
-  NotificationPreferencesPage, SalaryComponentsPage, EmployeeSalaryPage, TaxConfigPage,
-  TicketCategoriesPage, DocumentTemplatesAdminPage, DocumentTypesPage, FileVaultPage,
-  WorkflowInstancesPage, DelegationRulesPage, WebhooksPage, JobCostReportsPage,
+  StatutoryReturnsPage, CourseModulesPage, AssessmentsPage,
+  ReceiptOcrPage, PerformanceAnalyticsPage,
+  RecruitmentAgenciesPage, BgvPage, EventsPage,
+  AnnouncementsAdminPage, EmailTemplatesPage,
+  EmployeeSalaryPage,
+  FileVaultPage,
+  WebhooksPage, JobCostReportsPage,
 } from '@/pages/extras/BulkPages'
 
 // Final gap pages (20)
 import {
-  CompensationPlansPage, EmployeeBenefitsPage, MarketBenchmarkPage, ExpenseCategoriesPage,
-  LeavePoliciesPage, GstReturnsPage, DashboardWidgetsPage, WorkflowStepsPage,
+  EmployeeBenefitsPage, MarketBenchmarkPage,
+  GstReturnsPage,
   ReferenceChecksPage, PsychometricPage, InternalMobilityPage, OnboardingDocumentsPage,
   DocumentVersionsPage, CsatDashboardPage, EmployeeBulkImportPage, FilesPage,
   NotificationDispatchPage, ScormPlayerPage, CareerSitePage,
@@ -58,6 +62,7 @@ import { DepartmentsPage } from '@/pages/organization/DepartmentsPage'
 import { DesignationsPage } from '@/pages/organization/DesignationsPage'
 import { LocationsPage } from '@/pages/organization/LocationsPage'
 import { AttendancePage } from '@/pages/attendance/AttendancePage'
+import { RegularizationsPage } from '@/pages/attendance/RegularizationsPage'
 import { LeaveApplicationPage } from '@/pages/leave/LeaveApplicationPage'
 import { LeaveApprovalsPage } from '@/pages/leave/LeaveApprovalsPage'
 import { LeaveBalancePage } from '@/pages/leave/LeaveBalancePage'
@@ -72,6 +77,7 @@ import { DocumentsPage } from '@/pages/documents/DocumentsPage'
 import { TimesheetPage } from '@/pages/timesheet/TimesheetPage'
 import { TaxDeclarationPage } from '@/pages/tax/TaxDeclarationPage'
 import { InvestmentProofsPage } from '@/pages/tax/InvestmentProofsPage'
+import { ProofVerificationPage } from '@/pages/tax/ProofVerificationPage'
 
 // Recruitment
 import { JobsPage } from '@/pages/recruitment/JobsPage'
@@ -118,6 +124,9 @@ import { AssetMaintenancePage } from '@/pages/assets/AssetMaintenancePage'
 import { AmcContractsPage } from '@/pages/assets/AmcContractsPage'
 import { VendorsPage } from '@/pages/vendors/VendorsPage'
 import { ExpensesPage } from '@/pages/expenses/ExpensesPage'
+import { ExpenseReportDetailPage } from '@/pages/expenses/ExpenseReportDetailPage'
+import { ExpenseCategoriesPage } from '@/pages/expenses/ExpenseCategoriesPage'
+import { ExpensePoliciesPage } from '@/pages/expenses/ExpensePoliciesPage'
 import { AdvancesPage } from '@/pages/expenses/AdvancesPage'
 import { TicketsPage } from '@/pages/helpdesk/TicketsPage'
 import { KbPage } from '@/pages/helpdesk/KbPage'
@@ -153,15 +162,36 @@ import { OrgChartPage } from '@/pages/organization/OrgChartPage'
 import { CostCentersPage } from '@/pages/organization/CostCentersPage'
 import { SkillsPage } from '@/pages/skills/SkillsPage'
 import { TravelPage } from '@/pages/travel/TravelPage'
+import { TravelDetailPage } from '@/pages/travel/TravelDetailPage'
 import { FormsPage } from '@/pages/forms/FormsPage'
 import { ShiftsPage } from '@/pages/time/ShiftsPage'
 
 // Reports + Settings + Notifications + Holidays
 import { ReportsPage } from '@/pages/reports/ReportsPage'
+import { ReportDetailPage } from '@/pages/reports/ReportDetailPage'
+import { DashboardsPage } from '@/pages/reports/DashboardsPage'
+import { SavedReportsPage } from '@/pages/reports/SavedReportsPage'
 import { DeiAnalyticsPage } from '@/pages/reports/DeiAnalyticsPage'
 import { SettingsPage } from '@/pages/settings/SettingsPage'
 import { NotificationsPage } from '@/pages/notifications/NotificationsPage'
 import { HolidaysPage } from '@/pages/holidays/HolidaysPage'
+import { GroupsPage } from '@/pages/engagement/GroupsPage'
+import { GroupDetailPage } from '@/pages/engagement/GroupDetailPage'
+import { TicketCategoriesPage } from '@/pages/helpdesk/TicketCategoriesPage'
+import { SalaryComponentsPage } from '@/pages/payroll/SalaryComponentsPage'
+import { CompensationPlansPage } from '@/pages/payroll/CompensationPlansPage'
+import { WorkflowInstancesPage } from '@/pages/workflows/WorkflowInstancesPage'
+import { DelegationRulesPage } from '@/pages/workflows/DelegationRulesPage'
+import { DocumentTypesPage } from '@/pages/documents/DocumentTypesPage'
+import { DocumentTemplatesAdminPage } from '@/pages/documents/DocumentTemplatesAdminPage'
+import { ContinuousFeedbackPage } from '@/pages/performance/ContinuousFeedbackPage'
+import { ComplianceTasksPage } from '@/pages/compliance/ComplianceTasksPage'
+import { RecruitmentAnalyticsPage } from '@/pages/recruitment/RecruitmentAnalyticsPage'
+import { TaxConfigPage } from '@/pages/payroll/TaxConfigPage'
+import { LeavePoliciesPage } from '@/pages/leave/LeavePoliciesPage'
+import { WorkflowStepsPage } from '@/pages/workflows/WorkflowStepsPage'
+import { DashboardWidgetsPage } from '@/pages/reports/DashboardWidgetsPage'
+import { NotificationPreferencesPage } from '@/pages/notifications/NotificationPreferencesPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore(s => s.isAuthenticated)
@@ -191,11 +221,13 @@ export default function App() {
         {/* Self-service */}
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/my-leave" element={<MyLeavePage />} />
+        <Route path="/my-team" element={<MyTeamPage />} />
         <Route path="/payslips" element={<MyPayslipsPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/timesheet" element={<TimesheetPage />} />
         <Route path="/tax/declaration" element={<TaxDeclarationPage />} />
         <Route path="/tax/proofs" element={<InvestmentProofsPage />} />
+        <Route path="/tax/proof-verification" element={<ProofVerificationPage />} />
         <Route path="/policies" element={<PoliciesPage />} />
 
         {/* People + Org */}
@@ -212,6 +244,7 @@ export default function App() {
 
         {/* Attendance + Leave + Shifts */}
         <Route path="/attendance" element={<AttendancePage />} />
+        <Route path="/regularizations" element={<RegularizationsPage />} />
         <Route path="/leave/apply" element={<LeaveApplicationPage />} />
         <Route path="/leave-approvals" element={<LeaveApprovalsPage />} />
         <Route path="/leave-balances" element={<LeaveBalancePage />} />
@@ -242,6 +275,7 @@ export default function App() {
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/onboarding/:id" element={<OnboardingDetailPage />} />
         <Route path="/offboarding" element={<OffboardingPage />} />
+        <Route path="/separations/:id" element={<SeparationDetailPage />} />
 
         {/* Performance */}
         <Route path="/goals" element={<GoalsPage />} />
@@ -255,6 +289,7 @@ export default function App() {
 
         {/* LMS */}
         <Route path="/courses" element={<CoursesPage />} />
+        <Route path="/courses/:id" element={<CourseDetailPage />} />
         <Route path="/courses/:id/play" element={<CoursePlayerPage />} />
         <Route path="/enrollments" element={<EnrollmentsPage />} />
         <Route path="/certifications" element={<CertificationsPage />} />
@@ -280,6 +315,7 @@ export default function App() {
         <Route path="/amc-contracts" element={<AmcContractsPage />} />
         <Route path="/vendors" element={<VendorsPage />} />
         <Route path="/expenses" element={<ExpensesPage />} />
+        <Route path="/expenses/:id" element={<ExpenseReportDetailPage />} />
         <Route path="/advances" element={<AdvancesPage />} />
         <Route path="/helpdesk" element={<TicketsPage />} />
         <Route path="/helpdesk/:id" element={<TicketDetailPage />} />
@@ -290,6 +326,7 @@ export default function App() {
         <Route path="/floor-plan" element={<FloorPlanPage />} />
         <Route path="/visitors" element={<VisitorsPage />} />
         <Route path="/travel" element={<TravelPage />} />
+        <Route path="/travel/:id" element={<TravelDetailPage />} />
 
         {/* Workflow */}
         <Route path="/approvals" element={<ApprovalsPage />} />
@@ -300,6 +337,7 @@ export default function App() {
         {/* Compliance + Cases */}
         <Route path="/compliance" element={<AuditLogPage />} />
         <Route path="/cases" element={<CasesPage />} />
+        <Route path="/cases/:id" element={<CaseDetailPage />} />
         <Route path="/gdpr" element={<GdprPage />} />
         <Route path="/compliance-items" element={<ComplianceItemsPage />} />
         <Route path="/licenses" element={<LicensesPage />} />
@@ -316,6 +354,7 @@ export default function App() {
 
         {/* Reports + Notifications + Settings */}
         <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/reports/:id" element={<ReportDetailPage />} />
         <Route path="/dei" element={<DeiAnalyticsPage />} />
         <Route path="/dashboards" element={<DashboardsPage />} />
         <Route path="/saved-reports" element={<SavedReportsPage />} />
@@ -368,6 +407,7 @@ export default function App() {
 
         {/* Social depth */}
         <Route path="/groups" element={<GroupsPage />} />
+        <Route path="/groups/:id" element={<GroupDetailPage />} />
         <Route path="/events" element={<EventsPage />} />
 
         {/* Payroll depth */}

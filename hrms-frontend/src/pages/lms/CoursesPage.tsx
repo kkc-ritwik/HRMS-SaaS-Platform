@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { BookOpen, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,7 @@ import { lmsService, type Course } from '@/services/lmsService'
 
 export function CoursesPage() {
   const qc = useQueryClient()
+  const navigate = useNavigate()
   const [creating, setCreating] = useState(false)
   const { data, isLoading } = useQuery({ queryKey: ['courses'], queryFn: () => lmsService.listCourses() })
   const courses: Course[] = (data as { data?: Course[]; content?: Course[] } | undefined)?.data
@@ -33,7 +35,7 @@ export function CoursesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {courses.map(c => (
-            <Card key={c.id} className="hover:shadow-md transition cursor-pointer">
+            <Card key={c.id} className="hover:shadow-md transition cursor-pointer" onClick={() => navigate(`/courses/${c.id}`)}>
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-start justify-between">
                   <h3 className="font-semibold text-slate-800">{c.title}</h3>

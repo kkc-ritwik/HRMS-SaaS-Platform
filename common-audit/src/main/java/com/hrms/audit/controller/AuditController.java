@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,5 +43,25 @@ public class AuditController {
                                   @RequestParam("to") OffsetDateTime to,
                                   Pageable pageable) {
         return repo.findByTenantIdAndCreatedAtBetweenOrderByCreatedAtDesc(tenantId, from, to, pageable);
+    }
+
+    /**
+     * Free-text audit search by entity name (or actor). {@code tenantId} is taken from
+     * the request param when present, otherwise from the X-Tenant-Id header.
+     */
+    @GetMapping("/search")
+    public Page<AuditLog> search(@RequestParam(value = "tenantId", required = false) String tenantId,
+                                 @RequestHeader(value = "X-Tenant-Id", required = false) String tenantHeader,
+                                 @RequestParam(value = "entityName", required = false) String entityName,
+                                 @RequestParam(value = "actorId", required = false) String actorId,
+                                 Pageable pageable) {
+        String tid = tenantId != null ? tenantId : tenantHeader;
+        if (actorId != null && !actorId.isBlank()) {
+            return repo.findByTenantIdAndActorIdOrderByCreatedAtDesc(tid, actorId, pageable);
+        }
+        if (entityName != null && !entityName.isBlank()) {
+            return repo.findByTenantIdAndEntityNameContainingIgnoreCaseOrderByCreatedAtDesc(tid, entityName, pageable);
+        }
+        return repo.findByTenantIdOrderByCreatedAtDesc(tid, pageable);
     }
 }

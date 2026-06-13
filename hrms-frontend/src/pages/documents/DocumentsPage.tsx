@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRef } from 'react'
-import { FileText, Upload, Download } from 'lucide-react'
+import { FileText, Upload, Download, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -20,6 +20,10 @@ export function DocumentsPage() {
   const upload = useMutation({
     mutationFn: (file: File) => documentService.upload(file, { name: file.name }),
     onSuccess: () => { toast.success('Uploaded'); qc.invalidateQueries({ queryKey: ['documents'] }) },
+  })
+  const del = useMutation({
+    mutationFn: (id: string) => documentService.delete(id),
+    onSuccess: () => { toast.success('Deleted'); qc.invalidateQueries({ queryKey: ['documents'] }) },
   })
 
   return (
@@ -51,15 +55,20 @@ export function DocumentsPage() {
                   <p className="text-sm font-medium truncate">{d.name}</p>
                   <p className="text-xs text-slate-500">{d.category || '—'} · {formatDate(d.uploadedAt, 'PP')}</p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={async () => {
-                  const blob = await documentService.download(d.id)
-                  const url = URL.createObjectURL(blob)
-                  const a = window.document.createElement('a')
-                  a.href = url; a.download = d.name; a.click()
-                  URL.revokeObjectURL(url)
-                }}>
-                  <Download className="h-4 w-4" />
-                </Button>
+                <div className="flex flex-col gap-1">
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={async () => {
+                    const blob = await documentService.download(d.id)
+                    const url = URL.createObjectURL(blob)
+                    const a = window.document.createElement('a')
+                    a.href = url; a.download = d.name; a.click()
+                    URL.revokeObjectURL(url)
+                  }}>
+                    <Download className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-red-500" onClick={() => del.mutate(d.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}

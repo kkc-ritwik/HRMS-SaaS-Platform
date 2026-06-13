@@ -57,14 +57,13 @@ export const helpdeskService = {
     unwrap(await api.post<Ticket>(`/api/v1/tickets/${id}/status`, { status, notes })),
   addComment: async (id: string, body: string, isInternalNote = false) =>
     unwrap(await api.post<TicketComment>(`/api/v1/tickets/${id}/comments`, { body, isInternalNote })),
-  comments: async (id: string) => unwrap(await api.get<TicketComment[]>(`/api/v1/tickets/${id}/comments`)),
+  comments: async (id: string) => unwrap(await api.get<TicketComment[]>(`/api/v1/tickets/comments/ticket/${id}`)),
   rate: async (id: string, rating: number, feedback?: string) =>
-    unwrap(await api.post(`/api/v1/tickets/${id}/rate`, { rating, feedback })),
+    unwrap(await api.post(`/api/v1/helpdesk/tickets/${id}/csat`, {}, { params: { score: rating, comment: feedback } })),
 
   // KB
-  listArticles: async (params: { category?: string; search?: string } = {}) =>
-    unwrap(await api.get<KbArticle[]>('/api/v1/kb', { params })),
-  getArticle: async (id: string) => unwrap(await api.get<KbArticle>(`/api/v1/kb/${id}`)),
+  listArticles: async () => unwrap(await api.get<KbArticle[]>('/api/v1/tickets/kb-articles/published')),
+  getArticle: async (id: string) => unwrap(await api.get<KbArticle>(`/api/v1/tickets/kb-articles/${id}`)),
   feedback: async (id: string, helpful: boolean) =>
-    unwrap(await api.post(`/api/v1/kb/${id}/feedback`, { helpful })),
+    unwrap(await api.post(`/api/v1/tickets/kb-articles/${id}/feedback`, { helpful })),
 }

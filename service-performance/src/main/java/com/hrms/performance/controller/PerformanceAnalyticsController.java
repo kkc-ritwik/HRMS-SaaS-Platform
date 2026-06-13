@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -52,6 +53,30 @@ public class PerformanceAnalyticsController {
         UUID managerId = UUID.fromString(principal().getEmployeeId());
         return ResponseEntity.ok(ApiResponse.ok(
                 analyticsService.getTeamSummary(tenantId(), cycleId, managerId)));
+    }
+
+    @GetMapping("/distribution")
+    @PreAuthorize("hasAuthority('PERFORMANCE:READ')")
+    @Operation(summary = "Org-wide overall-rating distribution (optionally scoped to a cycle)")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> distribution(
+            @RequestParam(value = "cycleId", required = false) UUID cycleId) {
+        return ResponseEntity.ok(ApiResponse.ok(analyticsService.getRatingDistribution(tenantId(), cycleId)));
+    }
+
+    @GetMapping("/rating-spread")
+    @PreAuthorize("hasAuthority('PERFORMANCE:READ')")
+    @Operation(summary = "Min/max/avg/median/std-dev of overall ratings")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> ratingSpread(
+            @RequestParam(value = "cycleId", required = false) UUID cycleId) {
+        return ResponseEntity.ok(ApiResponse.ok(analyticsService.getRatingSpread(tenantId(), cycleId)));
+    }
+
+    @GetMapping("/calibration")
+    @PreAuthorize("hasAuthority('PERFORMANCE:READ')")
+    @Operation(summary = "Calibration matrix — employee counts per performance-rating band")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> calibration(
+            @RequestParam(value = "cycleId", required = false) UUID cycleId) {
+        return ResponseEntity.ok(ApiResponse.ok(analyticsService.getCalibrationMatrix(tenantId(), cycleId)));
     }
 
     private String tenantId() { return TenantContext.get(); }

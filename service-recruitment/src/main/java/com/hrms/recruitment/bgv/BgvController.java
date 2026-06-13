@@ -29,10 +29,17 @@ public class BgvController {
     public interface Repo extends JpaRepository<VerificationCase, UUID> {
         Optional<VerificationCase> findByTenantIdAndCandidateId(String tenantId, UUID candidateId);
         Optional<VerificationCase> findByExternalVerificationId(String externalVerificationId);
+        List<VerificationCase> findByTenantIdOrderByInitiatedAtDesc(String tenantId);
     }
 
     private final Repo repo;
     private final BackgroundVerificationClient client;
+
+    /** List all BGV cases for the current tenant. */
+    @GetMapping
+    public List<VerificationCase> list() {
+        return repo.findByTenantIdOrderByInitiatedAtDesc(TenantContext.get());
+    }
 
     /** Shared secret for HMAC-SHA256 verification of vendor webhook bodies. */
     @Value("${hrms.recruitment.bgv.webhook-secret:}")

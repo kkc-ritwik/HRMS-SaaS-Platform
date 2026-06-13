@@ -22,6 +22,7 @@ public class CasesController {
     @GetMapping public Page<HrCase> list(@RequestParam(required = false) HrCase.Status status, Pageable p) {
         return svc.list(status, p);
     }
+    @GetMapping("/{id}") public HrCase get(@PathVariable UUID id) { return svc.get(id); }
     @PostMapping("/{id}/status") public HrCase setStatus(@PathVariable UUID id,
                                                          @RequestParam HrCase.Status status,
                                                          @RequestParam(required = false) String resolution) {

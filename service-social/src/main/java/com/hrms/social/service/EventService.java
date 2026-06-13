@@ -41,6 +41,15 @@ public class EventService {
         return toResponse(findOrThrow(tenantId, id));
     }
 
+    /** RSVP to an event — increments (attending) or decrements (not attending) the count. */
+    public EventDto.Response rsvp(String tenantId, UUID id, boolean attending, String currentUser) {
+        Event event = findOrThrow(tenantId, id);
+        int next = event.getRsvpCount() + (attending ? 1 : -1);
+        event.setRsvpCount(Math.max(0, next));
+        event.setUpdatedBy(currentUser);
+        return toResponse(eventRepository.save(event));
+    }
+
     public Page<EventDto.Response> list(String tenantId, Pageable pageable) {
         return eventRepository.findByTenantIdAndDeletedFalseOrderByCreatedAtDesc(tenantId, pageable)
                 .map(this::toResponse);

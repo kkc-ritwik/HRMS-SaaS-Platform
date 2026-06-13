@@ -1,25 +1,36 @@
-import { useQuery } from '@tanstack/react-query'
 import { Target } from 'lucide-react'
-import { DataList } from '@/components/ui/data-list'
+import { Badge } from '@/components/ui/badge'
+import { ResourcePage } from '@/components/ui/resource-page'
 import { competencyService } from '@/services/extendedServices'
+import { Catalog } from '@/services/catalog'
 
-interface Competency { id: string; name: string; description?: string; category?: string; level?: string }
+interface Competency extends Record<string, unknown> { id: string; name: string; description?: string; category?: string; level?: string }
 
 export function CompetenciesPage() {
-  const { data, isLoading } = useQuery({ queryKey: ['competencies'], queryFn: () => competencyService.list() })
-  const items: Competency[] = (data as { content?: Competency[] } | undefined)?.content
-    || (Array.isArray(data) ? data as Competency[] : [])
   return (
-    <DataList<Competency>
-      title="Competencies" description="Skills + behavioural competencies used in reviews"
-      data={items} isLoading={isLoading}
-      emptyIcon={<Target className="h-10 w-10" />} emptyTitle="No competencies defined"
+    <ResourcePage<Competency>
+      title="Competencies"
+      description="Skills + behavioural competencies used in reviews"
+      icon={<Target className="h-10 w-10" />}
+      queryKey={['competencies']}
+      fetcher={() => competencyService.list()}
+      filters={{ category: ['TECHNICAL', 'BEHAVIOURAL', 'LEADERSHIP', 'FUNCTIONAL'] }}
       columns={[
         { key: 'name', label: 'Name' },
-        { key: 'category', label: 'Category' },
+        { key: 'category', label: 'Category', render: c => c.category ? <Badge>{String(c.category)}</Badge> : '—' },
         { key: 'level', label: 'Level' },
         { key: 'description', label: 'Description' },
       ]}
+      formFields={[
+        { name: 'name', label: 'Name', type: 'text', required: true, span: 2 },
+        { name: 'category', label: 'Category', type: 'select', required: true, options: [
+          { value: 'TECHNICAL', label: 'Technical' }, { value: 'BEHAVIOURAL', label: 'Behavioural' },
+          { value: 'LEADERSHIP', label: 'Leadership' }, { value: 'FUNCTIONAL', label: 'Functional' },
+        ] },
+        { name: 'description', label: 'Description', type: 'textarea', span: 2 },
+      ]}
+      onCreate={v => competencyService.create(v)}
+      onUpdate={(id, v) => Catalog.competencies.update(id, v)}
     />
   )
 }

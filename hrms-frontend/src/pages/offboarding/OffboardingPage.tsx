@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { UserMinus } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { DataList } from '@/components/ui/data-list'
 import { offboardingService, type Separation } from '@/services/offboardingService'
 
 export function OffboardingPage() {
+  const navigate = useNavigate()
   const { data, isLoading } = useQuery({ queryKey: ['offboarding'], queryFn: offboardingService.list })
   return (
     <DataList<Separation>
@@ -12,6 +14,7 @@ export function OffboardingPage() {
       description="Resignations, terminations, retirements"
       data={data || []}
       isLoading={isLoading}
+      onRowClick={s => navigate(`/separations/${s.id}`)}
       emptyIcon={<UserMinus className="h-10 w-10" />}
       emptyTitle="No active separations"
       columns={[

@@ -54,13 +54,18 @@ export const reportsService = {
   shareReport: async (id: string, userIds: string[]) =>
     unwrap(await api.post(`/api/v1/reports/saved/${id}/share`, { userIds })),
 
-  // Dashboards
-  listDashboards: async () => unwrap(await api.get<Dashboard[]>('/api/v1/dashboards')),
-  getDashboard: async (id: string) => unwrap(await api.get<Dashboard>(`/api/v1/dashboards/${id}`)),
+  // Dashboards — Backend: DashboardController @ /api/v1/reports/dashboards
+  listDashboards: async () => unwrap(await api.get<Dashboard[]>('/api/v1/reports/dashboards/me')),
+  sharedDashboards: async () => unwrap(await api.get<Dashboard[]>('/api/v1/reports/dashboards/shared')),
+  getDashboard: async (id: string) => unwrap(await api.get<Dashboard>(`/api/v1/reports/dashboards/${id}`)),
   createDashboard: async (payload: Partial<Dashboard>) =>
-    unwrap(await api.post<Dashboard>('/api/v1/dashboards', payload)),
+    unwrap(await api.post<Dashboard>('/api/v1/reports/dashboards', payload)),
+  updateDashboard: async (id: string, payload: Partial<Dashboard>) =>
+    unwrap(await api.put<Dashboard>(`/api/v1/reports/dashboards/${id}`, payload)),
+  deleteDashboard: async (id: string) => { await api.delete(`/api/v1/reports/dashboards/${id}`) },
+  setDefaultDashboard: async (id: string) => unwrap(await api.post(`/api/v1/reports/dashboards/${id}/set-default`)),
 
   // Schedules
   schedule: async (reportId: string, cron: string, recipients: string[]) =>
-    unwrap(await api.post(`/api/v1/reports/${reportId}/schedule`, { cron, recipients })),
+    unwrap(await api.post(`/api/v1/reports/${reportId}/schedule`, { cronExpression: cron, recipients, format: 'CSV' })),
 }

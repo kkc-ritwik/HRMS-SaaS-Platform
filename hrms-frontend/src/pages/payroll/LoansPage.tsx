@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { DataList } from '@/components/ui/data-list'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { loanService } from '@/services/extendedServices'
+import { useAuthStore } from '@/store/authStore'
 
 interface Loan {
   id: string; employeeId: string; loanType: string; principalAmount: number;
@@ -14,13 +15,15 @@ interface Loan {
 
 export function LoansPage() {
   const qc = useQueryClient()
+  const user = useAuthStore(s => s.user)
+  const empId = user?.employeeId || user?.id || ''
   const [creating, setCreating] = useState(false)
-  const { data, isLoading } = useQuery({ queryKey: ['loans'], queryFn: () => loanService.list() })
+  const { data, isLoading } = useQuery({ queryKey: ['loans'], queryFn: () => loanService.myLoans() })
   const items: Loan[] = (data as { content?: Loan[] } | undefined)?.content
     || (Array.isArray(data) ? data as Loan[] : [])
 
   const create = useMutation({
-    mutationFn: (v: Record<string, unknown>) => loanService.apply(v),
+    mutationFn: (v: Record<string, unknown>) => loanService.apply({ ...v, employeeId: empId }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['loans'] }),
   })
 

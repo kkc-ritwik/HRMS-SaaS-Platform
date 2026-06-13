@@ -39,8 +39,10 @@ const navGroups: NavGroup[] = [
     label: 'My Space',
     items: [
       { label: 'My Profile', href: '/profile', icon: UserCircle },
+      { label: 'My Team', href: '/my-team', icon: Users },
       { label: 'My Leave', href: '/my-leave', icon: Calendar },
       { label: 'Attendance', href: '/attendance', icon: Clock },
+      { label: 'Regularizations', href: '/regularizations', icon: ClipboardEdit },
       { label: 'Timesheet', href: '/timesheet', icon: Clock },
       { label: 'My Payslips', href: '/payslips', icon: CreditCard },
       { label: 'My Documents', href: '/documents', icon: FileText },
@@ -224,6 +226,7 @@ const navGroups: NavGroup[] = [
       { label: 'Salary Components', href: '/salary-components', icon: DollarSign },
       { label: 'Employee Salaries', href: '/employee-salaries', icon: DollarSign },
       { label: 'Tax Config', href: '/tax-config', icon: Receipt },
+      { label: 'Proof Verification', href: '/tax/proof-verification', icon: BadgeCheck },
       { label: 'Document Templates', href: '/document-templates', icon: FileSignature },
       { label: 'Document Types', href: '/document-types', icon: FileText },
       { label: 'File Vault', href: '/file-vault', icon: FileText },

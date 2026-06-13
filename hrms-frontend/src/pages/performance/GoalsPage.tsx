@@ -1,57 +1,45 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Target } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Target, TrendingUp } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { DataList } from '@/components/ui/data-list'
+import { ResourcePage } from '@/components/ui/resource-page'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { performanceService } from '@/services/performanceService'
+import { toast } from 'sonner'
 
-interface Goal {
-  id: string
-  title: string
-  employeeName?: string
-  category?: string
-  status: string
-  progress: number
-  dueDate?: string
-  priority?: string
+interface Goal extends Record<string, unknown> {
+  id: string; title: string; employeeName?: string; category?: string; status: string; progress: number; dueDate?: string; priority?: string
 }
 
 export function GoalsPage() {
   const qc = useQueryClient()
-  const [creating, setCreating] = useState(false)
-  const { data, isLoading } = useQuery({ queryKey: ['goals', 'me'], queryFn: () => performanceService.myGoals() })
-  const goals = (data as Goal[]) || []
+  const [progressFor, setProgressFor] = useState<Goal | null>(null)
 
-  const create = useMutation({
-    mutationFn: (v: Record<string, unknown>) => performanceService.createGoal(v),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['goals'] }),
+  const updateProgress = useMutation({
+    mutationFn: (v: Record<string, unknown>) => performanceService.updateGoalProgress(String(progressFor?.id), Number(v.progress), String(v.note ?? '')),
+    onSuccess: () => { toast.success('Progress updated'); qc.invalidateQueries({ queryKey: ['goals'] }); setProgressFor(null) },
   })
 
   return (
     <>
-      <DataList<Goal>
-        title="Goals & OKRs" description="Track individual, team, and org goals"
-        action={<Button onClick={() => setCreating(true)}><Plus className="h-4 w-4 mr-1" /> New Goal</Button>}
-        data={goals} isLoading={isLoading}
-        emptyIcon={<Target className="h-10 w-10" />} emptyTitle="No goals defined"
+      <ResourcePage<Goal>
+        title="Goals & OKRs"
+        description="Track individual, team, and org goals"
+        icon={<Target className="h-10 w-10" />}
+        queryKey={['goals', 'me']}
+        fetcher={() => performanceService.myGoals()}
         filters={{ status: ['DRAFT', 'ACTIVE', 'COMPLETED', 'CANCELLED'], category: ['INDIVIDUAL', 'TEAM', 'COMPANY'] }}
         columns={[
           { key: 'title', label: 'Title' },
           { key: 'employeeName', label: 'Owner' },
-          { key: 'category', label: 'Type', render: g => g.category ? <Badge>{g.category}</Badge> : '—' },
-          { key: 'progress', label: 'Progress', render: g => <div className="flex items-center gap-2 min-w-[100px]"><Progress value={g.progress ?? 0} /><span className="text-xs">{g.progress ?? 0}%</span></div> },
-          { key: 'priority', label: 'Priority', render: g => g.priority ? <Badge>{g.priority}</Badge> : '—' },
-          { key: 'status', label: 'Status', render: g => <Badge>{g.status}</Badge> },
+          { key: 'category', label: 'Type', render: g => g.category ? <Badge>{String(g.category)}</Badge> : '—' },
+          { key: 'progress', label: 'Progress', render: g => <div className="flex items-center gap-2 min-w-[100px]"><Progress value={Number(g.progress ?? 0)} /><span className="text-xs">{Number(g.progress ?? 0)}%</span></div> },
+          { key: 'priority', label: 'Priority', render: g => g.priority ? <Badge>{String(g.priority)}</Badge> : '—' },
+          { key: 'status', label: 'Status', render: g => <Badge>{String(g.status)}</Badge> },
           { key: 'dueDate', label: 'Due' },
         ]}
-      />
-      <FormDialog
-        open={creating} onOpenChange={setCreating} title="Create goal"
-        onSubmit={v => create.mutateAsync(v)}
-        fields={[
+        formFields={[
           { name: 'title', label: 'Title', type: 'text', required: true, span: 2 },
           { name: 'description', label: 'Description', type: 'textarea', span: 2 },
           { name: 'category', label: 'Type', type: 'select', required: true, options: [
@@ -63,6 +51,22 @@ export function GoalsPage() {
           { name: 'startDate', label: 'Start date', type: 'date' },
           { name: 'endDate', label: 'End date', type: 'date' },
         ]}
+        createTitle="Create goal"
+        onCreate={v => performanceService.createGoal(v)}
+        onUpdate={(id, v) => performanceService.updateGoal(id, v)}
+        onDelete={id => performanceService.deleteGoal(id)}
+        rowActions={g => [
+          { label: 'Update progress', icon: <TrendingUp className="h-3.5 w-3.5" />, run: () => { setProgressFor(g); return Promise.resolve() } },
+        ]}
+      />
+      <FormDialog
+        open={!!progressFor} onOpenChange={o => !o && setProgressFor(null)}
+        title={`Update progress — ${progressFor?.title ?? ''}`} submitLabel="Update"
+        fields={[
+          { name: 'progress', label: 'Progress (%)', type: 'number', required: true },
+          { name: 'note', label: 'Update note', type: 'textarea', span: 2 },
+        ]}
+        onSubmit={v => updateProgress.mutateAsync(v)}
       />
     </>
   )

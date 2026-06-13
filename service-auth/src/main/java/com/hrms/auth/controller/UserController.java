@@ -110,6 +110,18 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok("User status updated to " + newStatus));
     }
 
+    @PostMapping("/{id}/deactivate")
+    @PreAuthorize("hasAnyRole('HR_ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Deactivate a user account")
+    public ResponseEntity<ApiResponse<String>> deactivate(@PathVariable UUID id) {
+        User user = userRepository.findByIdAndTenantIdAndDeletedFalse(id, TenantContext.get())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        user.setStatus(User.UserStatus.INACTIVE);
+        userRepository.save(user);
+        log.info("User {} deactivated by admin", id);
+        return ResponseEntity.ok(ApiResponse.ok("User deactivated"));
+    }
+
     // ── Inner DTO ─────────────────────────────────────────────────────────────────
 
     @Data

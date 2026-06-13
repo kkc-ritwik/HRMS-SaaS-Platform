@@ -97,6 +97,14 @@ public class KbArticleService {
     }
 
     @Transactional
+    public KbArticleDto.Response recordFeedback(String tenantId, UUID id, boolean helpful) {
+        KbArticle article = findOrThrow(tenantId, id);
+        if (helpful) article.setHelpfulVotes(article.getHelpfulVotes() + 1);
+        else article.setHelpfulVotes(Math.max(0, article.getHelpfulVotes() - 1));
+        return toResponse(kbArticleRepository.save(article));
+    }
+
+    @Transactional
     public void delete(String tenantId, UUID id, String currentUser) {
         KbArticle article = findOrThrow(tenantId, id);
         article.setDeleted(true);

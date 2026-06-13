@@ -91,6 +91,15 @@ public class KbArticleController {
         return ApiResponse.ok(kbArticleService.incrementViews(tenantId, id));
     }
 
+    @PostMapping("/{id}/feedback")
+    @PreAuthorize("hasAuthority('HELPDESK:READ')")
+    public ApiResponse<KbArticleDto.Response> feedback(@PathVariable UUID id,
+                                                       @RequestBody(required = false) java.util.Map<String, Object> body) {
+        String tenantId = TenantContext.get();
+        boolean helpful = body == null || !body.containsKey("helpful") || Boolean.TRUE.equals(body.get("helpful"));
+        return ApiResponse.ok(kbArticleService.recordFeedback(tenantId, id, helpful));
+    }
+
     private String getCurrentUserId() {
         return ((UserPrincipal) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal()).getId();

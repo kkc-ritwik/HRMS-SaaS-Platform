@@ -21,6 +21,9 @@ public interface HolidayRepository extends JpaRepository<Holiday, UUID> {
     List<Holiday> findByTenantIdAndYearAndActiveAndDeletedFalse(
             String tenantId, int year, boolean active);
 
+    List<Holiday> findByTenantIdAndYearAndTypeAndActiveAndDeletedFalse(
+            String tenantId, int year, Holiday.HolidayType type, boolean active);
+
     List<Holiday> findByTenantIdAndDateBetweenAndActiveAndDeletedFalse(
             String tenantId, LocalDate from, LocalDate to, boolean active);
 

@@ -16,6 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SkeletonCard } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/ui/empty-state'
 import { payrollService } from '@/services/payrollService'
+import { Catalog } from '@/services/catalog'
+import { Lock, BadgeCheck } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { getErrorMessage } from '@/lib/api'
 
@@ -70,6 +72,17 @@ export function PayrollRunPage() {
       toast.success('Payroll processed successfully!')
       queryClient.invalidateQueries({ queryKey: ['pay-runs'] })
     },
+    onError: (e: unknown) => toast.error(getErrorMessage(e)),
+  })
+
+  const lockMutation = useMutation({
+    mutationFn: (id: string) => Catalog.payrollRuns.lock(id),
+    onSuccess: () => { toast.success('Pay run locked'); queryClient.invalidateQueries({ queryKey: ['pay-runs'] }) },
+    onError: (e: unknown) => toast.error(getErrorMessage(e)),
+  })
+  const markPaidMutation = useMutation({
+    mutationFn: (id: string) => Catalog.payrollRuns.markPaid(id),
+    onSuccess: () => { toast.success('Marked as paid'); queryClient.invalidateQueries({ queryKey: ['pay-runs'] }) },
     onError: (e: unknown) => toast.error(getErrorMessage(e)),
   })
 
@@ -143,10 +156,16 @@ export function PayrollRunPage() {
                           Process
                         </Button>
                       )}
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4" />
-                        View
-                      </Button>
+                      {(run.status === 'COMPLETED' || run.status === 'PROCESSED') && !run.locked && (
+                        <Button variant="outline" size="sm" onClick={() => lockMutation.mutate(run.id)} loading={lockMutation.isPending}>
+                          <Lock className="h-4 w-4" /> Lock
+                        </Button>
+                      )}
+                      {(run.status === 'COMPLETED' || run.status === 'PROCESSED' || run.locked) && run.status !== 'PAID' && (
+                        <Button variant="outline" size="sm" onClick={() => markPaidMutation.mutate(run.id)} loading={markPaidMutation.isPending}>
+                          <BadgeCheck className="h-4 w-4" /> Mark Paid
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>

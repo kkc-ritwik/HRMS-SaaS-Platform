@@ -12,8 +12,11 @@ interface Article { id: string; title: string; category: string; views: number; 
 
 export function KbPage() {
   const [q, setQ] = useState('')
-  const { data, isLoading } = useQuery({ queryKey: ['kb', q], queryFn: () => kbService.list(undefined, q) })
-  const items: Article[] = Array.isArray(data) ? data as Article[] : []
+  const { data, isLoading } = useQuery({ queryKey: ['kb'], queryFn: () => kbService.published() })
+  const all: Article[] = Array.isArray(data) ? data as Article[] : ((data as { content?: Article[] } | undefined)?.content ?? [])
+  const items = q.trim()
+    ? all.filter(a => `${a.title} ${a.category}`.toLowerCase().includes(q.toLowerCase()))
+    : all
   return (
     <div className="space-y-6">
       <PageHeader title="Knowledge Base" description="Self-service articles + HR FAQs" />

@@ -1,25 +1,38 @@
-import { useQuery } from '@tanstack/react-query'
-import { ClipboardEdit } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { ClipboardEdit, Send } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { DataList } from '@/components/ui/data-list'
+import { Button } from '@/components/ui/button'
+import { ResourcePage } from '@/components/ui/resource-page'
 import { formService } from '@/services/extendedServices'
+import { Catalog } from '@/services/catalog'
 
-interface Form { id: string; name: string; description?: string; category?: string; active: boolean; submissionsCount?: number }
+interface Form extends Record<string, unknown> { id: string; name: string; description?: string; category?: string; active?: boolean; status?: string; submissionsCount?: number }
 
 export function FormsPage() {
-  const { data, isLoading } = useQuery({ queryKey: ['forms'], queryFn: () => formService.list() })
-  const items: Form[] = (data as { content?: Form[] } | undefined)?.content
-    || (Array.isArray(data) ? data as Form[] : [])
+  const navigate = useNavigate()
   return (
-    <DataList<Form>
-      title="Forms Library" description="Custom HR forms"
-      data={items} isLoading={isLoading}
-      emptyIcon={<ClipboardEdit className="h-10 w-10" />} emptyTitle="No forms"
+    <ResourcePage<Form>
+      title="Forms Library"
+      description="Custom HR forms — build, publish, collect submissions"
+      icon={<ClipboardEdit className="h-10 w-10" />}
+      queryKey={['forms']}
+      fetcher={() => formService.list()}
+      headerExtra={<Button variant="outline" size="sm" onClick={() => navigate('/forms/builder')}><ClipboardEdit className="h-4 w-4 mr-1" /> Form Builder</Button>}
       columns={[
         { key: 'name', label: 'Name' },
         { key: 'category', label: 'Category' },
-        { key: 'submissionsCount', label: 'Submissions' },
-        { key: 'active', label: 'Active', render: f => <Badge>{f.active ? 'Active' : 'Draft'}</Badge> },
+        { key: 'submissionsCount', label: 'Submissions', align: 'right' },
+        { key: 'active', label: 'State', render: f => <Badge variant={f.active || f.status === 'PUBLISHED' ? 'success' : 'secondary'}>{f.active || f.status === 'PUBLISHED' ? 'Published' : 'Draft'}</Badge> },
+      ]}
+      formFields={[
+        { name: 'name', label: 'Form name', type: 'text', required: true, span: 2 },
+        { name: 'code', label: 'Code', type: 'text', required: true },
+        { name: 'category', label: 'Category', type: 'text' },
+        { name: 'description', label: 'Description', type: 'textarea', span: 2 },
+      ]}
+      onCreate={v => Catalog.forms.create(v)}
+      rowActions={f => [
+        { label: 'Publish', icon: <Send className="h-3.5 w-3.5" />, show: !(f.active || f.status === 'PUBLISHED'), run: () => Catalog.forms.publish(f.id) },
       ]}
     />
   )

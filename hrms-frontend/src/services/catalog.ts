@@ -34,11 +34,13 @@ export const coursesCatalog = {
 
   modulesForCourse: (courseId: string) => G(`/api/v1/courses/modules/course/${courseId}`),
   module: (id: string) => G(`/api/v1/courses/modules/${id}`),
+  createModule: (b: Body) => P('/api/v1/courses/modules', b),
   updateModule: (id: string, b: Body) => PU(`/api/v1/courses/modules/${id}`, b),
   deleteModule: (id: string) => D(`/api/v1/courses/modules/${id}`),
 
   assessmentsForCourse: (courseId: string) => G(`/api/v1/courses/assessments/course/${courseId}`),
   assessment: (id: string) => G(`/api/v1/courses/assessments/${id}`),
+  createAssessment: (b: Body) => P('/api/v1/courses/assessments', b),
   updateAssessment: (id: string, b: Body) => PU(`/api/v1/courses/assessments/${id}`, b),
   deleteAssessment: (id: string) => D(`/api/v1/courses/assessments/${id}`),
 
@@ -192,8 +194,10 @@ export const ticketsCatalog = {
   close: (id: string, b?: Body) => P(`/api/v1/tickets/${id}/close`, b),
   resolve: (id: string, b?: Body) => P(`/api/v1/tickets/${id}/resolve`, b),
 
-  categories: { all: () => G('/api/v1/tickets/categories/all'),
+  categories: { list: () => G('/api/v1/tickets/categories'),
+                all: () => G('/api/v1/tickets/categories/all'),
                 get: (id: string) => G(`/api/v1/tickets/categories/${id}`),
+                create: (b: Body) => P('/api/v1/tickets/categories', b),
                 update: (id: string, b: Body) => PU(`/api/v1/tickets/categories/${id}`, b),
                 delete: (id: string) => D(`/api/v1/tickets/categories/${id}`) },
 
@@ -319,8 +323,10 @@ export const reportsCatalog = {
            complete: (id: string, b?: Body) => P(`/api/v1/reports/saved/${id}/complete`, b),
            fail: (id: string, b?: Body) => P(`/api/v1/reports/saved/${id}/fail`, b) },
 
-  widgets: { forDashboard: (dashboardId: string) => G(`/api/v1/reports/widgets/dashboard/${dashboardId}`),
+  widgets: { list: () => G('/api/v1/reports/widgets'),
+             forDashboard: (dashboardId: string) => G(`/api/v1/reports/widgets/dashboard/${dashboardId}`),
              get: (id: string) => G(`/api/v1/reports/widgets/${id}`),
+             create: (b: Body) => P('/api/v1/reports/widgets', b),
              update: (id: string, b: Body) => PU(`/api/v1/reports/widgets/${id}`, b),
              delete: (id: string) => D(`/api/v1/reports/widgets/${id}`) },
 }
@@ -336,8 +342,10 @@ export const workflowsCatalog = {
                  activate: (id: string) => P(`/api/v1/workflows/definitions/${id}/activate`),
                  deactivate: (id: string) => P(`/api/v1/workflows/definitions/${id}/deactivate`) },
 
-  steps: { forWorkflow: (workflowId: string) => G(`/api/v1/workflows/steps/workflow/${workflowId}`),
+  steps: { list: () => G('/api/v1/workflows/steps'),
+           forWorkflow: (workflowId: string) => G(`/api/v1/workflows/steps/workflow/${workflowId}`),
            get: (id: string) => G(`/api/v1/workflows/steps/${id}`),
+           create: (b: Body) => P('/api/v1/workflows/steps', b),
            update: (id: string, b: Body) => PU(`/api/v1/workflows/steps/${id}`, b),
            delete: (id: string) => D(`/api/v1/workflows/steps/${id}`) },
 
@@ -413,7 +421,9 @@ export const leavesCatalog = {
            update: (id: string, b: Body) => PU(`/api/v1/leaves/types/${id}`, b),
            delete: (id: string) => D(`/api/v1/leaves/types/${id}`) },
 
-  policies: { get: (id: string) => G(`/api/v1/leaves/policies/${id}`),
+  policies: { list: () => G('/api/v1/leaves/policies'),
+              get: (id: string) => G(`/api/v1/leaves/policies/${id}`),
+              create: (b: Body) => P('/api/v1/leaves/policies', b),
               update: (id: string, b: Body) => PU(`/api/v1/leaves/policies/${id}`, b),
               delete: (id: string) => D(`/api/v1/leaves/policies/${id}`) },
 }
@@ -441,7 +451,8 @@ export const notificationsCatalog = {
                     update: (id: string, b: Body) => PU(`/api/v1/notifications/email-templates/${id}`, b),
                     delete: (id: string) => D(`/api/v1/notifications/email-templates/${id}`) },
 
-  preferences: { forEmployee: (employeeId: string) => G(`/api/v1/notifications/preferences/employee/${employeeId}`),
+  preferences: { list: () => G('/api/v1/notifications/preferences'),
+                 forEmployee: (employeeId: string) => G(`/api/v1/notifications/preferences/employee/${employeeId}`),
                  get: (id: string) => G(`/api/v1/notifications/preferences/${id}`),
                  create: (b: Body) => P('/api/v1/notifications/preferences', b),
                  update: (id: string, b: Body) => PU(`/api/v1/notifications/preferences/${id}`, b),
@@ -496,8 +507,10 @@ export const groupsCatalog = {
   events: { forGroup: (groupId: string) => G(`/api/v1/groups/events/group/${groupId}`),
             forOrganizer: (employeeId: string) => G(`/api/v1/groups/events/organizer/${employeeId}`),
             get: (id: string) => G(`/api/v1/groups/events/${id}`),
+            create: (b: Body) => P('/api/v1/groups/events', b),
             update: (id: string, b: Body) => PU(`/api/v1/groups/events/${id}`, b),
-            delete: (id: string) => D(`/api/v1/groups/events/${id}`) },
+            delete: (id: string) => D(`/api/v1/groups/events/${id}`),
+            rsvp: (id: string, attending: boolean) => P(`/api/v1/groups/events/${id}/rsvp`, { attending }) },
 }
 
 // ───────────────────────────────────────────────────────────────────────────

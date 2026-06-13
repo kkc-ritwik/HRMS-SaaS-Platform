@@ -107,6 +107,17 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
+    @PostMapping("/read-all")
+    @PreAuthorize("hasAuthority('NOTIFICATION:WRITE')")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> markAllRead() {
+        String tenantId = TenantContext.get();
+        UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        UUID employeeId = UUID.fromString(principal.getEmployeeId());
+        int updated = notificationService.markAllRead(tenantId, employeeId, principal.getId());
+        return ResponseEntity.ok(ApiResponse.ok(java.util.Map.of("markedRead", updated)));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('NOTIFICATION:WRITE')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {

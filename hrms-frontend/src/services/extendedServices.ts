@@ -10,15 +10,17 @@ export const interviewService = {
   get: async (id: string) => unwrap(await api.get(`/api/v1/interviews/${id}`)),
   schedule: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/interviews', payload)),
   submitFeedback: async (id: string, payload: Record<string, unknown>) => unwrap(await api.post(`/api/v1/interviews/${id}/feedback`, payload)),
-  panellists: async (id: string) => unwrap(await api.get(`/api/v1/interviews/${id}/panellists`)),
+  panellists: async (id: string) => unwrap(await api.get(`/api/v1/interviews/${id}/panelists`)),
 }
 
+// Backend: OfferController @ /api/v1/offers (offers are created from an application)
 export const offerService = {
   list: async () => unwrap(await api.get('/api/v1/offers')),
   get: async (id: string) => unwrap(await api.get(`/api/v1/offers/${id}`)),
-  create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/offers', payload)),
-  issue: async (id: string) => unwrap(await api.post(`/api/v1/offers/${id}/issue`)),
-  withdraw: async (id: string, reason: string) => unwrap(await api.post(`/api/v1/offers/${id}/withdraw`, { reason })),
+  forApplication: async (applicationId: string) => unwrap(await api.get(`/api/v1/offers/application/${applicationId}`)),
+  send: async (id: string) => unwrap(await api.post(`/api/v1/offers/${id}/send`)),
+  respond: async (id: string, accepted: boolean) => unwrap(await api.post(`/api/v1/offers/${id}/respond`, { accepted })),
+  revoke: async (id: string, reason: string) => unwrap(await api.post(`/api/v1/offers/${id}/revoke`, { reason })),
 }
 
 export const hiringLoopService = {
@@ -29,15 +31,15 @@ export const hiringLoopService = {
 }
 
 export const referenceCheckService = {
-  list: async (candidateId?: string) => unwrap(await api.get('/api/v1/reference-checks', { params: { candidateId } })),
-  invite: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/reference-checks/invite', payload)),
+  list: async (candidateId: string) => unwrap(await api.get(`/api/v1/recruitment/references/candidate/${candidateId}`)),
+  invite: async (candidateId: string, payload: Record<string, unknown>) => unwrap(await api.post(`/api/v1/recruitment/references/${candidateId}/invite`, payload)),
 }
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────
 export const probationService = {
   list: async () => unwrap(await api.get('/api/v1/onboarding/probation-reviews')),
   decide: async (id: string, decision: 'CONFIRM' | 'EXTEND' | 'TERMINATE', notes?: string) =>
-    unwrap(await api.post(`/api/v1/onboarding/probation-reviews/${id}/decide`, { decision, notes })),
+    unwrap(await api.put(`/api/v1/onboarding/probation-reviews/${id}`, { decision, status: decision, notes })),
 }
 
 export const exitInterviewService = {
@@ -45,22 +47,29 @@ export const exitInterviewService = {
   schedule: async (separationId: string, scheduledAt: string) =>
     unwrap(await api.post('/api/v1/offboarding/exit-interviews', { separationId, scheduledAt })),
   submit: async (id: string, payload: Record<string, unknown>) =>
-    unwrap(await api.post(`/api/v1/offboarding/exit-interviews/${id}/submit`, payload)),
+    unwrap(await api.post(`/api/v1/offboarding/exit-interviews/${id}/complete`, payload)),
 }
 
 // ── Payroll depth ────────────────────────────────────────────────────────
+// Backend: SalaryStructureController @ /api/v1/salary/structures
 export const salaryStructureService = {
-  list: async () => unwrap(await api.get('/api/v1/salary-structures')),
-  create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/salary-structures', payload)),
+  list: async () => unwrap(await api.get('/api/v1/salary/structures')),
+  active: async () => unwrap(await api.get('/api/v1/salary/structures/active')),
+  create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/salary/structures', payload)),
 }
 
+// Backend: LoanController @ /api/v1/payroll/loans (per-employee; no admin list-all)
 export const loanService = {
-  myLoans: async () => unwrap(await api.get('/api/v1/loans/me')),
-  list: async () => unwrap(await api.get('/api/v1/loans')),
-  apply: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/loans', payload)),
-  approve: async (id: string) => unwrap(await api.post(`/api/v1/loans/${id}/approve`)),
-  reject: async (id: string, reason: string) => unwrap(await api.post(`/api/v1/loans/${id}/reject`, { reason })),
-  repayments: async (id: string) => unwrap(await api.get(`/api/v1/loans/${id}/repayments`)),
+  myLoans: async () => unwrap(await api.get('/api/v1/payroll/loans/me')),
+  list: async () => unwrap(await api.get('/api/v1/payroll/loans/me')),
+  forEmployee: async (employeeId: string) => unwrap(await api.get(`/api/v1/payroll/loans/employee/${employeeId}`)),
+  get: async (id: string) => unwrap(await api.get(`/api/v1/payroll/loans/${id}`)),
+  schedule: async (id: string) => unwrap(await api.get(`/api/v1/payroll/loans/${id}/schedule`)),
+  apply: async (payload: Record<string, unknown>) => {
+    const employeeId = String(payload.employeeId ?? '')
+    return unwrap(await api.post(`/api/v1/payroll/loans/employee/${employeeId}`, payload))
+  },
+  close: async (id: string) => unwrap(await api.post(`/api/v1/payroll/loans/${id}/close`)),
 }
 
 // ── Performance depth ────────────────────────────────────────────────────
@@ -74,10 +83,17 @@ export const competencyService = {
   create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/competencies', payload)),
 }
 
+// Backend: PerformanceCycleController @ /api/v1/performance/cycles
 export const reviewCycleService = {
   list: async () => unwrap(await api.get('/api/v1/performance/cycles')),
   create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/performance/cycles', payload)),
-  launch: async (id: string) => unwrap(await api.post(`/api/v1/performance/cycles/${id}/launch`)),
+  activate: async (id: string) => unwrap(await api.post(`/api/v1/performance/cycles/${id}/activate`)),
+  launch: async (id: string) => unwrap(await api.post(`/api/v1/performance/cycles/${id}/activate`)),
+  startSelfReview: async (id: string) => unwrap(await api.post(`/api/v1/performance/cycles/${id}/start-self-review`)),
+  startManagerReview: async (id: string) => unwrap(await api.post(`/api/v1/performance/cycles/${id}/start-manager-review`)),
+  startCalibration: async (id: string) => unwrap(await api.post(`/api/v1/performance/cycles/${id}/start-calibration`)),
+  finalize: async (id: string) => unwrap(await api.post(`/api/v1/performance/cycles/${id}/finalize`)),
+  close: async (id: string) => unwrap(await api.post(`/api/v1/performance/cycles/${id}/close`)),
 }
 
 export const pipService = {
@@ -86,10 +102,15 @@ export const pipService = {
 }
 
 // ── Engagement depth ─────────────────────────────────────────────────────
+// Backend: AwardController @ /api/v1/awards (recognition nominations + approvals)
 export const awardService = {
-  list: async () => unwrap(await api.get('/api/v1/awards')),
+  list: async (status?: string) => unwrap(await api.get('/api/v1/awards', { params: { status } })),
+  forNominee: async (nomineeId: string) => unwrap(await api.get(`/api/v1/awards/nominee/${nomineeId}`)),
+  get: async (id: string) => unwrap(await api.get(`/api/v1/awards/${id}`)),
   nominate: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/awards', payload)),
-  approve: async (id: string) => unwrap(await api.post(`/api/v1/awards/${id}/approve`)),
+  approve: async (id: string, notes?: string) => unwrap(await api.post(`/api/v1/awards/${id}/approve`, { notes })),
+  reject: async (id: string, notes?: string) => unwrap(await api.post(`/api/v1/awards/${id}/reject`, { notes })),
+  remove: async (id: string) => { await api.delete(`/api/v1/awards/${id}`) },
 }
 
 export const rewardsCatalogService = {
@@ -125,9 +146,10 @@ export const heatmapService = {
 }
 
 export const pollService = {
-  list: async () => unwrap(await api.get('/api/v1/polls')),
-  create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/polls', payload)),
-  vote: async (pollId: string, optionId: string) => unwrap(await api.post(`/api/v1/polls/${pollId}/vote`, { optionId })),
+  list: async () => unwrap(await api.get('/api/v1/engagement/polls')),
+  create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/engagement/polls', payload)),
+  vote: async (pollId: string, optionId: string) => unwrap(await api.post(`/api/v1/engagement/polls/${pollId}/vote`, { optionId })),
+  tally: async (pollId: string) => unwrap(await api.get(`/api/v1/engagement/polls/${pollId}/tally`)),
 }
 
 // ── Asset depth ──────────────────────────────────────────────────────────
@@ -139,7 +161,7 @@ export const assetCategoryService = {
 export const assetMaintenanceService = {
   list: async () => unwrap(await api.get('/api/v1/assets/maintenance')),
   schedule: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/assets/maintenance', payload)),
-  complete: async (id: string, notes?: string) => unwrap(await api.post(`/api/v1/assets/maintenance/${id}/complete`, { notes })),
+  complete: async (id: string, notes?: string) => unwrap(await api.put(`/api/v1/assets/maintenance/${id}`, { status: 'COMPLETED', notes })),
 }
 
 export const assetRequestService = {
@@ -151,14 +173,19 @@ export const assetRequestService = {
 
 export const amcContractService = {
   list: async () => unwrap(await api.get('/api/v1/assets/amc-contracts')),
+  get: async (id: string) => unwrap(await api.get(`/api/v1/assets/amc-contracts/${id}`)),
   create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/assets/amc-contracts', payload)),
+  update: async (id: string, payload: Record<string, unknown>) => unwrap(await api.put(`/api/v1/assets/amc-contracts/${id}`, payload)),
+  remove: async (id: string) => { await api.delete(`/api/v1/assets/amc-contracts/${id}`) },
   expiring: async (days = 90) => unwrap(await api.get('/api/v1/assets/amc-contracts/expiring', { params: { days } })),
 }
 
 export const vendorService = {
-  list: async () => unwrap(await api.get('/api/v1/vendors')),
+  list: async (category?: string) => unwrap(await api.get('/api/v1/vendors', { params: { category } })),
   get: async (id: string) => unwrap(await api.get(`/api/v1/vendors/${id}`)),
   create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/vendors', payload)),
+  update: async (id: string, payload: Record<string, unknown>) => unwrap(await api.put(`/api/v1/vendors/${id}`, payload)),
+  remove: async (id: string) => { await api.delete(`/api/v1/vendors/${id}`) },
 }
 
 // ── Expense depth ────────────────────────────────────────────────────────
@@ -176,39 +203,54 @@ export const advanceService = {
 }
 
 // ── Document depth ───────────────────────────────────────────────────────
+// Backend: DocumentTemplateController @ /api/v1/documents/templates
 export const documentTemplateService = {
-  list: async () => unwrap(await api.get('/api/v1/document-templates')),
-  create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/document-templates', payload)),
+  list: async () => unwrap(await api.get('/api/v1/documents/templates/all')),
+  get: async (id: string) => unwrap(await api.get(`/api/v1/documents/templates/${id}`)),
+  create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/documents/templates', payload)),
+  update: async (id: string, payload: Record<string, unknown>) => unwrap(await api.put(`/api/v1/documents/templates/${id}`, payload)),
+  remove: async (id: string) => { await api.delete(`/api/v1/documents/templates/${id}`) },
 }
 
 export const lettersService = {
-  list: async (type?: string) => unwrap(await api.get('/api/v1/letters', { params: { type } })),
-  employment: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/documents/letters/employment', payload)),
+  list: async (employeeId?: string) => unwrap(await api.get(employeeId ? `/api/v1/documents/letters/employee/${employeeId}` : '/api/v1/documents/letters')),
+  employment: async (payload: Record<string, unknown>) => {
+    const type = String(payload.letterType ?? 'EMPLOYMENT')
+    return unwrap(await api.post(`/api/v1/letters/employment/${type}`, payload))
+  },
   salaryRevision: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/documents/letters/salary-revision', payload)),
   exit: async (type: 'RELIEVING' | 'EXPERIENCE' | 'SERVICE' | 'REFERENCE', payload: Record<string, unknown>) =>
     unwrap(await api.post(`/api/documents/letters/exit/${type}`, payload)),
 }
 
 export const companyPolicyService = {
-  list: async () => unwrap(await api.get('/api/v1/policies')),
-  acknowledge: async (id: string) => unwrap(await api.post(`/api/v1/policies/${id}/acknowledge`)),
-  acknowledgements: async (id: string) => unwrap(await api.get(`/api/v1/policies/${id}/acknowledgements`)),
+  list: async () => unwrap(await api.get('/api/v1/documents/policies/all')),
+  get: async (id: string) => unwrap(await api.get(`/api/v1/documents/policies/${id}`)),
+  create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/documents/policies', payload)),
+  update: async (id: string, payload: Record<string, unknown>) => unwrap(await api.put(`/api/v1/documents/policies/${id}`, payload)),
 }
 
 // ── Helpdesk depth ───────────────────────────────────────────────────────
+// Backend: KbArticleController @ /api/v1/tickets/kb-articles
 export const kbService = {
-  list: async (category?: string, search?: string) => unwrap(await api.get('/api/v1/kb', { params: { category, search } })),
-  get: async (id: string) => unwrap(await api.get(`/api/v1/kb/${id}`)),
-  create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/kb', payload)),
+  list: async () => unwrap(await api.get('/api/v1/tickets/kb-articles')),
+  published: async () => unwrap(await api.get('/api/v1/tickets/kb-articles/published')),
+  get: async (id: string) => unwrap(await api.get(`/api/v1/tickets/kb-articles/${id}`)),
+  create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/tickets/kb-articles', payload)),
+  update: async (id: string, payload: Record<string, unknown>) => unwrap(await api.put(`/api/v1/tickets/kb-articles/${id}`, payload)),
+  publish: async (id: string) => unwrap(await api.post(`/api/v1/tickets/kb-articles/${id}/publish`)),
+  view: async (id: string) => unwrap(await api.post(`/api/v1/tickets/kb-articles/${id}/view`)),
 }
 
 // ── Compliance / Cases / GDPR ────────────────────────────────────────────
+// Backend: GdprController @ /api/v1/me (operates on the current authenticated user)
 export const gdprService = {
-  exportEmployee: async (employeeId: string) => unwrap(await api.get(`/api/v1/gdpr/export/${employeeId}`)),
-  eraseEmployee: async (employeeId: string, reason: string) => unwrap(await api.post(`/api/v1/gdpr/erase/${employeeId}`, { reason })),
-  consents: async (employeeId: string) => unwrap(await api.get(`/api/v1/gdpr/consents/${employeeId}`)),
-  recordConsent: async (employeeId: string, payload: Record<string, unknown>) =>
-    unwrap(await api.post(`/api/v1/gdpr/consent/${employeeId}`, payload)),
+  exportEmployee: async () => unwrap(await api.get('/api/v1/me/data')),
+  myData: async () => unwrap(await api.get('/api/v1/me/data')),
+  eraseEmployee: async (reason: string) => unwrap(await api.post('/api/v1/me/erase', { reason })),
+  restrict: async (payload: Record<string, unknown> = {}) => unwrap(await api.post('/api/v1/me/restrict', payload)),
+  recordConsent: async (payload: Record<string, unknown>) =>
+    unwrap(await api.post('/api/v1/me/consent', payload)),
 }
 
 export const casesService = {
@@ -221,24 +263,28 @@ export const casesService = {
 export const complianceItemService = {
   list: async () => unwrap(await api.get('/api/v1/compliance/items')),
   create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/compliance/items', payload)),
-  markDone: async (id: string) => unwrap(await api.post(`/api/v1/compliance/items/${id}/done`)),
+  markDone: async (id: string) => unwrap(await api.post(`/api/v1/compliance/items/${id}/mark-compliant`)),
 }
 
 export const licenseService = {
   list: async () => unwrap(await api.get('/api/v1/compliance/licenses')),
-  expiring: async (days = 90) => unwrap(await api.get('/api/v1/compliance/licenses/expiring', { params: { days } })),
+  byStatus: async (status: string) => unwrap(await api.get(`/api/v1/compliance/licenses/status/${status}`)),
 }
 
 // ── Org / Skills / Travel / Forms / Shifts / CostCenters ────────────────
 export const orgChartService = {
-  tree: async () => unwrap(await api.get('/api/v1/org-chart/tree')),
+  tree: async () => unwrap(await api.get('/api/v1/org-chart')),
   reportsTo: async (employeeId: string) => unwrap(await api.get(`/api/v1/org-chart/${employeeId}`)),
 }
 
+// Backend: SkillsController @ /api/v1/skills (employee skills, gap, experts, role reqs)
 export const skillsService = {
-  list: async () => unwrap(await api.get('/api/v1/skills')),
-  myMatrix: async (employeeId: string) => unwrap(await api.get(`/api/v1/skills/employee/${employeeId}`)),
-  rate: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/skills/rate', payload)),
+  gap: async () => unwrap(await api.get('/api/v1/skills/gap')),
+  experts: async (skillId: string) => unwrap(await api.get('/api/v1/skills/experts', { params: { skillId } })),
+  forEmployee: async (employeeId: string) => unwrap(await api.get(`/api/v1/skills/employees/${employeeId}`)),
+  myMatrix: async (employeeId: string) => unwrap(await api.get(`/api/v1/skills/employees/${employeeId}`)),
+  rate: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/skills/employees', payload)),
+  setRoleRequirement: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/skills/role-requirements', payload)),
 }
 
 export const formService = {
@@ -270,8 +316,10 @@ export const customFieldService = {
 // ── Workflows ────────────────────────────────────────────────────────────
 export const workflowDefinitionService = {
   list: async () => unwrap(await api.get('/api/v1/workflows/definitions')),
+  byEntity: async (entityType: string) => unwrap(await api.get(`/api/v1/workflows/definitions/entity/${entityType}`)),
   create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/workflows/definitions', payload)),
-  publish: async (id: string) => unwrap(await api.post(`/api/v1/workflows/definitions/${id}/publish`)),
+  activate: async (id: string) => unwrap(await api.post(`/api/v1/workflows/definitions/${id}/activate`)),
+  deactivate: async (id: string) => unwrap(await api.post(`/api/v1/workflows/definitions/${id}/deactivate`)),
 }
 
 export const workflowInstanceService = {
@@ -279,9 +327,12 @@ export const workflowInstanceService = {
   get: async (id: string) => unwrap(await api.get(`/api/v1/workflows/instances/${id}`)),
 }
 
+// Backend: WorkflowDelegationController @ /api/v1/workflows/delegations
 export const delegationRuleService = {
-  list: async () => unwrap(await api.get('/api/v1/workflow/delegation-rules')),
-  create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/workflow/delegation-rules', payload)),
+  list: async () => unwrap(await api.get('/api/v1/workflows/delegations')),
+  byDelegator: async (employeeId: string) => unwrap(await api.get(`/api/v1/workflows/delegations/delegator/${employeeId}`)),
+  create: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/workflows/delegations', payload)),
+  deactivate: async (id: string) => unwrap(await api.post(`/api/v1/workflows/delegations/${id}/deactivate`)),
 }
 
 // ── Onboarding ───────────────────────────────────────────────────────────
@@ -291,43 +342,51 @@ export const onboardingTemplateService = {
 }
 
 export const onboardingTaskService = {
-  list: async (workflowId: string) => unwrap(await api.get(`/api/v1/onboarding/workflows/${workflowId}/tasks`)),
+  forEmployee: async (employeeId: string) => unwrap(await api.get(`/api/v1/onboarding/tasks/employee/${employeeId}`)),
   complete: async (taskId: string, payload?: Record<string, unknown>) =>
-    unwrap(await api.post(`/api/v1/onboarding/tasks/${taskId}/complete`, payload || {})),
+    unwrap(await api.put(`/api/v1/onboarding/tasks/${taskId}`, { status: 'COMPLETED', ...(payload || {}) })),
 }
 
+// Backend: BuddyAssignmentController @ /api/v1/onboarding/buddy-assignments
 export const buddyService = {
-  list: async () => unwrap(await api.get('/api/v1/onboarding/buddies')),
+  forEmployee: async (employeeId: string) => unwrap(await api.get(`/api/v1/onboarding/buddy-assignments/employee/${employeeId}`)),
+  get: async (id: string) => unwrap(await api.get(`/api/v1/onboarding/buddy-assignments/${id}`)),
   assign: async (newHireId: string, buddyId: string) =>
-    unwrap(await api.post('/api/v1/onboarding/buddies', { newHireId, buddyId })),
+    unwrap(await api.post('/api/v1/onboarding/buddy-assignments', { employeeId: newHireId, buddyId })),
 }
 
 // ── LMS depth ────────────────────────────────────────────────────────────
+// Backend: CertificationController @ /api/v1/courses/certifications
 export const certificationService = {
-  myCerts: async () => unwrap(await api.get('/api/v1/certifications/me')),
-  list: async (employeeId?: string) => unwrap(await api.get('/api/v1/certifications', { params: { employeeId } })),
-  upload: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/certifications', payload)),
+  myCerts: async () => unwrap(await api.get('/api/v1/courses/certifications')),
+  list: async () => unwrap(await api.get('/api/v1/courses/certifications')),
+  forEmployee: async (employeeId: string) => unwrap(await api.get(`/api/v1/courses/certifications/employee/${employeeId}`)),
+  upload: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/courses/certifications', payload)),
+  revoke: async (id: string, reason?: string) => unwrap(await api.post(`/api/v1/courses/certifications/${id}/revoke`, { reason })),
 }
 
+// Backend: AssessmentController @ /api/v1/courses/assessments
 export const assessmentService = {
-  list: async (courseId: string) => unwrap(await api.get(`/api/v1/courses/${courseId}/assessments`)),
-  attempt: async (assessmentId: string, answers: Record<string, unknown>) =>
-    unwrap(await api.post(`/api/v1/assessments/${assessmentId}/attempt`, answers)),
+  forCourse: async (courseId: string) => unwrap(await api.get(`/api/v1/courses/assessments/course/${courseId}`)),
+  list: async (courseId: string) => unwrap(await api.get(`/api/v1/courses/assessments/course/${courseId}`)),
+  get: async (id: string) => unwrap(await api.get(`/api/v1/courses/assessments/${id}`)),
 }
 
-// ── Self-service ─────────────────────────────────────────────────────────
+// ── Self-service ── Backend: SelfServiceController @ /api/v1/me ────────────
 export const selfServiceService = {
-  myEmployee: async () => unwrap(await api.get('/api/v1/self-service/me')),
-  myTeam: async () => unwrap(await api.get('/api/v1/self-service/my-team')),
-  myManager: async () => unwrap(await api.get('/api/v1/self-service/my-manager')),
-  raiseUpdate: async (payload: Record<string, unknown>) =>
-    unwrap(await api.post('/api/v1/self-service/profile-update', payload)),
+  myEmployee: async () => unwrap(await api.get('/api/v1/me/dashboard')),
+  dashboard: async () => unwrap(await api.get('/api/v1/me/dashboard')),
+  myTeam: async () => unwrap(await api.get('/api/v1/me/team')),
+  myApprovals: async () => unwrap(await api.get('/api/v1/me/approvals')),
 }
 
-// ── Background verification ──────────────────────────────────────────────
+// ── Background verification ── Backend: BgvController @ /api/v1/recruitment/bgv
 export const bgvService = {
-  list: async () => unwrap(await api.get('/api/v1/recruitment/bgv')),
+  forCandidate: async (candidateId: string) => unwrap(await api.get(`/api/v1/recruitment/bgv/candidate/${candidateId}`)),
+  list: async (candidateId?: string) => candidateId
+    ? unwrap(await api.get(`/api/v1/recruitment/bgv/candidate/${candidateId}`))
+    : [],
   initiate: async (candidateId: string, payload: Record<string, unknown>) =>
     unwrap(await api.post('/api/v1/recruitment/bgv/initiate', { candidateId, ...payload })),
-  status: async (caseId: string) => unwrap(await api.get(`/api/v1/recruitment/bgv/${caseId}`)),
+  refresh: async (caseId: string) => unwrap(await api.post(`/api/v1/recruitment/bgv/${caseId}/refresh`)),
 }

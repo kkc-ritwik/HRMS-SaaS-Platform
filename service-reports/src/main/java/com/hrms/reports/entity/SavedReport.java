@@ -61,4 +61,9 @@ public class SavedReport extends BaseEntity {
 
     @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
+
+    /** User IDs this saved report has been shared with. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "shared_with", columnDefinition = "jsonb")
+    private List<String> sharedWith;
 }

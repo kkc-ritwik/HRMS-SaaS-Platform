@@ -20,4 +20,9 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, UUID> {
             String tenantId, OffsetDateTime from, OffsetDateTime to, Pageable pageable);
 
     List<AuditLog> findByTenantIdOrderByCreatedAtAsc(String tenantId);
+
+    Page<AuditLog> findByTenantIdAndEntityNameContainingIgnoreCaseOrderByCreatedAtDesc(
+            String tenantId, String entityName, Pageable pageable);
+
+    Page<AuditLog> findByTenantIdOrderByCreatedAtDesc(String tenantId, Pageable pageable);
 }

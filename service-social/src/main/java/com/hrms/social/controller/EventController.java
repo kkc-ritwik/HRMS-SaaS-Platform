@@ -44,6 +44,18 @@ public class EventController {
         return ResponseEntity.ok(ApiResponse.ok(eventService.getById(tenantId, id)));
     }
 
+    @PostMapping("/{id}/rsvp")
+    @PreAuthorize("hasAuthority('SOCIAL:WRITE')")
+    public ResponseEntity<ApiResponse<EventDto.Response>> rsvp(
+            @PathVariable UUID id, @RequestBody(required = false) java.util.Map<String, Object> body) {
+        String tenantId = TenantContext.get();
+        String currentUser = ((UserPrincipal) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal()).getId();
+        boolean attending = body == null || !body.containsKey("attending")
+                || Boolean.TRUE.equals(body.get("attending"));
+        return ResponseEntity.ok(ApiResponse.ok(eventService.rsvp(tenantId, id, attending, currentUser)));
+    }
+
     @GetMapping
     @PreAuthorize("hasAuthority('SOCIAL:READ')")
     public ResponseEntity<ApiResponse<Page<EventDto.Response>>> list(

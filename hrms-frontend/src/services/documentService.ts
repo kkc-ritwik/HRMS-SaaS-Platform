@@ -53,9 +53,9 @@ export const documentService = {
   generateLetter: async (templateId: string, data: Record<string, unknown>) =>
     unwrap(await api.post(`/api/v1/templates/${templateId}/generate`, data)),
 
-  // Employment letters
+  // Employment letters — Backend: EmploymentLetterController @ /api/v1/letters/employment/{type}
   generateEmploymentLetter: async (payload: Record<string, unknown>) =>
-    unwrap(await api.post('/api/v1/documents/letters/employment', payload)),
+    unwrap(await api.post(`/api/v1/letters/employment/${String(payload.letterType ?? 'EMPLOYMENT')}`, payload)),
   generateSalaryRevisionLetter: async (payload: Record<string, unknown>) =>
     unwrap(await api.post('/api/documents/letters/salary-revision', payload)),
 

@@ -170,7 +170,7 @@ export function ReceiptOcrPage() {
 
 // ── Performance ────────────────────────────────────────────────────────
 export function PerformanceAnalyticsPage() {
-  const { data, isLoading } = useQuery({ queryKey: ['perf-analytics'], queryFn: performanceAnalyticsService.distribution })
+  const { data, isLoading } = useQuery({ queryKey: ['perf-analytics'], queryFn: () => performanceAnalyticsService.distribution() })
   return (
     <div className="space-y-6">
       <PageHeader title="Performance Analytics" description="Rating distribution, calibration matrix, trends" />
@@ -254,9 +254,9 @@ export function RecruitmentAgenciesPage() {
 }
 
 export function RecruitmentAnalyticsPage() {
-  const funnel = useQuery({ queryKey: ['recr-funnel'], queryFn: recruitmentAnalyticsService.funnel })
-  const sources = useQuery({ queryKey: ['recr-sources'], queryFn: recruitmentAnalyticsService.sourceEffectiveness })
-  const tth = useQuery({ queryKey: ['recr-tth'], queryFn: recruitmentAnalyticsService.timeToHire })
+  const funnel = useQuery({ queryKey: ['recr-dashboard'], queryFn: () => recruitmentAnalyticsService.dashboard() })
+  const sources = useQuery({ queryKey: ['recr-pipeline'], queryFn: () => recruitmentAnalyticsService.pipeline() })
+  const tth = useQuery({ queryKey: ['recr-dashboard2'], queryFn: () => recruitmentAnalyticsService.dashboard() })
   return (
     <div className="space-y-6">
       <PageHeader title="Recruitment Analytics" description="Funnel, source effectiveness, time to hire" />

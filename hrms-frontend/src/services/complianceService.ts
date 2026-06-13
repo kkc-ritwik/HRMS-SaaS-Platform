@@ -30,7 +30,7 @@ export interface DiversityHeadcount { group: string; count: number; percent: num
 export const complianceService = {
   // Audit
   auditByEntity: async (entityName: string, entityId: string) =>
-    unwrap(await api.get<AuditLog[]>('/api/v1/audit', { params: { entityName, entityId } })),
+    unwrap(await api.get<AuditLog[]>('/api/v1/audit/entity', { params: { entityName, entityId } })),
   auditByActor: async (actorId: string, from?: string, to?: string) =>
     unwrap(await api.get<AuditLog[]>('/api/v1/audit/actor', { params: { actorId, from, to } })),
   searchAudit: async (params: { from?: string; to?: string; entityName?: string; actorId?: string; page?: number; size?: number }) =>
@@ -42,15 +42,15 @@ export const complianceService = {
   poshGenerate: async (payload: { year: number; employerName: string; employerAddress: string; iccChairperson: string; iccMembers: string[]; workshopsConducted: number; workshopAttendance: number; natureOfAction: string }) =>
     unwrap(await api.post('/api/cases/posh/annual-return/generate', payload)),
 
-  // GDPR
-  exportEmployee: async (employeeId: string) =>
-    unwrap(await api.get(`/api/v1/gdpr/export/${employeeId}`)),
-  eraseEmployee: async (employeeId: string, reason: string) =>
-    unwrap(await api.post(`/api/v1/gdpr/erase/${employeeId}`, { reason })),
-  restrictProcessing: async (employeeId: string) =>
-    unwrap(await api.post(`/api/v1/gdpr/restrict/${employeeId}`)),
-  recordConsent: async (employeeId: string, payload: Record<string, unknown>) =>
-    unwrap(await api.post(`/api/v1/gdpr/consent/${employeeId}`, payload)),
+  // GDPR / DPDP — Backend: GdprController @ /api/v1/me (self-service)
+  exportEmployee: async () =>
+    unwrap(await api.get('/api/v1/me/data')),
+  eraseEmployee: async (reason: string) =>
+    unwrap(await api.post('/api/v1/me/erase', { reason })),
+  restrictProcessing: async (payload: Record<string, unknown> = {}) =>
+    unwrap(await api.post('/api/v1/me/restrict', payload)),
+  recordConsent: async (payload: Record<string, unknown>) =>
+    unwrap(await api.post('/api/v1/me/consent', payload)),
 
   // D&I
   deiHeadcount: async (by: 'gender' | 'ethnicity' | 'generation' | 'disability' | 'nationality') =>

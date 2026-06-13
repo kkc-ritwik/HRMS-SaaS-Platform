@@ -1,24 +1,34 @@
-import { useQuery } from '@tanstack/react-query'
 import { UserPlus } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { DataList } from '@/components/ui/data-list'
+import { ResourcePage } from '@/components/ui/resource-page'
 import { onboardingService, type OnboardingWorkflow } from '@/services/onboardingService'
+import { formatDate } from '@/lib/utils'
 
 export function OnboardingPage() {
-  const { data, isLoading } = useQuery({ queryKey: ['onboarding'], queryFn: onboardingService.listWorkflows })
   return (
-    <DataList<OnboardingWorkflow>
-      title="Onboarding" description="Active and recent new-hire workflows"
-      data={data || []} isLoading={isLoading}
-      emptyIcon={<UserPlus className="h-10 w-10" />} emptyTitle="No active onboarding"
+    <ResourcePage<OnboardingWorkflow & Record<string, unknown>>
+      title="Onboarding"
+      description="Active and recent new-hire workflows — start, track"
+      icon={<UserPlus className="h-10 w-10" />}
+      queryKey={['onboarding']}
+      fetcher={() => onboardingService.listWorkflows()}
+      rowHref={w => `/onboarding/${w.id}`}
+      filters={{ status: ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'OVERDUE'] }}
       columns={[
         { key: 'employeeId', label: 'Employee' },
-        { key: 'startDate', label: 'Start date' },
-        { key: 'progressPercent', label: 'Progress', render: w => <div className="w-32"><Progress value={w.progressPercent} /></div> },
-        { key: 'status', label: 'Status', render: w => <Badge>{w.status}</Badge> },
-        { key: 'expectedCompletion', label: 'Expected done' },
+        { key: 'startDate', label: 'Start date', render: w => w.startDate ? formatDate(String(w.startDate)) : '—' },
+        { key: 'progressPercent', label: 'Progress', render: w => <div className="w-32"><Progress value={Number(w.progressPercent ?? 0)} /></div> },
+        { key: 'status', label: 'Status', render: w => <Badge>{String(w.status)}</Badge> },
+        { key: 'expectedCompletion', label: 'Expected done', render: w => w.expectedCompletion ? formatDate(String(w.expectedCompletion)) : '—' },
       ]}
+      formFields={[
+        { name: 'employeeId', label: 'Employee ID', type: 'text', required: true },
+        { name: 'templateId', label: 'Template ID', type: 'text' },
+        { name: 'startDate', label: 'Start date', type: 'date' },
+      ]}
+      createTitle="Start onboarding"
+      onCreate={v => onboardingService.startOnboarding(String(v.employeeId), v.templateId ? String(v.templateId) : undefined)}
     />
   )
 }

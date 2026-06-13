@@ -39,4 +39,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     /** All FINALIZED manager reviews in a cycle — for 9-box grid. */
     List<Review> findByTenantIdAndCycleIdAndReviewTypeAndStatusAndDeletedFalse(
             String tenantId, UUID cycleId, Review.ReviewType reviewType, Review.ReviewStatus status);
+
+    /** All FINALIZED manager reviews across all cycles — for org-wide rating analytics. */
+    List<Review> findByTenantIdAndReviewTypeAndStatusAndDeletedFalse(
+            String tenantId, Review.ReviewType reviewType, Review.ReviewStatus status);
 }

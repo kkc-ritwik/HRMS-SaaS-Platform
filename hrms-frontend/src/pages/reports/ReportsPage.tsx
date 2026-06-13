@@ -1,38 +1,45 @@
-import { useQuery } from '@tanstack/react-query'
+import { BarChart3, Play } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { BarChart3 } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { EmptyState } from '@/components/ui/empty-state'
-import { PageHeader } from '@/components/ui/page-header'
-import { reportsService, type ReportDefinition } from '@/services/reportsService'
+import { Badge } from '@/components/ui/badge'
+import { ResourcePage } from '@/components/ui/resource-page'
+import { Catalog } from '@/services/catalog'
+import type { ReportDefinition } from '@/services/reportsService'
 
 export function ReportsPage() {
   const navigate = useNavigate()
-  const { data, isLoading } = useQuery({ queryKey: ['reports', 'defs'], queryFn: reportsService.listDefinitions })
-
   return (
-    <div className="space-y-6">
-      <PageHeader title="Reports & Analytics" description="Pre-built and custom reports across the platform" />
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-28" />)}
-        </div>
-      ) : (data || []).length === 0 ? (
-        <EmptyState icon={<BarChart3 className="h-10 w-10" />} title="No reports configured" />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(data as ReportDefinition[] || []).map(r => (
-            <Card key={r.id} className="hover:shadow-md transition cursor-pointer" onClick={() => navigate(`/reports/${r.id}`)}>
-              <CardContent className="p-4">
-                <p className="text-xs font-medium uppercase text-slate-500">{r.module}</p>
-                <h3 className="font-semibold mt-1">{r.name}</h3>
-                {r.description && <p className="text-xs text-slate-500 mt-1 line-clamp-2">{r.description}</p>}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+    <ResourcePage<ReportDefinition & Record<string, unknown>>
+      title="Reports & Analytics"
+      description="Define, run, export and schedule reports across the platform"
+      icon={<BarChart3 className="h-10 w-10" />}
+      queryKey={['report-definitions']}
+      fetcher={() => Catalog.reports.definitions.list()}
+      rowHref={r => `/reports/${r.id}`}
+      filters={{ category: ['HR', 'PAYROLL', 'ATTENDANCE', 'RECRUITMENT', 'PERFORMANCE', 'FINANCE', 'COMPLIANCE', 'CUSTOM'] }}
+      columns={[
+        { key: 'name', label: 'Report' },
+        { key: 'category', label: 'Category', render: r => r.category ? <Badge>{String(r.category)}</Badge> : '—' },
+        { key: 'code', label: 'Code' },
+        { key: 'active', label: 'Active', render: r => <Badge variant={r.active === false ? 'secondary' : 'success'}>{r.active === false ? 'Inactive' : 'Active'}</Badge> },
+      ]}
+      formFields={[
+        { name: 'name', label: 'Report name', type: 'text', required: true, span: 2 },
+        { name: 'code', label: 'Code', type: 'text', required: true },
+        { name: 'category', label: 'Category', type: 'select', options: [
+          { value: 'HR', label: 'HR' }, { value: 'PAYROLL', label: 'Payroll' }, { value: 'ATTENDANCE', label: 'Attendance' },
+          { value: 'RECRUITMENT', label: 'Recruitment' }, { value: 'PERFORMANCE', label: 'Performance' },
+          { value: 'FINANCE', label: 'Finance' }, { value: 'COMPLIANCE', label: 'Compliance' }, { value: 'CUSTOM', label: 'Custom' },
+        ] },
+        { name: 'description', label: 'Description', type: 'textarea', span: 2 },
+        { name: 'queryConfig', label: 'SQL query', type: 'textarea', span: 2, helper: 'The SELECT statement this report runs' },
+      ]}
+      createTitle="New report definition"
+      onCreate={v => Catalog.reports.definitions.create({ ...v, queryConfig: v.queryConfig ? [String(v.queryConfig)] : [] })}
+      onUpdate={(id, v) => Catalog.reports.definitions.update(id, { ...v, queryConfig: v.queryConfig ? [String(v.queryConfig)] : undefined })}
+      onDelete={id => Catalog.reports.definitions.delete(id)}
+      rowActions={r => [
+        { label: 'Open & run', icon: <Play className="h-3.5 w-3.5" />, run: () => { navigate(`/reports/${r.id}`); return Promise.resolve() } },
+      ]}
+    />
   )
 }

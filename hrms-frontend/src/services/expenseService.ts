@@ -54,6 +54,7 @@ export const expenseService = {
     unwrap(await api.post<ExpenseClaim>('/api/v1/expenses/reports', payload)),
   updateClaim: async (id: string, payload: Partial<ExpenseClaim>) =>
     unwrap(await api.put<ExpenseClaim>(`/api/v1/expenses/reports/${id}`, payload)),
+  deleteClaim: async (id: string) => { await api.delete(`/api/v1/expenses/reports/${id}`) },
   submit: async (id: string) =>
     unwrap(await api.post<ExpenseClaim>(`/api/v1/expenses/reports/${id}/submit`)),
   approve: async (id: string, notes?: string) =>

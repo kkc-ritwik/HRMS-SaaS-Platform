@@ -37,6 +37,36 @@ public class BiometricDeviceController {
 
     private final PunchRepo punches;
     private final GeofenceService geofence;
+    private final BiometricDeviceRepository devices;
+
+    // ── Device registry ─────────────────────────────────────────────────────────
+
+    @GetMapping("/devices")
+    public List<BiometricDevice> listDevices() {
+        return devices.findByTenantIdAndDeletedFalseOrderByCreatedAtDesc(
+                com.hrms.security.model.TenantContext.get());
+    }
+
+    @PostMapping("/devices")
+    @Transactional
+    public ResponseEntity<BiometricDevice> registerDevice(@RequestBody BiometricDevice device) {
+        device.setTenantId(com.hrms.security.model.TenantContext.get());
+        if (device.getStatus() == null) device.setStatus(BiometricDevice.Status.ACTIVE);
+        return ResponseEntity.status(HttpStatus.CREATED).body(devices.save(device));
+    }
+
+    @PostMapping("/devices/{id}/sync")
+    @Transactional
+    public ResponseEntity<BiometricDevice> syncDevice(@PathVariable UUID id) {
+        BiometricDevice d = devices.findByIdAndTenantIdAndDeletedFalse(
+                        id, com.hrms.security.model.TenantContext.get())
+                .orElseThrow(() -> new IllegalArgumentException("Device not found: " + id));
+        Instant now = Instant.now();
+        d.setLastSyncAt(now);
+        d.setLastSeenAt(now);
+        d.setStatus(BiometricDevice.Status.ACTIVE);
+        return ResponseEntity.ok(devices.save(d));
+    }
 
     /** Generic JSON push — any device that can call a webhook can use this. */
     @PostMapping("/punch")

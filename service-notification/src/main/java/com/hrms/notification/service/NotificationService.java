@@ -89,6 +89,20 @@ public class NotificationService {
         return toResponse(notificationRepository.save(notification));
     }
 
+    @Transactional
+    public int markAllRead(String tenantId, UUID employeeId, String currentUser) {
+        List<Notification> unread = notificationRepository
+                .findByTenantIdAndEmployeeIdAndReadFalseAndDeletedFalse(tenantId, employeeId);
+        Instant now = Instant.now();
+        for (Notification n : unread) {
+            n.setRead(true);
+            n.setReadAt(now);
+            n.setUpdatedBy(currentUser);
+        }
+        notificationRepository.saveAll(unread);
+        return unread.size();
+    }
+
     public void delete(String tenantId, UUID id, String currentUser) {
         Notification notification = notificationRepository
                 .findByIdAndTenantIdAndDeletedFalse(id, tenantId)

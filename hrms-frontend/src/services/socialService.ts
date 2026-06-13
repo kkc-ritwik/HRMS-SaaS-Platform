@@ -53,19 +53,25 @@ export const socialService = {
   feed: async (page = 0, size = 20) =>
     unwrap(await api.get('/api/v1/posts/feed', { params: { page, size } })),
   createPost: async (payload: Partial<Post>) => unwrap(await api.post<Post>('/api/v1/posts', payload)),
-  likePost: async (id: string) => unwrap(await api.post(`/api/v1/posts/${id}/like`)),
-  unlikePost: async (id: string) => unwrap(await api.delete(`/api/v1/posts/${id}/like`)),
-  comments: async (id: string) => unwrap(await api.get<PostComment[]>(`/api/v1/posts/${id}/comments`)),
+  updatePost: async (id: string, payload: Partial<Post>) => unwrap(await api.put<Post>(`/api/v1/posts/${id}`, payload)),
+  deletePost: async (id: string) => { await api.delete(`/api/v1/posts/${id}`) },
+  postsByAuthor: async (authorId: string) => unwrap<Post[]>(await api.get(`/api/v1/posts/author/${authorId}`)),
+  deleteComment: async (id: string) => { await api.delete(`/api/v1/posts/comments/${id}`) },
+  // Backend: PostLikeController @ /api/v1/posts/likes
+  likePost: async (id: string) => unwrap(await api.post('/api/v1/posts/likes', { postId: id })),
+  unlikePost: async (id: string) => unwrap(await api.delete(`/api/v1/posts/likes/${id}`)),
+  // Backend: PostCommentController @ /api/v1/posts/comments
+  comments: async (id: string) => unwrap(await api.get<PostComment[]>(`/api/v1/posts/comments/post/${id}`)),
   comment: async (id: string, body: string) =>
-    unwrap(await api.post<PostComment>(`/api/v1/posts/${id}/comments`, { body })),
+    unwrap(await api.post<PostComment>('/api/v1/posts/comments', { postId: id, body })),
 
-  // Groups
+  // Groups — Backend: GroupController @ /api/v1/groups, members @ /api/v1/groups/members
   listGroups: async () => unwrap(await api.get<Group[]>('/api/v1/groups')),
-  myGroups: async () => unwrap(await api.get<Group[]>('/api/v1/groups/me')),
-  joinGroup: async (id: string) => unwrap(await api.post(`/api/v1/groups/${id}/join`)),
+  myGroups: async (employeeId: string) => unwrap(await api.get<Group[]>(`/api/v1/groups/members/employee/${employeeId}`)),
+  joinGroup: async (id: string) => unwrap(await api.post('/api/v1/groups/members/join', { groupId: id })),
 
-  // Events
-  listEvents: async () => unwrap(await api.get<Event[]>('/api/v1/events')),
+  // Events — Backend: EventController @ /api/v1/groups/events
+  listEvents: async () => unwrap(await api.get<Event[]>('/api/v1/groups/events')),
   rsvp: async (id: string, attending: boolean) =>
-    unwrap(await api.post(`/api/v1/events/${id}/rsvp`, { attending })),
+    unwrap(await api.post(`/api/v1/groups/events/${id}/rsvp`, { attending })),
 }

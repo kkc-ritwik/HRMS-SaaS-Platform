@@ -1,25 +1,38 @@
-import { useQuery } from '@tanstack/react-query'
-import { BarChart3 } from 'lucide-react'
+import { BarChart3, Square } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { DataList } from '@/components/ui/data-list'
+import { ResourcePage } from '@/components/ui/resource-page'
 import { pollService } from '@/services/extendedServices'
+import { Catalog } from '@/services/catalog'
+import { formatDate } from '@/lib/utils'
 
-interface Poll { id: string; question: string; totalVotes: number; isActive: boolean; endsAt: string }
+interface Poll extends Record<string, unknown> { id: string; question: string; totalVotes?: number; isActive?: boolean; status?: string; endsAt?: string }
 
 export function PollsPage() {
-  const { data, isLoading } = useQuery({ queryKey: ['polls'], queryFn: () => pollService.list() })
-  const items: Poll[] = (data as { content?: Poll[] } | undefined)?.content
-    || (Array.isArray(data) ? data as Poll[] : [])
   return (
-    <DataList<Poll>
-      title="Polls" description="Active and past quick polls"
-      data={items} isLoading={isLoading}
-      emptyIcon={<BarChart3 className="h-10 w-10" />} emptyTitle="No active polls"
+    <ResourcePage<Poll>
+      title="Polls"
+      description="Quick pulse polls — create, launch, tally"
+      icon={<BarChart3 className="h-10 w-10" />}
+      queryKey={['polls']}
+      fetcher={() => pollService.list()}
       columns={[
         { key: 'question', label: 'Question' },
-        { key: 'totalVotes', label: 'Votes' },
-        { key: 'endsAt', label: 'Ends' },
-        { key: 'isActive', label: 'Active', render: p => <Badge>{p.isActive ? 'Open' : 'Closed'}</Badge> },
+        { key: 'totalVotes', label: 'Votes', align: 'right' },
+        { key: 'endsAt', label: 'Ends', render: p => p.endsAt ? formatDate(String(p.endsAt)) : '—' },
+        { key: 'isActive', label: 'State', render: p => <Badge variant={p.isActive ? 'success' : 'secondary'}>{p.isActive ? 'Open' : 'Closed'}</Badge> },
+      ]}
+      formFields={[
+        { name: 'question', label: 'Question', type: 'text', required: true, span: 2 },
+        { name: 'options', label: 'Options (comma-separated)', type: 'text', required: true, span: 2, helper: 'e.g. Yes, No, Maybe' },
+        { name: 'anonymous', label: 'Anonymous', type: 'switch', defaultValue: true },
+        { name: 'endsAt', label: 'Ends at', type: 'date' },
+      ]}
+      onCreate={v => {
+        const opts = String(v.options ?? '').split(',').map(s => s.trim()).filter(Boolean)
+        return Catalog.engagement.polls.create({ ...v, options: opts })
+      }}
+      rowActions={p => [
+        { label: 'Tally results', icon: <Square className="h-3.5 w-3.5" />, run: () => pollService.list() },
       ]}
     />
   )

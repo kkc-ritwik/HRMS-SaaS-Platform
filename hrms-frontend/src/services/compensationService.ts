@@ -74,9 +74,9 @@ export const compensationService = {
     unwrap(await api.post<CompensationPlan>('/api/v1/compensation/plans', payload)),
 
   // Benefits
-  listBenefits: async () => unwrap(await api.get<Benefit[]>('/api/v1/benefits')),
+  listBenefits: async () => unwrap(await api.get<Benefit[]>('/api/v1/compensation/benefits')),
   enrollBenefit: async (payload: { employeeId: string; benefitId: string }) =>
-    unwrap(await api.post('/api/v1/benefits/enroll', payload)),
+    unwrap(await api.post('/api/v1/compensation/employee-benefits', payload)),
 
   // Bands
   listBands: async () => unwrap(await api.get<SalaryBand[]>('/api/v1/compensation/bands')),

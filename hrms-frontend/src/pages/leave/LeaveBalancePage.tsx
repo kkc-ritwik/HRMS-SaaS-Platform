@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { TrendingUp, Users } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { SlidersHorizontal, RotateCcw } from 'lucide-react'
 import { PageHeader } from '@/components/ui/page-header'
+import { Button } from '@/components/ui/button'
+import { FormDialog } from '@/components/ui/form-dialog'
 import { Card } from '@/components/ui/card'
 import { SearchInput } from '@/components/ui/search-input'
 import { Badge } from '@/components/ui/badge'
@@ -23,9 +25,15 @@ const DEMO_BALANCES = [
 ]
 
 export function LeaveBalancePage() {
+  const qc = useQueryClient()
   const [search, setSearch] = useState('')
+  const [adjustOpen, setAdjustOpen] = useState(false)
+  const [initOpen, setInitOpen] = useState(false)
   const debouncedSearch = useDebounce(search)
   const { page, pageSize, goToPage, changePageSize } = usePagination()
+
+  const adjust = useMutation({ mutationFn: (v: Record<string, unknown>) => leaveService.adjustBalance(v), onSuccess: () => { qc.invalidateQueries({ queryKey: ['leave-balances-all'] }); setAdjustOpen(false) } })
+  const init = useMutation({ mutationFn: (v: Record<string, unknown>) => leaveService.initBalance(v), onSuccess: () => { qc.invalidateQueries({ queryKey: ['leave-balances-all'] }); setInitOpen(false) } })
 
   const { data, isLoading } = useQuery({
     queryKey: ['leave-balances-all', debouncedSearch, page, pageSize],
@@ -42,7 +50,25 @@ export function LeaveBalancePage() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <PageHeader title="Leave Balances" description="Employee leave allocation overview" breadcrumbs={[{ label: 'Time & Leave' }, { label: 'Leave Balances' }]} />
+      <PageHeader title="Leave Balances" description="Employee leave allocation overview" breadcrumbs={[{ label: 'Time & Leave' }, { label: 'Leave Balances' }]}>
+        <Button variant="outline" size="sm" onClick={() => setInitOpen(true)}><RotateCcw className="h-4 w-4 mr-1" /> Initialize Year</Button>
+        <Button size="sm" onClick={() => setAdjustOpen(true)}><SlidersHorizontal className="h-4 w-4 mr-1" /> Adjust Balance</Button>
+      </PageHeader>
+
+      <FormDialog open={adjustOpen} onOpenChange={setAdjustOpen} title="Adjust leave balance" submitLabel="Apply"
+        fields={[
+          { name: 'employeeId', label: 'Employee ID', type: 'text', required: true },
+          { name: 'leaveTypeId', label: 'Leave type ID', type: 'text', required: true },
+          { name: 'days', label: 'Days (+ credit / − debit)', type: 'number', required: true },
+          { name: 'reason', label: 'Reason', type: 'textarea', span: 2, required: true },
+        ]}
+        onSubmit={v => adjust.mutateAsync(v)} />
+      <FormDialog open={initOpen} onOpenChange={setInitOpen} title="Initialize annual balances" submitLabel="Initialize"
+        fields={[
+          { name: 'year', label: 'Year', type: 'number', required: true, defaultValue: new Date().getFullYear() },
+          { name: 'employeeId', label: 'Employee ID (blank = all)', type: 'text' },
+        ]}
+        onSubmit={v => init.mutateAsync(v)} />
 
       <Card>
         <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-slate-100">

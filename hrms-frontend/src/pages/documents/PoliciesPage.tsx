@@ -1,36 +1,37 @@
-import { useQuery, useMutation } from '@tanstack/react-query'
 import { ShieldCheck } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { DataList } from '@/components/ui/data-list'
+import { ResourcePage } from '@/components/ui/resource-page'
 import { companyPolicyService } from '@/services/extendedServices'
-import { toast } from 'sonner'
+import { Catalog } from '@/services/catalog'
+import { formatDate } from '@/lib/utils'
 
-interface Policy { id: string; name: string; category?: string; version?: string; effectiveFrom?: string; acknowledgedByMe?: boolean }
+interface Policy extends Record<string, unknown> { id: string; name?: string; title?: string; category?: string; version?: string; effectiveFrom?: string; status?: string }
 
 export function PoliciesPage() {
-  const { data, isLoading, refetch } = useQuery({ queryKey: ['policies'], queryFn: () => companyPolicyService.list() })
-  const ack = useMutation({
-    mutationFn: (id: string) => companyPolicyService.acknowledge(id),
-    onSuccess: () => { toast.success('Acknowledged'); refetch() },
-  })
-  const items: Policy[] = (data as { content?: Policy[] } | undefined)?.content
-    || (Array.isArray(data) ? data as Policy[] : [])
   return (
-    <DataList<Policy>
-      title="Company Policies" description="Active policies you must acknowledge"
-      data={items} isLoading={isLoading}
-      emptyIcon={<ShieldCheck className="h-10 w-10" />} emptyTitle="No policies"
+    <ResourcePage<Policy>
+      title="Company Policies"
+      description="Publish and manage company policy documents"
+      icon={<ShieldCheck className="h-10 w-10" />}
+      queryKey={['policies']}
+      fetcher={() => companyPolicyService.list()}
       columns={[
-        { key: 'name', label: 'Policy' },
+        { key: 'name', label: 'Policy', render: p => String(p.name ?? p.title ?? '—') },
         { key: 'category', label: 'Category' },
         { key: 'version', label: 'Version' },
-        { key: 'effectiveFrom', label: 'Effective' },
-        { key: 'acknowledgedByMe', label: 'Status', render: p => p.acknowledgedByMe
-          ? <Badge>Acknowledged</Badge>
-          : <Button size="sm" onClick={() => ack.mutate(p.id)}>Acknowledge</Button>
-        },
+        { key: 'effectiveFrom', label: 'Effective', render: p => p.effectiveFrom ? formatDate(String(p.effectiveFrom)) : '—' },
+        { key: 'status', label: 'Status', render: p => p.status ? <Badge>{String(p.status)}</Badge> : '—' },
       ]}
+      formFields={[
+        { name: 'title', label: 'Policy title', type: 'text', required: true, span: 2 },
+        { name: 'category', label: 'Category', type: 'text' },
+        { name: 'version', label: 'Version', type: 'text' },
+        { name: 'effectiveFrom', label: 'Effective from', type: 'date' },
+        { name: 'content', label: 'Content', type: 'textarea', span: 2 },
+      ]}
+      onCreate={v => companyPolicyService.create(v)}
+      onUpdate={(id, v) => companyPolicyService.update(id, v)}
+      onDelete={id => Catalog.documents.policies.delete(id)}
     />
   )
 }

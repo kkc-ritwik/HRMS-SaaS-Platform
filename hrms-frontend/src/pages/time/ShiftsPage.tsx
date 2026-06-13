@@ -1,27 +1,38 @@
-import { useQuery } from '@tanstack/react-query'
 import { Clock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { DataList } from '@/components/ui/data-list'
+import { ResourcePage } from '@/components/ui/resource-page'
 import { shiftService } from '@/services/extendedServices'
 
-interface Shift { id: string; name: string; startTime: string; endTime: string; breakMinutes?: number; type?: string }
+interface Shift extends Record<string, unknown> { id: string; name: string; startTime?: string; endTime?: string; breakMinutes?: number; type?: string }
 
 export function ShiftsPage() {
-  const { data, isLoading } = useQuery({ queryKey: ['shifts'], queryFn: () => shiftService.list() })
-  const items: Shift[] = (data as { content?: Shift[] } | undefined)?.content
-    || (Array.isArray(data) ? data as Shift[] : [])
   return (
-    <DataList<Shift>
-      title="Shifts" description="Work shifts + rotation templates"
-      data={items} isLoading={isLoading}
-      emptyIcon={<Clock className="h-10 w-10" />} emptyTitle="No shifts defined"
+    <ResourcePage<Shift>
+      title="Shifts"
+      description="Work shifts + rotation templates"
+      icon={<Clock className="h-10 w-10" />}
+      queryKey={['shifts']}
+      fetcher={() => shiftService.list()}
+      filters={{ type: ['FIXED', 'ROTATIONAL', 'FLEXIBLE', 'NIGHT'] }}
       columns={[
         { key: 'name', label: 'Name' },
-        { key: 'type', label: 'Type', render: s => s.type ? <Badge>{s.type}</Badge> : '—' },
+        { key: 'type', label: 'Type', render: s => s.type ? <Badge>{String(s.type)}</Badge> : '—' },
         { key: 'startTime', label: 'Start' },
         { key: 'endTime', label: 'End' },
-        { key: 'breakMinutes', label: 'Break (min)' },
+        { key: 'breakMinutes', label: 'Break (min)', align: 'right' },
       ]}
+      formFields={[
+        { name: 'name', label: 'Shift name', type: 'text', required: true, span: 2 },
+        { name: 'type', label: 'Type', type: 'select', options: [
+          { value: 'FIXED', label: 'Fixed' }, { value: 'ROTATIONAL', label: 'Rotational' },
+          { value: 'FLEXIBLE', label: 'Flexible' }, { value: 'NIGHT', label: 'Night' },
+        ] },
+        { name: 'startTime', label: 'Start time', type: 'time', required: true },
+        { name: 'endTime', label: 'End time', type: 'time', required: true },
+        { name: 'breakMinutes', label: 'Break (minutes)', type: 'number' },
+        { name: 'graceMinutes', label: 'Grace period (minutes)', type: 'number' },
+      ]}
+      onCreate={v => shiftService.create(v)}
     />
   )
 }

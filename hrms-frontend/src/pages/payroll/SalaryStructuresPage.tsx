@@ -1,23 +1,30 @@
-import { useQuery } from '@tanstack/react-query'
 import { DollarSign } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { DataList } from '@/components/ui/data-list'
-import { payrollService, type SalaryStructure } from '@/services/payrollService'
+import { ResourcePage } from '@/components/ui/resource-page'
+import { salaryStructureService } from '@/services/salaryService'
+import type { SalaryStructure } from '@/services/payrollService'
 
 export function SalaryStructuresPage() {
-  const { data, isLoading } = useQuery({ queryKey: ['salary-structures'], queryFn: () => payrollService.listSalaryStructures() })
-  const items: SalaryStructure[] = (data as { content?: SalaryStructure[] } | undefined)?.content
-    || (Array.isArray(data) ? data as SalaryStructure[] : (data as { data?: SalaryStructure[] } | undefined)?.data || [])
   return (
-    <DataList<SalaryStructure>
-      title="Salary Structures" description="Templates of earnings + deductions"
-      data={items} isLoading={isLoading}
-      emptyIcon={<DollarSign className="h-10 w-10" />} emptyTitle="No structures defined"
+    <ResourcePage<SalaryStructure & Record<string, unknown>>
+      title="Salary Structures"
+      description="Templates of earnings + deductions assigned to employees"
+      icon={<DollarSign className="h-10 w-10" />}
+      queryKey={['salary-structures']}
+      fetcher={() => salaryStructureService.list()}
       columns={[
         { key: 'name', label: 'Name' },
         { key: 'description', label: 'Description' },
-        { key: 'components', label: 'Components', render: s => <Badge>{s.components?.length ?? 0}</Badge> },
+        { key: 'components', label: 'Components', render: s => <Badge>{(s.components as unknown[] | undefined)?.length ?? 0}</Badge> },
+        { key: 'active', label: 'Active', render: s => <Badge variant={s.active === false ? 'secondary' : 'success'}>{s.active === false ? 'Inactive' : 'Active'}</Badge> },
       ]}
+      formFields={[
+        { name: 'name', label: 'Name', type: 'text', required: true, span: 2 },
+        { name: 'description', label: 'Description', type: 'textarea', span: 2 },
+        { name: 'effectiveFrom', label: 'Effective from', type: 'date' },
+      ]}
+      onCreate={v => salaryStructureService.create(v)}
+      onUpdate={(id, v) => salaryStructureService.update(id, v)}
     />
   )
 }

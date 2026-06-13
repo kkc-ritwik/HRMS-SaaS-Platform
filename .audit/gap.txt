@@ -1,6 +1,0 @@
-BACKEND=926 FE=1084 MISSING=2
-
-## notifications  (2)
-  GET /api/notifications/sse
-  GET /api/notifications/sse/dashboard
-

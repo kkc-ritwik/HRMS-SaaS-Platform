@@ -49,23 +49,36 @@ export const biometricService = {
 // ── Lifecycle ────────────────────────────────────────────────────────────
 export const probationReviewService = {
   list: () => GET('/api/v1/onboarding/probation-reviews'),
+  forEmployee: (employeeId: string) => GET(`/api/v1/onboarding/probation-reviews/employee/${employeeId}`),
+  create: (v: Record<string, unknown>) => POST('/api/v1/onboarding/probation-reviews', v),
   decide: (id: string, decision: 'CONFIRM' | 'EXTEND' | 'TERMINATE', notes?: string) =>
-    POST(`/api/v1/onboarding/probation-reviews/${id}/decide`, { decision, notes }),
+    PUT(`/api/v1/onboarding/probation-reviews/${id}`, { decision, status: decision, notes }),
+  remove: (id: string) => DEL(`/api/v1/onboarding/probation-reviews/${id}`),
 }
 export const buddyAssignmentService = {
   list: () => GET('/api/v1/onboarding/buddy-assignments'),
+  forEmployee: (employeeId: string) => GET(`/api/v1/onboarding/buddy-assignments/employee/${employeeId}`),
   assign: (v: Record<string, unknown>) => POST('/api/v1/onboarding/buddy-assignments', v),
+  update: (id: string, v: Record<string, unknown>) => PUT(`/api/v1/onboarding/buddy-assignments/${id}`, v),
+  remove: (id: string) => DEL(`/api/v1/onboarding/buddy-assignments/${id}`),
 }
 export const preOnboardingService = {
-  list: () => GET('/api/v1/onboarding/preboard'),
-  invite: (v: Record<string, unknown>) => POST('/api/v1/onboarding/preboard', v),
+  list: () => GET('/api/v1/onboarding/preboard/invites'),
+  invite: (v: Record<string, unknown>) => POST('/api/v1/onboarding/preboard/invite', v),
 }
 export const onboardingTemplateService = {
   list: () => GET('/api/v1/onboarding/templates'),
+  get: (id: string) => GET(`/api/v1/onboarding/templates/${id}`),
   create: (v: Record<string, unknown>) => POST('/api/v1/onboarding/templates', v),
+  update: (id: string, v: Record<string, unknown>) => PUT(`/api/v1/onboarding/templates/${id}`, v),
+  remove: (id: string) => DEL(`/api/v1/onboarding/templates/${id}`),
 }
 export const onboardingTaskAdminService = {
   list: () => GET('/api/v1/onboarding/tasks'),
+  forTemplate: (templateId: string) => GET(`/api/v1/onboarding/tasks/template/${templateId}`),
+  create: (v: Record<string, unknown>) => POST('/api/v1/onboarding/tasks', v),
+  update: (id: string, v: Record<string, unknown>) => PUT(`/api/v1/onboarding/tasks/${id}`, v),
+  remove: (id: string) => DEL(`/api/v1/onboarding/tasks/${id}`),
 }
 export const exitInterviewService = {
   list: () => GET('/api/v1/offboarding/exit-interviews'),
@@ -115,9 +128,9 @@ export const expensePolicyService = {
 
 // ── Performance depth ───────────────────────────────────────────────────
 export const performanceAnalyticsService = {
-  distribution: () => GET('/api/v1/performance/analytics/distribution'),
-  ratingSpread: (cycleId: string) => () => GET('/api/v1/performance/analytics/rating-spread', { cycleId }),
-  calibrationMatrix: (cycleId: string) => () => GET('/api/v1/performance/analytics/calibration', { cycleId }),
+  distribution: (cycleId?: string) => GET('/api/v1/performance/analytics/distribution', cycleId ? { cycleId } : undefined),
+  ratingSpread: (cycleId?: string) => GET('/api/v1/performance/analytics/rating-spread', cycleId ? { cycleId } : undefined),
+  calibrationMatrix: (cycleId?: string) => GET('/api/v1/performance/analytics/calibration', cycleId ? { cycleId } : undefined),
 }
 export const continuousFeedbackService = {
   feed: () => GET('/api/v1/feedback'),
@@ -130,22 +143,24 @@ export const recruitmentAgencyService = {
   create: (v: Record<string, unknown>) => POST('/api/v1/recruitment/agencies', v),
 }
 export const recruitmentAnalyticsService = {
-  funnel: () => GET('/api/v1/recruitment/analytics/funnel'),
-  sourceEffectiveness: () => GET('/api/v1/recruitment/analytics/source-effectiveness'),
-  timeToHire: () => GET('/api/v1/recruitment/analytics/time-to-hire'),
+  dashboard: () => GET('/api/v1/recruitment/analytics/dashboard'),
+  pipeline: () => GET('/api/v1/recruitment/analytics/pipeline'),
+  funnel: (jobId: string) => GET(`/api/v1/recruitment/analytics/funnel/${jobId}`),
+  timeToHire: (jobId: string) => GET(`/api/v1/recruitment/analytics/time-to-hire/${jobId}`),
 }
 export const bgvService = {
   list: () => GET('/api/v1/recruitment/bgv'),
-  initiate: (v: Record<string, unknown>) => POST('/api/v1/recruitment/bgv', v),
-  status: (id: string) => GET(`/api/v1/recruitment/bgv/${id}`),
+  forCandidate: (candidateId: string) => GET(`/api/v1/recruitment/bgv/candidate/${candidateId}`),
+  initiate: (v: Record<string, unknown>) => POST('/api/v1/recruitment/bgv/initiate', v),
+  refresh: (caseId: string) => POST(`/api/v1/recruitment/bgv/${caseId}/refresh`),
 }
 
 // ── Social depth ───────────────────────────────────────────────────────
 export const groupService = {
   list: () => GET('/api/v1/groups'),
   create: (v: Record<string, unknown>) => POST('/api/v1/groups', v),
-  join: (id: string) => POST(`/api/v1/groups/${id}/join`),
-  members: (id: string) => GET('/api/v1/groups/members', { groupId: id }),
+  join: (id: string) => POST('/api/v1/groups/members/join', { groupId: id }),
+  members: (id: string) => GET(`/api/v1/groups/members/group/${id}`),
 }
 export const eventService = {
   list: () => GET('/api/v1/groups/events'),
@@ -213,8 +228,10 @@ export const documentTemplateAdminService = {
   create: (v: Record<string, unknown>) => POST('/api/v1/documents/templates', v),
 }
 export const documentTypeService = {
-  list: () => GET('/api/v1/documents/types'),
+  list: () => GET('/api/v1/documents/types/all'),
   create: (v: Record<string, unknown>) => POST('/api/v1/documents/types', v),
+  update: (id: string, v: Record<string, unknown>) => PUT(`/api/v1/documents/types/${id}`, v),
+  remove: (id: string) => DEL(`/api/v1/documents/types/${id}`),
 }
 export const fileVaultService = {
   list: () => GET('/api/v1/file-vault'),

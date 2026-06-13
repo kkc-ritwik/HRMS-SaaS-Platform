@@ -79,6 +79,12 @@ public class CasesService {
                 : cases.findByTenantIdAndStatus(TenantContext.get(), status, p);
     }
 
+    public HrCase get(UUID caseId) {
+        return cases.findById(caseId)
+                .filter(c -> TenantContext.get().equals(c.getTenantId()))
+                .orElseThrow(() -> new IllegalArgumentException("Case not found: " + caseId));
+    }
+
     private String generateCaseNumber(HrCase.CaseType t) {
         String prefix = switch (t == null ? HrCase.CaseType.OTHER : t) {
             case POSH -> "POSH"; case HARASSMENT -> "HRS"; case GRIEVANCE -> "GRV";

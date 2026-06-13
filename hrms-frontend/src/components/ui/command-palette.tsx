@@ -7,6 +7,7 @@ interface NavTarget { label: string; href: string; group: string }
 const NAV_TARGETS: NavTarget[] = [
   { label: 'Dashboard', href: '/dashboard', group: 'Overview' },
   { label: 'My Profile', href: '/profile', group: 'My Space' },
+  { label: 'My Team', href: '/my-team', group: 'My Space' },
   { label: 'My Leave', href: '/my-leave', group: 'My Space' },
   { label: 'Apply Leave', href: '/leave/apply', group: 'My Space' },
   { label: 'My Payslips', href: '/payslips', group: 'My Space' },

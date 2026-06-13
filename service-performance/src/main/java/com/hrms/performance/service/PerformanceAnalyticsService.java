@@ -153,4 +153,97 @@ public class PerformanceAnalyticsService {
         return values.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
                 .divide(BigDecimal.valueOf(values.size()), 2, RoundingMode.HALF_UP);
     }
+
+    // ── Org-wide rating analytics ───────────────────────────────────────────────
+
+    private List<Review> finalizedManagerReviews(String tenantId, UUID cycleId) {
+        return cycleId != null
+                ? reviewRepository.findByTenantIdAndCycleIdAndReviewTypeAndStatusAndDeletedFalse(
+                        tenantId, cycleId, Review.ReviewType.MANAGER, Review.ReviewStatus.FINALIZED)
+                : reviewRepository.findByTenantIdAndReviewTypeAndStatusAndDeletedFalse(
+                        tenantId, Review.ReviewType.MANAGER, Review.ReviewStatus.FINALIZED);
+    }
+
+    /** Distribution of overall ratings, bucketed 1–5, with counts + percentages. */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getRatingDistribution(String tenantId, UUID cycleId) {
+        List<Review> reviews = finalizedManagerReviews(tenantId, cycleId);
+        Map<Integer, Long> counts = new TreeMap<>();
+        for (int i = 1; i <= 5; i++) counts.put(i, 0L);
+        for (Review r : reviews) {
+            if (r.getOverallRating() == null) continue;
+            int band = clamp(r.getOverallRating().setScale(0, RoundingMode.HALF_UP).intValue());
+            counts.merge(band, 1L, Long::sum);
+        }
+        long total = counts.values().stream().mapToLong(Long::longValue).sum();
+        List<Map<String, Object>> bands = new ArrayList<>();
+        counts.forEach((rating, count) -> bands.add(Map.of(
+                "rating", rating,
+                "count", count,
+                "percentage", total == 0 ? 0.0
+                        : BigDecimal.valueOf(count * 100.0 / total).setScale(1, RoundingMode.HALF_UP).doubleValue())));
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("total", total);
+        out.put("bands", bands);
+        return out;
+    }
+
+    /** Min / max / average / median / std-dev of overall ratings. */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getRatingSpread(String tenantId, UUID cycleId) {
+        List<Double> ratings = new ArrayList<>();
+        for (Review r : finalizedManagerReviews(tenantId, cycleId)) {
+            if (r.getOverallRating() != null) ratings.add(r.getOverallRating().doubleValue());
+        }
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("count", ratings.size());
+        if (ratings.isEmpty()) {
+            out.put("min", null); out.put("max", null); out.put("average", null);
+            out.put("median", null); out.put("stdDev", null);
+            return out;
+        }
+        Collections.sort(ratings);
+        double sum = ratings.stream().mapToDouble(Double::doubleValue).sum();
+        double mean = sum / ratings.size();
+        double variance = ratings.stream().mapToDouble(v -> (v - mean) * (v - mean)).sum() / ratings.size();
+        double median = ratings.size() % 2 == 1
+                ? ratings.get(ratings.size() / 2)
+                : (ratings.get(ratings.size() / 2 - 1) + ratings.get(ratings.size() / 2)) / 2.0;
+        out.put("min", ratings.get(0));
+        out.put("max", ratings.get(ratings.size() - 1));
+        out.put("average", round1(mean));
+        out.put("median", round1(median));
+        out.put("stdDev", round1(Math.sqrt(variance)));
+        return out;
+    }
+
+    /** Calibration matrix — counts of employees per performance-rating band. */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getCalibrationMatrix(String tenantId, UUID cycleId) {
+        List<Review> reviews = finalizedManagerReviews(tenantId, cycleId);
+        Map<Integer, Long> perf = new TreeMap<>();
+        for (int i = 1; i <= 5; i++) perf.put(i, 0L);
+        for (Review r : reviews) {
+            if (r.getPerformanceRating() == null) continue;
+            int band = clamp(r.getPerformanceRating().setScale(0, RoundingMode.HALF_UP).intValue());
+            perf.merge(band, 1L, Long::sum);
+        }
+        long total = perf.values().stream().mapToLong(Long::longValue).sum();
+        List<Map<String, Object>> rows = new ArrayList<>();
+        perf.forEach((rating, count) -> rows.add(Map.of(
+                "performanceRating", rating,
+                "count", count,
+                "percentage", total == 0 ? 0.0
+                        : BigDecimal.valueOf(count * 100.0 / total).setScale(1, RoundingMode.HALF_UP).doubleValue())));
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("total", total);
+        out.put("rows", rows);
+        return out;
+    }
+
+    private int clamp(int v) { return Math.max(1, Math.min(5, v)); }
+
+    private double round1(double v) {
+        return BigDecimal.valueOf(v).setScale(1, RoundingMode.HALF_UP).doubleValue();
+    }
 }

@@ -52,7 +52,7 @@ export const assetService = {
   create: async (payload: Partial<Asset>) => unwrap(await api.post<Asset>('/api/v1/assets', payload)),
   update: async (id: string, payload: Partial<Asset>) => unwrap(await api.put<Asset>(`/api/v1/assets/${id}`, payload)),
   retire: async (id: string, reason: string) =>
-    unwrap(await api.post(`/api/v1/assets/${id}/retire`, { reason })),
+    unwrap(await api.put(`/api/v1/assets/${id}`, { status: 'RETIRED', retireReason: reason })),
 
   // Assignment / handover
   assign: async (id: string, payload: { employeeId: string; conditionOnAssign?: string; handoverNotes?: string }) =>

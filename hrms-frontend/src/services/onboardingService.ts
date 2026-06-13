@@ -32,5 +32,5 @@ export const onboardingService = {
   listTasks: async (workflowId: string) =>
     unwrap(await api.get<OnboardingTask[]>(`/api/v1/onboarding/workflows/${workflowId}/tasks`)),
   completeTask: async (taskId: string, payload?: { notes?: string; documentUri?: string }) =>
-    unwrap(await api.post(`/api/v1/onboarding/tasks/${taskId}/complete`, payload)),
+    unwrap(await api.put(`/api/v1/onboarding/tasks/${taskId}`, { status: 'COMPLETED', ...payload })),
 }
