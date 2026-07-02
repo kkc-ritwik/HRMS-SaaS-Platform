@@ -19,8 +19,12 @@ async function DEL(url: string): Promise<void> { await api.delete(url) }
 export const userService = {
   list: () => GET('/api/v1/users'),
   create: (v: Record<string, unknown>) => POST('/api/v1/users', v),
-  setRoles: (id: string, roles: string[]) => POST(`/api/v1/users/${id}/roles`, { roles }),
+  setStatus: (id: string, status: string) => PUT(`/api/v1/users/${id}/status`, { status }),
   deactivate: (id: string) => POST(`/api/v1/users/${id}/deactivate`),
+  // Role assignment goes through the roles service (POST /roles/assign)
+  rolesForUser: (userId: string) => GET(`/api/v1/roles/users/${userId}`),
+  assignRole: (userId: string, roleId: string) => POST('/api/v1/roles/assign', { userId, roleId }),
+  removeRole: (userId: string, roleId: string) => DEL(`/api/v1/roles/users/${userId}/roles/${roleId}`),
 }
 export const roleService = {
   list: () => GET('/api/v1/roles'),

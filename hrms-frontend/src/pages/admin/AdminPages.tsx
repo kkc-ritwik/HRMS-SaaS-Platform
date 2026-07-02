@@ -24,6 +24,10 @@ export function UsersPage() {
   const { data, isLoading } = useQuery({ queryKey: ['users'], queryFn: userService.list })
   const items: User[] = (data as { content?: User[] } | undefined)?.content || (Array.isArray(data) ? data as User[] : [])
   const create = useMutation({ mutationFn: userService.create, onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }) })
+  const setStatus = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => userService.setStatus(id, status),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+  })
   return (
     <>
       <DataList<User>
@@ -35,6 +39,12 @@ export function UsersPage() {
           { key: 'fullName', label: 'Name' }, { key: 'email', label: 'Email' },
           { key: 'roles', label: 'Roles', render: u => u.roles?.map(r => <Badge key={r} className="mr-1">{r}</Badge>) },
           { key: 'active', label: 'Status', render: u => <Badge>{u.active ? 'Active' : 'Inactive'}</Badge> },
+          { key: 'id', label: '', align: 'right', sortable: false, render: u => (
+            <Button size="sm" variant={u.active ? 'outline' : 'default'} className="h-7"
+              onClick={() => setStatus.mutate({ id: u.id, status: u.active ? 'INACTIVE' : 'ACTIVE' })}>
+              {u.active ? 'Deactivate' : 'Activate'}
+            </Button>
+          ) },
         ]}
       />
       <FormDialog open={creating} onOpenChange={setCreating} title="Add user"
