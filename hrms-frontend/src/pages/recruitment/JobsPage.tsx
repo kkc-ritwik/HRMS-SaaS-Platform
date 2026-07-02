@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { DataList } from '@/components/ui/data-list'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { recruitmentService, type Job } from '@/services/recruitmentService'
+import { getErrorMessage } from '@/lib/api'
+import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 
 export function JobsPage() {
@@ -21,6 +23,14 @@ export function JobsPage() {
   const create = useMutation({
     mutationFn: (v: Record<string, unknown>) => recruitmentService.createJob(v as Partial<Job>),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['jobs'] }),
+  })
+  const act = useMutation({
+    mutationFn: ({ id, action }: { id: string; action: 'submit' | 'approve' | 'cancel' }) =>
+      action === 'submit' ? recruitmentService.submitJob(id)
+        : action === 'approve' ? recruitmentService.approveJob(id)
+          : recruitmentService.cancelJob(id),
+    onSuccess: (_d, v) => { toast.success(`Requisition ${v.action}${v.action === 'cancel' ? 'led' : v.action === 'submit' ? 'ted' : 'd'}`); qc.invalidateQueries({ queryKey: ['jobs'] }) },
+    onError: e => toast.error(getErrorMessage(e)),
   })
 
   return (
@@ -48,6 +58,16 @@ export function JobsPage() {
           { key: 'applicationCount', label: 'Applicants', align: 'right', render: j => j.applicationCount ?? 0 },
           { key: 'status', label: 'Status', render: j => <Badge>{j.status}</Badge> },
           { key: 'closingDate', label: 'Closes' },
+          { key: 'id', label: '', align: 'right', sortable: false, render: j => {
+            const s = String(j.status)
+            return (
+              <div className="flex justify-end gap-1" onClick={e => e.stopPropagation()}>
+                {s === 'DRAFT' && <Button size="sm" variant="outline" className="h-7" onClick={() => act.mutate({ id: j.id, action: 'submit' })}>Submit</Button>}
+                {(s === 'PENDING_APPROVAL' || s === 'SUBMITTED') && <Button size="sm" className="h-7" onClick={() => act.mutate({ id: j.id, action: 'approve' })}>Approve</Button>}
+                {s !== 'CANCELLED' && s !== 'CLOSED' && <Button size="sm" variant="ghost" className="h-7 text-red-500" onClick={() => act.mutate({ id: j.id, action: 'cancel' })}>Cancel</Button>}
+              </div>
+            )
+          } },
         ]}
       />
       <FormDialog
