@@ -1,4 +1,4 @@
-import { FileSignature, Send, XCircle } from 'lucide-react'
+import { FileSignature, Send, XCircle, Check, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { ResourcePage } from '@/components/ui/resource-page'
 import { offerService } from '@/services/extendedServices'
@@ -26,6 +26,8 @@ export function OffersPage() {
       ]}
       rowActions={o => [
         { label: 'Send to candidate', icon: <Send className="h-3.5 w-3.5" />, show: o.status === 'DRAFT', confirm: 'Send this offer to the candidate?', run: () => offerService.send(o.id) },
+        { label: 'Mark accepted', icon: <Check className="h-3.5 w-3.5" />, show: o.status === 'ISSUED' || o.status === 'SENT', confirm: 'Record the candidate as having accepted this offer?', run: () => offerService.respond(o.id, true) },
+        { label: 'Mark declined', icon: <X className="h-3.5 w-3.5" />, show: o.status === 'ISSUED' || o.status === 'SENT', destructive: true, confirm: 'Record the candidate as having declined this offer?', run: () => offerService.respond(o.id, false) },
         { label: 'Revoke', icon: <XCircle className="h-3.5 w-3.5" />, show: o.status === 'ISSUED' || o.status === 'SENT', destructive: true, confirm: 'Revoke this offer?', run: () => offerService.revoke(o.id, 'Revoked by employer') },
       ]}
     />

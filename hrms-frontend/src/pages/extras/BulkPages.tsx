@@ -350,6 +350,10 @@ export function EventsPage() {
   const [creating, setCreating] = useState(false)
   const { data, isLoading } = useQuery({ queryKey: ['events'], queryFn: eventService.list })
   const create = useMutation({ mutationFn: eventService.create, onSuccess: () => qc.invalidateQueries({ queryKey: ['events'] }) })
+  const rsvp = useMutation({
+    mutationFn: ({ id, attending }: { id: string; attending: boolean }) => eventService.rsvp(id, attending),
+    onSuccess: () => { toast.success('RSVP recorded'); qc.invalidateQueries({ queryKey: ['events'] }) },
+  })
   return (
     <>
       <DataList<EventItem>
@@ -361,6 +365,12 @@ export function EventsPage() {
           { key: 'title', label: 'Event' }, { key: 'startsAt', label: 'Starts' },
           { key: 'endsAt', label: 'Ends' }, { key: 'location', label: 'Location' },
           { key: 'attendeesCount', label: 'RSVPs', align: 'right' },
+          { key: 'id', label: '', align: 'right', render: e => (
+            <div className="flex justify-end gap-1">
+              <Button size="sm" variant="outline" className="h-7" onClick={() => rsvp.mutate({ id: e.id, attending: true })}>Going</Button>
+              <Button size="sm" variant="ghost" className="h-7" onClick={() => rsvp.mutate({ id: e.id, attending: false })}>Can’t</Button>
+            </div>
+          ) },
         ]}
       />
       <FormDialog open={creating} onOpenChange={setCreating} title="Create event"
