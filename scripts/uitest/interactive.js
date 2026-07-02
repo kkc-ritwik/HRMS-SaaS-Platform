@@ -9,6 +9,7 @@ const routes = [
   '/surveys', '/polls', '/kudos', '/reviews', '/one-on-ones', '/helpdesk',
   '/advances', '/assets', '/asset-requests', '/tax/declaration', '/tax/proof-verification',
   '/interviews', '/goal-cascade', '/offboarding', '/holidays', '/settings', '/letters',
+  '/users', '/compliance-tasks', '/goals', '/workflows', '/wellness',
 ];
 
 (async () => {
