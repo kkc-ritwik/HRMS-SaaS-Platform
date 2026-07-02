@@ -11,6 +11,7 @@ const routes = [
   '/interviews', '/goal-cascade', '/offboarding', '/holidays', '/settings', '/letters',
   '/users', '/compliance-tasks', '/goals', '/workflows', '/wellness',
   '/rewards-catalog', '/skills', '/competencies', '/jobs',
+  '/awards', '/offers', '/events',
 ];
 
 (async () => {

@@ -1,21 +1,38 @@
+import { useState } from 'react'
 import { Trophy, Check, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResourcePage } from '@/components/ui/resource-page'
 import { awardService } from '@/services/extendedServices'
+import { useAuthStore } from '@/store/authStore'
 
 interface Award extends Record<string, unknown> {
   id: string; awardType: string; nomineeId?: string; title: string;
   status: string; period?: string; monetaryValue?: number; currency?: string; points?: number
 }
+type View = 'all' | 'mine'
 
 export function AwardsPage() {
+  const [view, setView] = useState<View>('all')
+  const user = useAuthStore(s => s.user)
+  const employeeId = user?.employeeId || user?.id || ''
+  const fetcher = () => view === 'mine' ? awardService.forNominee(employeeId) : awardService.list()
+
   return (
+    <>
+    <Tabs value={view} onValueChange={v => setView(v as View)} className="mb-2">
+      <TabsList>
+        <TabsTrigger value="all">All awards</TabsTrigger>
+        <TabsTrigger value="mine">Received by me</TabsTrigger>
+      </TabsList>
+    </Tabs>
     <ResourcePage<Award>
+      key={view}
       title="Awards"
       description="Recognition awards — nominate, approve, grant"
       icon={<Trophy className="h-10 w-10" />}
-      queryKey={['awards']}
-      fetcher={() => awardService.list()}
+      queryKey={['awards', view]}
+      fetcher={fetcher}
       filters={{
         awardType: ['SPOT_AWARD', 'EMPLOYEE_OF_THE_MONTH', 'EMPLOYEE_OF_THE_YEAR', 'LONG_SERVICE', 'TEAM_AWARD', 'INNOVATION', 'LEADERSHIP', 'CUSTOMER_HERO', 'VALUES_CHAMPION', 'OTHER'],
         status: ['NOMINATED', 'APPROVED', 'REJECTED', 'AWARDED'],
@@ -51,5 +68,6 @@ export function AwardsPage() {
         { label: 'Reject', icon: <X className="h-3.5 w-3.5" />, show: a.status === 'NOMINATED', destructive: true, confirm: 'Reject this nomination?', run: () => awardService.reject(a.id) },
       ]}
     />
+    </>
   )
 }
