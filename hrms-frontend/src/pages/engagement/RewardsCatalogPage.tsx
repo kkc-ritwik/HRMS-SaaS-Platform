@@ -10,8 +10,11 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { rewardsCatalogService } from '@/services/extendedServices'
+import { engagementService } from '@/services/engagementService'
 import { engagementCatalog } from '@/services/catalog'
 import { useAuthStore } from '@/store/authStore'
+import { getErrorMessage } from '@/lib/api'
+import { formatDate } from '@/lib/utils'
 import { toast } from 'sonner'
 
 type AnyObj = Record<string, unknown>
@@ -25,12 +28,19 @@ interface CatalogItem extends Record<string, unknown> { id: string; title: strin
 export function RewardsCatalogPage() {
   const qc = useQueryClient()
   const user = useAuthStore(s => s.user)
-  const [tab, setTab] = useState<'catalog' | 'budgets'>('catalog')
+  const [tab, setTab] = useState<'catalog' | 'budgets' | 'redemptions'>('catalog')
   const [newItem, setNewItem] = useState(false)
   const [newBudget, setNewBudget] = useState(false)
+  const employeeId = user?.employeeId || user?.id || ''
 
   const catQ = useQuery({ queryKey: ['rewards', 'catalog'], queryFn: rewardsCatalogService.catalog, enabled: tab === 'catalog' })
   const budQ = useQuery({ queryKey: ['rewards', 'budgets'], queryFn: rewardsCatalogService.budgets, enabled: tab === 'budgets' })
+  const redQ = useQuery({ queryKey: ['rewards', 'redemptions', employeeId], queryFn: () => engagementService.myRedemptions(employeeId), enabled: tab === 'redemptions' && !!employeeId })
+  const fulfill = useMutation({
+    mutationFn: (id: string) => engagementCatalog.rewards.fulfillRedemption(id, {}),
+    onSuccess: () => { toast.success('Redemption fulfilled'); qc.invalidateQueries({ queryKey: ['rewards', 'redemptions', employeeId] }) },
+    onError: e => toast.error(getErrorMessage(e)),
+  })
 
   const redeem = useMutation({
     mutationFn: (item: CatalogItem) => rewardsCatalogService.redeem({ catalogItemId: item.id, employeeId: user?.employeeId || user?.id || '', availablePoints: 9999 }),
@@ -46,10 +56,11 @@ export function RewardsCatalogPage() {
           ? <Button size="sm" onClick={() => setNewItem(true)}><Plus className="h-4 w-4 mr-1" /> Add Reward</Button>
           : <Button size="sm" onClick={() => setNewBudget(true)}><Plus className="h-4 w-4 mr-1" /> New Budget</Button>} />
 
-      <Tabs value={tab} onValueChange={v => setTab(v as 'catalog' | 'budgets')}>
+      <Tabs value={tab} onValueChange={v => setTab(v as 'catalog' | 'budgets' | 'redemptions')}>
         <TabsList>
           <TabsTrigger value="catalog">Catalogue</TabsTrigger>
           <TabsTrigger value="budgets">Budgets</TabsTrigger>
+          <TabsTrigger value="redemptions">My redemptions</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -76,7 +87,7 @@ export function RewardsCatalogPage() {
             ))}
           </div>
         )
-      ) : (
+      ) : tab === 'budgets' ? (
         budQ.isLoading ? <Skeleton className="h-48" /> : rows<AnyObj>(budQ.data).length === 0 ? (
           <EmptyState icon={<Wallet className="h-10 w-10" />} title="No reward budgets" action={{ label: 'New Budget', onClick: () => setNewBudget(true) }} />
         ) : (
@@ -88,6 +99,31 @@ export function RewardsCatalogPage() {
                   <p className="text-2xl font-bold mt-1">{String(b.remainingPoints ?? b.totalPoints ?? 0)} <span className="text-sm text-slate-400">pts left</span></p>
                   <p className="text-xs text-slate-500">of {String(b.totalPoints ?? 0)} allocated · {String(b.period ?? '')}</p>
                   <Button size="sm" variant="outline" className="mt-2" onClick={() => engagementCatalog.rewards.spendBudget(String(b.id), { points: 0 }).then(() => toast.success('Recorded'))}>Record spend</Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )
+      ) : (
+        redQ.isLoading ? <Skeleton className="h-48" /> : rows<AnyObj>(redQ.data).length === 0 ? (
+          <EmptyState icon={<Gift className="h-10 w-10" />} title="No redemptions yet" description="Redeem a reward from the catalogue to see it here." />
+        ) : (
+          <div className="space-y-2">
+            {rows<AnyObj>(redQ.data).map(r => (
+              <Card key={String(r.id)}>
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">{String(r.itemTitle ?? r.catalogItemTitle ?? r.catalogItemId ?? 'Reward')}</p>
+                    <p className="text-xs text-slate-500">
+                      {String(r.pointsSpent ?? r.pointsCost ?? 0)} pts · {r.redeemedAt ? formatDate(String(r.redeemedAt)) : r.createdAt ? formatDate(String(r.createdAt)) : ''}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={String(r.status) === 'FULFILLED' ? 'success' : String(r.status) === 'REJECTED' ? 'destructive' : 'warning'}>{String(r.status ?? 'PENDING')}</Badge>
+                    {String(r.status ?? 'PENDING') !== 'FULFILLED' && (
+                      <Button size="sm" variant="outline" loading={fulfill.isPending} onClick={() => fulfill.mutate(String(r.id))}>Fulfill</Button>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))}

@@ -24,13 +24,15 @@ interface Skill extends Record<string, unknown> { id: string; name: string; cate
 
 export function SkillsPage() {
   const qc = useQueryClient()
-  const [tab, setTab] = useState<'library' | 'gap' | 'role'>('library')
+  const [tab, setTab] = useState<'library' | 'gap' | 'experts'>('library')
   const [creating, setCreating] = useState(false)
   const [rating, setRating] = useState(false)
   const [roleReq, setRoleReq] = useState(false)
+  const [expertSkillId, setExpertSkillId] = useState('')
 
-  const libQ = useQuery({ queryKey: ['skills'], queryFn: async () => (await api.get('/api/v1/skills')).data, enabled: tab === 'library' })
+  const libQ = useQuery({ queryKey: ['skills'], queryFn: async () => (await api.get('/api/v1/skills')).data, enabled: tab === 'library' || tab === 'experts' })
   const gapQ = useQuery({ queryKey: ['skills-gap'], queryFn: () => skillsService.gap(), enabled: tab === 'gap' })
+  const expertsQ = useQuery({ queryKey: ['skill-experts', expertSkillId], queryFn: () => skillsService.experts(expertSkillId), enabled: tab === 'experts' && !!expertSkillId })
 
   const create = useMutation({ mutationFn: (v: Record<string, unknown>) => api.post('/api/v1/skills', v).then(r => r.data), onSuccess: () => { toast.success('Skill added'); qc.invalidateQueries({ queryKey: ['skills'] }); setCreating(false) } })
   const rate = useMutation({ mutationFn: (v: Record<string, unknown>) => skillsService.rate(v), onSuccess: () => { toast.success('Employee skill recorded'); setRating(false) } })
@@ -45,10 +47,11 @@ export function SkillsPage() {
           <Button size="sm" onClick={() => setCreating(true)}><Plus className="h-4 w-4 mr-1" /> New Skill</Button>
         </div>} />
 
-      <Tabs value={tab} onValueChange={v => setTab(v as 'library' | 'gap' | 'role')}>
+      <Tabs value={tab} onValueChange={v => setTab(v as 'library' | 'gap' | 'experts')}>
         <TabsList>
           <TabsTrigger value="library">Skill Library</TabsTrigger>
           <TabsTrigger value="gap">Gap Analysis</TabsTrigger>
+          <TabsTrigger value="experts">Find Experts</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -62,6 +65,33 @@ export function SkillsPage() {
             { key: 'description', label: 'Description' },
           ]}
         />
+      ) : tab === 'experts' ? (
+        <Card><CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-slate-500">Skill:</span>
+            <select className="h-9 rounded-md border border-slate-300 bg-white px-2 text-sm min-w-[220px]"
+              value={expertSkillId} onChange={e => setExpertSkillId(e.target.value)}>
+              <option value="">Select a skill…</option>
+              {rows<Skill>(libQ.data).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </div>
+          {!expertSkillId ? (
+            <EmptyState icon={<Users className="h-8 w-8" />} title="Pick a skill" description="Choose a skill to find employees rated proficient in it." />
+          ) : expertsQ.isLoading ? <Skeleton className="h-40" /> : rows(expertsQ.data).length === 0 ? (
+            <EmptyState icon={<Users className="h-8 w-8" />} title="No experts found" description="No employee meets the proficiency threshold for this skill." />
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="text-xs uppercase text-slate-500 border-b"><tr><th className="text-left p-2">Employee</th><th className="text-left p-2">Proficiency</th><th className="text-left p-2">Experience</th></tr></thead>
+              <tbody>{rows<AnyObj>(expertsQ.data).map((x, i) => (
+                <tr key={i} className="border-b last:border-0">
+                  <td className="p-2">{String(x.employeeName ?? x.employeeId ?? '—')}</td>
+                  <td className="p-2"><Badge>{String(x.level ?? x.proficiency ?? '—')}/5</Badge></td>
+                  <td className="p-2">{x.yearsExperience != null ? `${x.yearsExperience} yr` : '—'}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          )}
+        </CardContent></Card>
       ) : (
         <Card><CardContent className="p-4">
           {gapQ.isLoading ? <Skeleton className="h-40" /> : rows(gapQ.data).length === 0 ? (
