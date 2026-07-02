@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { skillsService } from '@/services/extendedServices'
 import { api } from '@/lib/api'
+import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 
 type AnyObj = Record<string, unknown>
@@ -29,9 +30,13 @@ export function SkillsPage() {
   const [rating, setRating] = useState(false)
   const [roleReq, setRoleReq] = useState(false)
   const [expertSkillId, setExpertSkillId] = useState('')
+  const [gapDesignationId, setGapDesignationId] = useState('')
+  const user = useAuthStore(s => s.user)
+  const gapEmployeeId = user?.employeeId || user?.id || ''
 
   const libQ = useQuery({ queryKey: ['skills'], queryFn: async () => (await api.get('/api/v1/skills')).data, enabled: tab === 'library' || tab === 'experts' })
-  const gapQ = useQuery({ queryKey: ['skills-gap'], queryFn: () => skillsService.gap(), enabled: tab === 'gap' })
+  const desigQ = useQuery({ queryKey: ['designations'], queryFn: async () => (await api.get('/api/v1/designations')).data, enabled: tab === 'gap' })
+  const gapQ = useQuery({ queryKey: ['skills-gap', gapEmployeeId, gapDesignationId], queryFn: () => skillsService.gap(gapEmployeeId, gapDesignationId), enabled: tab === 'gap' && !!gapEmployeeId && !!gapDesignationId })
   const expertsQ = useQuery({ queryKey: ['skill-experts', expertSkillId], queryFn: () => skillsService.experts(expertSkillId), enabled: tab === 'experts' && !!expertSkillId })
 
   const create = useMutation({ mutationFn: (v: Record<string, unknown>) => api.post('/api/v1/skills', v).then(r => r.data), onSuccess: () => { toast.success('Skill added'); qc.invalidateQueries({ queryKey: ['skills'] }); setCreating(false) } })
@@ -93,8 +98,18 @@ export function SkillsPage() {
           )}
         </CardContent></Card>
       ) : (
-        <Card><CardContent className="p-4">
-          {gapQ.isLoading ? <Skeleton className="h-40" /> : rows(gapQ.data).length === 0 ? (
+        <Card><CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-slate-500">Target role:</span>
+            <select className="h-9 rounded-md border border-slate-300 bg-white px-2 text-sm min-w-[220px]"
+              value={gapDesignationId} onChange={e => setGapDesignationId(e.target.value)}>
+              <option value="">Select a designation…</option>
+              {rows<{ id: string; name?: string; title?: string }>(desigQ.data).map(d => <option key={d.id} value={d.id}>{d.name ?? d.title ?? d.id.slice(0, 8)}</option>)}
+            </select>
+          </div>
+          {!gapDesignationId ? (
+            <EmptyState icon={<Target className="h-8 w-8" />} title="Pick a target designation" description="Choose a role to compare your current skills against its requirements." />
+          ) : gapQ.isLoading ? <Skeleton className="h-40" /> : rows(gapQ.data).length === 0 ? (
             <EmptyState icon={<Target className="h-8 w-8" />} title="No skill gaps detected" />
           ) : (
             <table className="w-full text-sm">

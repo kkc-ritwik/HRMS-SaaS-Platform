@@ -10,6 +10,7 @@ const routes = [
   '/advances', '/assets', '/asset-requests', '/tax/declaration', '/tax/proof-verification',
   '/interviews', '/goal-cascade', '/offboarding', '/holidays', '/settings', '/letters',
   '/users', '/compliance-tasks', '/goals', '/workflows', '/wellness',
+  '/rewards-catalog', '/skills', '/competencies', '/jobs',
 ];
 
 (async () => {

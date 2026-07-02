@@ -279,7 +279,8 @@ export const orgChartService = {
 
 // Backend: SkillsController @ /api/v1/skills (employee skills, gap, experts, role reqs)
 export const skillsService = {
-  gap: async () => unwrap(await api.get('/api/v1/skills/gap')),
+  gap: async (employeeId: string, designationId: string) =>
+    unwrap(await api.get('/api/v1/skills/gap', { params: { employeeId, designationId } })),
   experts: async (skillId: string) => unwrap(await api.get('/api/v1/skills/experts', { params: { skillId } })),
   forEmployee: async (employeeId: string) => unwrap(await api.get(`/api/v1/skills/employees/${employeeId}`)),
   myMatrix: async (employeeId: string) => unwrap(await api.get(`/api/v1/skills/employees/${employeeId}`)),
