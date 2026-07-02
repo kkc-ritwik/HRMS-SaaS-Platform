@@ -1,5 +1,6 @@
 package com.hrms.asset.workspace;
 
+import com.hrms.common.exception.ResourceNotFoundException;
 import com.hrms.security.model.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -58,7 +59,7 @@ public class FloorPlanController {
     @PutMapping("/{id}")
     @Transactional
     public Floor update(@PathVariable UUID id, @RequestBody Floor in) {
-        Floor f = floors.findById(id).orElseThrow();
+        Floor f = floors.findById(id).orElseThrow(() -> new ResourceNotFoundException("Floor", "id", id));
         f.setName(in.getName());
         f.setCapacity(in.getCapacity());
         f.setWidthPx(in.getWidthPx());
@@ -73,7 +74,7 @@ public class FloorPlanController {
     @GetMapping("/{id}/seating-map")
     public Map<String, Object> seatingMap(@PathVariable UUID id, @RequestParam LocalDate date) {
         String tenant = TenantContext.get();
-        Floor f = floors.findById(id).orElseThrow();
+        Floor f = floors.findById(id).orElseThrow(() -> new ResourceNotFoundException("Floor", "id", id));
         List<Desk> floorDesks = desks.onFloor(tenant, id);
 
         Map<UUID, UUID> bookedBy = new HashMap<>();

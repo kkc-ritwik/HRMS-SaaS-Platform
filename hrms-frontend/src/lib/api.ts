@@ -73,8 +73,40 @@ api.interceptors.request.use(
 let isRefreshing = false
 let refreshQueue: Array<() => void> = []
 
+/**
+ * Extract the first complete top-level JSON value from a string. The API gateway can emit a
+ * duplicated/concatenated body ({...}{...}) which is invalid JSON; axios then leaves res.data as
+ * a raw string. We brace-match the first balanced object/array so parsing still succeeds.
+ */
+function extractFirstJson(s: string): unknown {
+  const str = s.trim()
+  try { return JSON.parse(str) } catch { /* fall through to brace-matching */ }
+  const open = str[0]
+  if (open !== '{' && open !== '[') return null
+  const close = open === '{' ? '}' : ']'
+  let depth = 0, inStr = false, esc = false
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i]
+    if (inStr) {
+      if (esc) esc = false
+      else if (c === '\\') esc = true
+      else if (c === '"') inStr = false
+    } else if (c === '"') inStr = true
+    else if (c === open) depth++
+    else if (c === close) { depth--; if (depth === 0) { try { return JSON.parse(str.slice(0, i + 1)) } catch { return null } } }
+  }
+  return null
+}
+
+// Normalise any string body (some gateway responses arrive unparsed / duplicated) into JSON.
 api.interceptors.response.use(
-  res => res,
+  res => {
+    if (typeof res.data === 'string' && res.data.length && /^[\[{]/.test(res.data.trim())) {
+      const parsed = extractFirstJson(res.data)
+      if (parsed !== null) res.data = parsed
+    }
+    return res
+  },
   async (error: AxiosError) => {
     const original = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined
     if (!original) return Promise.reject(error)
@@ -92,6 +124,7 @@ api.interceptors.response.use(
         if (!refreshToken) throw new Error('No refresh token')
         const { data } = await api.post('/api/v1/auth/refresh', { refreshToken })
         const newToken = data?.data?.accessToken || data?.accessToken
+        if (!newToken) throw new Error('Refresh returned no access token')
         localStorage.setItem('accessToken', newToken)
         if (original.headers) original.headers.Authorization = `Bearer ${newToken}`
         refreshQueue.forEach(cb => cb())

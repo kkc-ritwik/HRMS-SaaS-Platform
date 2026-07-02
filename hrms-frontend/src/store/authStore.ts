@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export type UserRole = 'ADMIN' | 'HR_MANAGER' | 'MANAGER' | 'EMPLOYEE'
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'HR_MANAGER' | 'HR_ADMIN' | 'MANAGER' | 'EMPLOYEE' | 'RECRUITER' | 'PAYROLL_ADMIN'
 
 export interface User {
   id: string
@@ -87,16 +87,14 @@ export const useAuthStore = create<AuthState>()(
 
       isAdmin: () => {
         const { user } = get()
-        return user?.roles?.includes('ADMIN') ?? false
+        return (user?.roles?.some(r => r === 'ADMIN' || r === 'SUPER_ADMIN')) ?? false
       },
 
       isHRManager: () => {
         const { user } = get()
-        return (
-          (user?.roles?.includes('ADMIN') ||
-            user?.roles?.includes('HR_MANAGER')) ??
-          false
-        )
+        return (user?.roles?.some(r =>
+          r === 'ADMIN' || r === 'SUPER_ADMIN' || r === 'HR_MANAGER' || r === 'HR_ADMIN'
+        )) ?? false
       },
     }),
     {

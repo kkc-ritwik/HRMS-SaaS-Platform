@@ -261,5 +261,5 @@ export const integrationsService = {
 
 // ── Job-cost reports ──────────────────────────────────────────────────
 export const jobCostService = {
-  list: () => GET('/api/v1/timesheet/reports/job-cost'),
+  list: () => GET('/api/v1/timesheet/reports/job-cost/tenant-summary'),
 }

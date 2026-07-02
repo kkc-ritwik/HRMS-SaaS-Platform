@@ -23,8 +23,11 @@ public class JobCostController {
     }
 
     @GetMapping("/tenant-summary")
-    public List<JobCostReportService.ProjectCost> tenant(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-                                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return svc.tenantSummary(from, to);
+    public List<JobCostReportService.ProjectCost> tenant(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        LocalDate t = to != null ? to : LocalDate.now();
+        LocalDate f = from != null ? from : t.minusMonths(12);
+        return svc.tenantSummary(f, t);
     }
 }

@@ -108,13 +108,22 @@ export const engagementService = {
     unwrap(await api.get(`/api/engagement/heatmap/by-${by}`, { params: { from, to } })),
 
   // Polls (/api/v1/engagement/polls)
+  listPolls: async (): Promise<Poll[]> => {
+    const res = unwrap<{ content?: Poll[] } | Poll[]>(await api.get('/api/v1/engagement/polls'))
+    return Array.isArray(res) ? res : (res?.content ?? [])
+  },
   createPoll: async (payload: Partial<Poll>) => unwrap(await api.post<Poll>('/api/v1/engagement/polls', payload)),
-  votePoll: async (pollId: string, optionIndex: number) =>
-    unwrap(await api.post(`/api/v1/engagement/polls/${pollId}/vote`, { optionIndex })),
+  // backend PollVote expects selectedOptions: List<Integer> (option indexes)
+  votePoll: async (pollId: string, optionIndexes: number[]) =>
+    unwrap(await api.post(`/api/v1/engagement/polls/${pollId}/vote`, { selectedOptions: optionIndexes })),
   pollTally: async (pollId: string) =>
     unwrap<Record<number, number>>(await api.get(`/api/v1/engagement/polls/${pollId}/tally`)),
 
   // Surveys (/api/v1/engagement/surveys)
+  listSurveys: async (): Promise<Survey[]> => {
+    const res = unwrap<{ content?: Survey[] } | Survey[]>(await api.get('/api/v1/engagement/surveys'))
+    return Array.isArray(res) ? res : (res?.content ?? [])
+  },
   createSurvey: async (payload: Partial<Survey>) => unwrap(await api.post<Survey>('/api/v1/engagement/surveys', payload)),
   launchSurvey: async (id: string) => unwrap(await api.post<Survey>(`/api/v1/engagement/surveys/${id}/launch`)),
   submitSurveyResponse: async (id: string, payload: Record<string, unknown>) =>

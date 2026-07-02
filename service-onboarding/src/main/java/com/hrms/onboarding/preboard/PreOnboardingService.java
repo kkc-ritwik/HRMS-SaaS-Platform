@@ -83,14 +83,16 @@ public class PreOnboardingService {
 
     @Transactional
     public PreOnboardingPortal complete(String token) {
-        PreOnboardingPortal p = portals.findByAccessToken(token).orElseThrow();
+        PreOnboardingPortal p = portals.findByAccessToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid access token"));
         p.setStatus(PreOnboardingPortal.Status.COMPLETED);
         p.setCompletedAt(Instant.now());
         return portals.save(p);
     }
 
     public PreOnboardingPortal byToken(String token) {
-        return portals.findByAccessToken(token).orElseThrow();
+        return portals.findByAccessToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid access token"));
     }
 
     private void sendInvitationEmail(PreOnboardingPortal p, String name, String email) {

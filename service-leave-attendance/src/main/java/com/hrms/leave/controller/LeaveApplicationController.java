@@ -106,12 +106,18 @@ public class LeaveApplicationController {
     // ── Manager / HR endpoints ────────────────────────────────────────────────
 
     @GetMapping("/team")
-    @Operation(summary = "Get team leave applications (pass employeeIds as query params)")
+    @Operation(summary = "Get team/tenant leave applications (optional employeeIds + status filter)")
     public ResponseEntity<ApiResponse<List<LeaveApplicationDto.Response>>> teamLeaves(
-            @RequestParam List<UUID> employeeIds,
+            @RequestParam(required = false) List<UUID> employeeIds,
+            @RequestParam(required = false) com.hrms.leave.entity.LeaveApplication.LeaveStatus status,
+            @RequestParam(required = false) UUID employeeId,
             @PageableDefault(size = 20) Pageable pageable) {
+        if (employeeId != null) {
+            employeeIds = (employeeIds == null) ? new java.util.ArrayList<>(List.of(employeeId)) : employeeIds;
+            if (!employeeIds.contains(employeeId)) employeeIds.add(employeeId);
+        }
         Page<LeaveApplicationDto.Response> page = leaveApplicationService
-                .getTeamLeaves(tenantId(), employeeIds, pageable);
+                .listTeamLeaves(tenantId(), employeeIds, status, pageable);
         PaginationMeta meta = leaveApplicationService.buildMeta(page);
         return ResponseEntity.ok(ApiResponse.ok(page.getContent(), meta));
     }
@@ -119,11 +125,17 @@ public class LeaveApplicationController {
     @GetMapping("/team-calendar")
     @Operation(summary = "Get team leave calendar for a specific month/year")
     public ResponseEntity<ApiResponse<List<LeaveApplicationDto.TeamCalendarItem>>> teamCalendar(
-            @RequestParam List<UUID> employeeIds,
-            @RequestParam int month,
-            @RequestParam int year) {
+            @RequestParam(required = false) List<UUID> employeeIds,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year) {
+        if (employeeIds == null || employeeIds.isEmpty()) {
+            return ResponseEntity.ok(ApiResponse.ok(java.util.List.of()));
+        }
+        java.time.LocalDate now = java.time.LocalDate.now();
+        int m = month != null ? month : now.getMonthValue();
+        int y = year != null ? year : now.getYear();
         return ResponseEntity.ok(ApiResponse.ok(
-                leaveApplicationService.getTeamCalendar(tenantId(), employeeIds, month, year)));
+                leaveApplicationService.getTeamCalendar(tenantId(), employeeIds, m, y)));
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────

@@ -10,10 +10,37 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PageHeader } from '@/components/ui/page-header'
 import { settingsService } from '@/services/settingsService'
+import { authService } from '@/services/authService'
+import { getErrorMessage } from '@/lib/api'
 import { toast } from 'sonner'
 
 export function SettingsPage() {
   const qc = useQueryClient()
+  const [pw, setPw] = useState({ currentPassword: '', newPassword: '', confirm: '' })
+  const changePassword = useMutation({
+    mutationFn: () => authService.changePassword({ currentPassword: pw.currentPassword, newPassword: pw.newPassword }),
+    onSuccess: () => { toast.success('Password changed'); setPw({ currentPassword: '', newPassword: '', confirm: '' }) },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  })
+  const [mfaCode, setMfaCode] = useState('')
+  const [enroll, setEnroll] = useState<{ secret: string; qrCode: string } | null>(null)
+  const mfa = useQuery({ queryKey: ['settings', 'mfa'], queryFn: settingsService.myMfa })
+  const mfaEnabled = (mfa.data as { enabled?: boolean } | undefined)?.enabled
+  const startEnroll = useMutation({
+    mutationFn: settingsService.enrollMfa,
+    onSuccess: (d) => setEnroll(d as { secret: string; qrCode: string }),
+    onError: (e) => toast.error(getErrorMessage(e)),
+  })
+  const confirmMfa = useMutation({
+    mutationFn: () => settingsService.verifyMfa(mfaCode),
+    onSuccess: () => { toast.success('Two-factor authentication enabled'); setEnroll(null); setMfaCode(''); qc.invalidateQueries({ queryKey: ['settings', 'mfa'] }) },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  })
+  const disableMfa = useMutation({
+    mutationFn: () => settingsService.disableMfa(mfaCode),
+    onSuccess: () => { toast.success('Two-factor authentication disabled'); setMfaCode(''); qc.invalidateQueries({ queryKey: ['settings', 'mfa'] }) },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  })
   const tenant = useQuery({ queryKey: ['settings', 'tenant'], queryFn: settingsService.myTenant })
   const integrations = useQuery({ queryKey: ['settings', 'integrations'], queryFn: settingsService.listIntegrations })
   const flags = useQuery({ queryKey: ['settings', 'flags'], queryFn: settingsService.listFlags })
@@ -63,6 +90,82 @@ export function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="security" className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Change password</CardTitle></CardHeader>
+            <CardContent className="space-y-3 max-w-md">
+              <div>
+                <Label>Current password</Label>
+                <Input type="password" value={pw.currentPassword}
+                  onChange={e => setPw(p => ({ ...p, currentPassword: e.target.value }))} />
+              </div>
+              <div>
+                <Label>New password</Label>
+                <Input type="password" value={pw.newPassword}
+                  onChange={e => setPw(p => ({ ...p, newPassword: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Confirm new password</Label>
+                <Input type="password" value={pw.confirm}
+                  onChange={e => setPw(p => ({ ...p, confirm: e.target.value }))} />
+              </div>
+              <Button
+                onClick={() => changePassword.mutate()}
+                loading={changePassword.isPending}
+                disabled={!pw.currentPassword || pw.newPassword.length < 8 || pw.newPassword !== pw.confirm}>
+                Update password
+              </Button>
+              {pw.newPassword && pw.confirm && pw.newPassword !== pw.confirm &&
+                <p className="text-xs text-red-500">Passwords do not match</p>}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Two-factor authentication (TOTP)
+                {mfa.isLoading ? null : <Badge variant={mfaEnabled ? 'default' : 'outline'}>{mfaEnabled ? 'Enabled' : 'Disabled'}</Badge>}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 max-w-md">
+              {mfa.isLoading ? <Skeleton className="h-16" /> : mfaEnabled ? (
+                <>
+                  <p className="text-sm text-slate-500">Enter a current code from your authenticator app to turn off two-factor authentication.</p>
+                  <div>
+                    <Label>Authenticator code</Label>
+                    <Input inputMode="numeric" placeholder="123456" value={mfaCode}
+                      onChange={e => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))} />
+                  </div>
+                  <Button variant="destructive" onClick={() => disableMfa.mutate()}
+                    loading={disableMfa.isPending} disabled={mfaCode.length !== 6}>
+                    Disable two-factor
+                  </Button>
+                </>
+              ) : enroll ? (
+                <>
+                  <p className="text-sm text-slate-500">Scan this QR code with Google Authenticator, Authy or 1Password, then enter the 6-digit code to confirm.</p>
+                  {enroll.qrCode && <img src={enroll.qrCode} alt="MFA QR code" className="h-44 w-44 rounded border bg-white p-2" />}
+                  <p className="text-xs text-slate-500 break-all">Or enter this secret manually: <span className="font-mono">{enroll.secret}</span></p>
+                  <div>
+                    <Label>Authenticator code</Label>
+                    <Input inputMode="numeric" placeholder="123456" value={mfaCode}
+                      onChange={e => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))} />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={() => confirmMfa.mutate()} loading={confirmMfa.isPending} disabled={mfaCode.length !== 6}>
+                      Verify &amp; enable
+                    </Button>
+                    <Button variant="outline" onClick={() => { setEnroll(null); setMfaCode('') }}>Cancel</Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-slate-500">Add an extra layer of security by requiring a one-time code at sign-in.</p>
+                  <Button onClick={() => startEnroll.mutate()} loading={startEnroll.isPending}>Set up two-factor</Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader><CardTitle>Active sessions</CardTitle></CardHeader>
             <CardContent>

@@ -20,6 +20,7 @@ public class EngagementService {
 
     public interface SurveyRepo extends JpaRepository<Survey, UUID> {
         Page<Survey> findByTenantIdAndStatus(String tenantId, Survey.Status s, Pageable p);
+        List<Survey> findByTenantId(String tenantId);
     }
     public interface SurveyResponseRepo extends JpaRepository<SurveyResponse, UUID> {
         List<SurveyResponse> findByTenantIdAndSurveyId(String tenantId, UUID surveyId);
@@ -43,6 +44,9 @@ public class EngagementService {
     private final EventPublisher events;
 
     // ── Surveys ──────────────────────────────────────────────────────────────
+    public List<Survey> listSurveys() { return surveys.findByTenantId(TenantContext.get()); }
+    public List<Poll> listPolls() { return polls.findByTenantId(TenantContext.get(), Pageable.unpaged()).getContent(); }
+
     @Transactional public Survey createSurvey(Survey s) {
         s.setTenantId(TenantContext.get()); if (s.getStatus()==null) s.setStatus(Survey.Status.DRAFT); return surveys.save(s);
     }

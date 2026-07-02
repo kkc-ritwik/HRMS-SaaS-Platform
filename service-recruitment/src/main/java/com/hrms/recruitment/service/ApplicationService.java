@@ -115,6 +115,12 @@ public class ApplicationService {
     }
 
     @Transactional(readOnly = true)
+    public java.util.List<ApplicationDto.Response> listAll(String tenantId) {
+        return applicationRepository.findByTenantIdAndDeletedFalse(tenantId)
+                .stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
     public Page<ApplicationDto.Response> listByRequisition(String tenantId, UUID requisitionId,
                                                              Pageable pageable) {
         return applicationRepository

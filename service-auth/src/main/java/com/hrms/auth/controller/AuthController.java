@@ -91,6 +91,21 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok("Password changed successfully"));
     }
 
+    @GetMapping("/me")
+    @Operation(summary = "Get the currently authenticated user")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> me() {
+        UserPrincipal u = currentUser();
+        java.util.Map<String, Object> user = new java.util.LinkedHashMap<>();
+        user.put("id", u.getId());
+        user.put("email", u.getEmail());
+        user.put("fullName", u.getFullName());
+        user.put("employeeId", u.getEmployeeId());
+        user.put("tenantId", u.getTenantId());
+        user.put("roles", u.getRoles());
+        user.put("permissions", u.getPermissions());
+        return ResponseEntity.ok(ApiResponse.ok(user));
+    }
+
     // ── OTP ───────────────────────────────────────────────────────────────────────
 
     @PostMapping("/otp/send")

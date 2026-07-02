@@ -1,5 +1,6 @@
 server:
   port: 8080
+  shutdown: graceful
 spring:
   application:
     name: api-gateway
@@ -10,14 +11,19 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
+        # GDPR self-service (auth) — must precede the generic /api/v1/me/** route below
+        - id: me-gdpr
+          uri: lb://service-auth
+          predicates:
+            - Path=/api/v1/me/data/**, /api/v1/me/erase/**, /api/v1/me/restrict/**, /api/v1/me/consent/**
         - id: auth
           uri: lb://service-auth
           predicates:
-            - Path=/api/v1/auth/**, /api/v1/users/**, /api/v1/roles/**
+            - Path=/api/v1/auth/**, /api/v1/users/**, /api/v1/roles/**, /api/v1/tenants/**, /api/v1/api-keys/**
         - id: core-hr
           uri: lb://service-core-hr
           predicates:
-            - Path=/api/v1/employees/**, /api/v1/departments/**, /api/v1/designations/**, /api/v1/locations/**, /api/v1/org-chart/**
+            - Path=/api/v1/employees/**, /api/v1/departments/**, /api/v1/designations/**, /api/v1/locations/**, /api/v1/org-chart/**, /api/v1/custom-fields/**, /api/v1/legal-entities/**, /api/corehr/**, /api/v1/me/**
         - id: leave-attendance
           uri: lb://service-leave-attendance
           predicates:
@@ -25,15 +31,15 @@ spring:
         - id: payroll
           uri: lb://service-payroll
           predicates:
-            - Path=/api/v1/payroll/**, /api/v1/salary/**, /api/v1/payslips/**, /api/v1/tax/**
+            - Path=/api/v1/payroll/**, /api/v1/salary/**, /api/v1/payslips/**, /api/v1/tax/**, /api/payroll/**
         - id: recruitment
           uri: lb://service-recruitment
           predicates:
-            - Path=/api/v1/jobs/**, /api/v1/candidates/**, /api/v1/applications/**, /api/v1/interviews/**, /api/v1/offers/**
+            - Path=/api/v1/jobs/**, /api/v1/candidates/**, /api/v1/applications/**, /api/v1/interviews/**, /api/v1/offers/**, /api/v1/recruitment/**, /api/recruitment/**
         - id: performance
           uri: lb://service-performance
           predicates:
-            - Path=/api/v1/goals/**, /api/v1/reviews/**, /api/v1/feedback/**, /api/v1/performance/**, /api/v1/competencies/**
+            - Path=/api/v1/goals/**, /api/v1/reviews/**, /api/v1/feedback/**, /api/v1/performance/**, /api/v1/competencies/**, /api/v1/one-on-ones/**, /api/v1/pip-plans/**, /api/performance/**
         - id: onboarding
           uri: lb://service-onboarding
           predicates:
@@ -41,11 +47,11 @@ spring:
         - id: document
           uri: lb://service-document
           predicates:
-            - Path=/api/v1/documents/**, /api/v1/templates/**, /api/v1/policies/**
+            - Path=/api/v1/documents/**, /api/v1/templates/**, /api/v1/policies/**, /api/v1/letters/**, /api/v1/esign/**, /api/documents/**
         - id: notification
           uri: lb://service-notification
           predicates:
-            - Path=/api/v1/notifications/**, /api/v1/announcements/**
+            - Path=/api/v1/notifications/**, /api/v1/announcements/**, /api/notifications/**
         - id: expense
           uri: lb://service-expense
           predicates:
@@ -53,11 +59,11 @@ spring:
         - id: asset
           uri: lb://service-asset
           predicates:
-            - Path=/api/v1/assets/**
+            - Path=/api/v1/assets/**, /api/v1/vendors/**, /api/asset/**
         - id: helpdesk
           uri: lb://service-helpdesk
           predicates:
-            - Path=/api/v1/tickets/**, /api/v1/kb/**
+            - Path=/api/v1/tickets/**, /api/v1/kb/**, /api/v1/helpdesk/**
         - id: social
           uri: lb://service-social
           predicates:
@@ -65,11 +71,11 @@ spring:
         - id: compensation
           uri: lb://service-compensation
           predicates:
-            - Path=/api/v1/compensation/**, /api/v1/benefits/**, /api/v1/pay-grades/**
+            - Path=/api/v1/compensation/**, /api/v1/benefits/**, /api/v1/pay-grades/**, /api/compensation/**
         - id: compliance
           uri: lb://service-compliance
           predicates:
-            - Path=/api/v1/compliance/**, /api/v1/licenses/**
+            - Path=/api/v1/compliance/**, /api/v1/licenses/**, /api/v1/audit/**
         - id: offboarding
           uri: lb://service-offboarding
           predicates:
@@ -77,15 +83,51 @@ spring:
         - id: lms
           uri: lb://service-lms
           predicates:
-            - Path=/api/v1/courses/**, /api/v1/learning/**, /api/v1/certifications/**
+            - Path=/api/v1/courses/**, /api/v1/learning/**, /api/v1/certifications/**, /api/v1/lms/**
         - id: workflow
           uri: lb://service-workflow
           predicates:
-            - Path=/api/v1/workflows/**, /api/v1/approvals/**
+            - Path=/api/v1/workflows/**, /api/v1/approvals/**, /api/v1/workflow/**
         - id: reports
           uri: lb://service-reports
           predicates:
-            - Path=/api/v1/reports/**, /api/v1/dashboards/**
+            - Path=/api/v1/reports/**, /api/v1/dashboards/**, /api/reports/**
+        - id: travel
+          uri: lb://service-travel
+          predicates:
+            - Path=/api/v1/travel/**, /api/v1/trips/**, /api/v1/travel-requests/**
+        - id: timesheet
+          uri: lb://service-timesheet
+          predicates:
+            - Path=/api/v1/timesheets/**, /api/v1/time-entries/**, /api/v1/timesheet/**
+        - id: cases
+          uri: lb://service-cases
+          predicates:
+            - Path=/api/v1/cases/**, /api/cases/**
+        - id: files
+          uri: lb://service-files
+          predicates:
+            - Path=/api/v1/files/**, /api/v1/file-vault/**
+        - id: forms
+          uri: lb://service-forms
+          predicates:
+            - Path=/api/v1/forms/**, /api/v1/form-submissions/**
+        - id: engagement
+          uri: lb://service-engagement
+          predicates:
+            - Path=/api/v1/engagement/**, /api/v1/surveys/**, /api/v1/pulse/**, /api/v1/awards/**, /api/engagement/**
+        - id: skills
+          uri: lb://service-skills
+          predicates:
+            - Path=/api/v1/skills/**, /api/v1/skill-matrix/**
+        - id: integrations
+          uri: lb://service-integrations
+          predicates:
+            - Path=/api/v1/integrations/**, /api/v1/webhooks/**
+        - id: workplace
+          uri: lb://service-workplace
+          predicates:
+            - Path=/api/v1/workplace/**, /api/v1/desks/**, /api/v1/meeting-rooms/**
       globalcors:
         cors-configurations:
           '[/**]':
@@ -130,8 +172,6 @@ management:
   endpoint.health.probes.enabled: true
   metrics.tags.application: ${spring.application.name}
 
-server:
-  shutdown: graceful
 spring.lifecycle.timeout-per-shutdown-phase: 30s
 
 resilience4j:

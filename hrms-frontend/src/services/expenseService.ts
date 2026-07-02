@@ -88,7 +88,7 @@ export const expenseService = {
   createAdvance: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/expenses/advances', payload)),
   updateAdvance: async (id: string, payload: Record<string, unknown>) => unwrap(await api.put(`/api/v1/expenses/advances/${id}`, payload)),
   deleteAdvance: async (id: string) => { await api.delete(`/api/v1/expenses/advances/${id}`) },
-  approveAdvance: async (id: string) => unwrap(await api.post(`/api/v1/expenses/advances/${id}/approve`)),
+  approveAdvance: async (id: string, approvedBy: string) => unwrap(await api.post(`/api/v1/expenses/advances/${id}/approve`, { approvedBy })),
 
   // Policies (/api/v1/expenses/policies)
   policies: async () => unwrap(await api.get('/api/v1/expenses/policies')),

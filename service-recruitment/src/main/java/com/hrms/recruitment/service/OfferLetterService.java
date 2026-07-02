@@ -142,6 +142,12 @@ public class OfferLetterService {
                 .stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<OfferLetterDto.Response> listAll(String tenantId) {
+        return offerLetterRepository.findByTenantIdAndDeletedFalseOrderByCreatedAtDesc(tenantId)
+                .stream().map(this::toResponse).toList();
+    }
+
     // ── Template merge ────────────────────────────────────────────────────────
 
     /**

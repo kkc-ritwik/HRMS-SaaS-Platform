@@ -1,19 +1,15 @@
 package com.hrms.mail.service;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.stereotype.Component;
-
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Default fallback renderer — supports mustache-style {{key}} and {{key.subkey}} substitution.
- * Services that provide TemplateRenderer beans (e.g. service-notification with DB-backed templates
- * + Thymeleaf) will override this via @ConditionalOnMissingBean.
+ * Registered as a @Bean with @ConditionalOnMissingBean in {@link com.hrms.mail.config.MailAutoConfiguration},
+ * so services that provide their own TemplateRenderer (e.g. service-notification with DB-backed
+ * templates + Thymeleaf) override it cleanly.
  */
-@Component
-@ConditionalOnMissingBean(TemplateRenderer.class)
 public class InlineTemplateRenderer implements TemplateRenderer {
 
     private static final Pattern P = Pattern.compile("\\{\\{\\s*([\\w.]+)\\s*}}");

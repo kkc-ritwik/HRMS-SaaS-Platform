@@ -37,6 +37,14 @@ public class NotificationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(response));
     }
 
+    @GetMapping("/unread-count")
+    @PreAuthorize("hasAuthority('NOTIFICATION:READ')")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> unreadCount() {
+        String tenantId = TenantContext.get();
+        long count = notificationService.list(tenantId, PageRequest.of(0, 1)).getTotalElements();
+        return ResponseEntity.ok(ApiResponse.ok(java.util.Map.of("count", count)));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('NOTIFICATION:READ')")
     public ResponseEntity<ApiResponse<NotificationDto.Response>> getById(@PathVariable UUID id) {

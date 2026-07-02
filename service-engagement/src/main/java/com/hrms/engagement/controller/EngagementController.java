@@ -19,6 +19,7 @@ public class EngagementController {
     private final EngagementService svc;
 
     // Surveys
+    @GetMapping("/surveys") public List<Survey> listSurveys() { return svc.listSurveys(); }
     @PostMapping("/surveys") public Survey createSurvey(@RequestBody Survey s) { return svc.createSurvey(s); }
     @PostMapping("/surveys/{id}/launch") public Survey launch(@PathVariable UUID id) { return svc.launch(id); }
     @PostMapping("/surveys/{id}/responses") public SurveyResponse respond(@PathVariable UUID id, @RequestBody SurveyResponse r) {
@@ -34,6 +35,7 @@ public class EngagementController {
     }
 
     // Polls
+    @GetMapping("/polls") public List<Poll> listPolls() { return svc.listPolls(); }
     @PostMapping("/polls") public Poll createPoll(@RequestBody Poll p) { return svc.createPoll(p); }
     @PostMapping("/polls/{id}/vote") public PollVote vote(@PathVariable UUID id, @RequestBody PollVote v) {
         v.setPollId(id); return svc.vote(v);

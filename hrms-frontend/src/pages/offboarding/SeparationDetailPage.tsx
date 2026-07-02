@@ -7,7 +7,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft, ClipboardCheck, MessageCircle, BookOpen, Banknote, History,
-  Check, Circle, AlertTriangle,
+  Check, Circle, AlertTriangle, ShieldCheck, Undo2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,6 +16,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Catalog } from '@/services/catalog'
+import { offboardingService, type ClearanceItem } from '@/services/offboardingService'
+import { getErrorMessage } from '@/lib/api'
 import { toast } from 'sonner'
 import { cn, formatDate } from '@/lib/utils'
 
@@ -39,11 +41,14 @@ export function SeparationDetailPage() {
   const checklistQ = useQuery({ queryKey: ['sep-chk', id], queryFn: () => Catalog.offboarding.checklists.forSeparation(id), enabled: !!id && tab === 'checklist' })
   const exitQ = useQuery({ queryKey: ['sep-exit', id], queryFn: () => Catalog.offboarding.exitInterviews.forSeparation(id), enabled: !!id && tab === 'exit' })
   const ktQ = useQuery({ queryKey: ['sep-kt', id], queryFn: () => Catalog.offboarding.knowledgeTransfers.forSeparation(id), enabled: !!id && tab === 'kt' })
+  const clearanceQ = useQuery({ queryKey: ['sep-clr', id], queryFn: () => offboardingService.clearance(id), enabled: !!id && tab === 'clearance' })
   const auditQ = useQuery({ queryKey: ['sep-audit', id], queryFn: () => Catalog.audit.byEntity('Separation', id), enabled: !!id && tab === 'audit' })
 
   const approve = useMutation({ mutationFn: () => Catalog.offboarding.separations.approve(id), onSuccess: () => { toast.success('Separation approved'); qc.invalidateQueries({ queryKey: ['sep', id] }) } })
   const complete = useMutation({ mutationFn: () => Catalog.offboarding.separations.complete(id), onSuccess: () => { toast.success('Separation completed'); qc.invalidateQueries({ queryKey: ['sep', id] }) } })
   const completeTask = useMutation({ mutationFn: (taskId: string) => Catalog.offboarding.checklists.complete(taskId), onSuccess: () => { toast.success('Task completed'); qc.invalidateQueries({ queryKey: ['sep-chk', id] }) } })
+  const withdraw = useMutation({ mutationFn: () => offboardingService.withdraw(id), onSuccess: () => { toast.success('Separation withdrawn'); qc.invalidateQueries({ queryKey: ['sep', id] }) }, onError: e => toast.error(getErrorMessage(e)) })
+  const markCleared = useMutation({ mutationFn: (dept: string) => offboardingService.markCleared(id, dept), onSuccess: () => { toast.success('Marked cleared'); qc.invalidateQueries({ queryKey: ['sep-clr', id] }) }, onError: e => toast.error(getErrorMessage(e)) })
 
   if (sepQ.isLoading) return <Skeleton className="h-96" />
   const s = (sepQ.data as AnyObj) || {}
@@ -67,6 +72,11 @@ export function SeparationDetailPage() {
               <Badge variant={s.status === 'COMPLETED' ? 'success' : s.status === 'APPROVED' ? 'success' : 'warning'}>{String(s.status || 'PENDING')}</Badge>
               {s.status === 'PENDING' && <Button size="sm" onClick={() => approve.mutate()} disabled={approve.isPending}>Approve</Button>}
               {s.status === 'APPROVED' && <Button size="sm" onClick={() => complete.mutate()} disabled={complete.isPending}>Mark complete</Button>}
+              {s.status !== 'COMPLETED' && s.status !== 'WITHDRAWN' && (
+                <Button size="sm" variant="outline" onClick={() => withdraw.mutate()} disabled={withdraw.isPending}>
+                  <Undo2 className="h-3.5 w-3.5 mr-1" /> Withdraw
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
@@ -78,6 +88,7 @@ export function SeparationDetailPage() {
           <TabsTrigger value="checklist"><ClipboardCheck className="h-3.5 w-3.5" /> Checklist</TabsTrigger>
           <TabsTrigger value="exit"><MessageCircle className="h-3.5 w-3.5" /> Exit Interview</TabsTrigger>
           <TabsTrigger value="kt"><BookOpen className="h-3.5 w-3.5" /> Knowledge Transfer</TabsTrigger>
+          <TabsTrigger value="clearance"><ShieldCheck className="h-3.5 w-3.5" /> Clearance</TabsTrigger>
           <TabsTrigger value="fnf"><Banknote className="h-3.5 w-3.5" /> Full & Final</TabsTrigger>
           <TabsTrigger value="audit"><History className="h-3.5 w-3.5" /> Audit</TabsTrigger>
         </TabsList>
@@ -146,6 +157,31 @@ export function SeparationDetailPage() {
               <div key={String(k.id)} className="border-b border-slate-100 last:border-0 py-3">
                 <p className="text-sm font-medium">{String(k.area || k.title || 'KT')}</p>
                 <p className="text-xs text-slate-500">To: {String(k.toEmployeeName || k.toEmployeeId || '—')} · <Badge>{String(k.status || '')}</Badge></p>
+              </div>
+            ))}
+          </CardContent></Card>
+        </TabsContent>
+
+        <TabsContent value="clearance">
+          <Card><CardContent className="space-y-2">
+            {clearanceQ.isLoading ? <Skeleton className="h-20" /> : ((clearanceQ.data as ClearanceItem[] | undefined) ?? []).length === 0 ? (
+              <EmptyState icon={<ShieldCheck className="h-6 w-6" />} title="No clearance items" description="Clearance departments appear once the separation enters the clearance stage." />
+            ) : ((clearanceQ.data as ClearanceItem[] | undefined) ?? []).map(c => (
+              <div key={c.department} className={cn('flex items-center justify-between p-3 rounded-lg border', c.status === 'CLEARED' ? 'bg-green-50 border-green-200' : c.status === 'BLOCKED' ? 'bg-red-50 border-red-200' : 'border-slate-100')}>
+                <div>
+                  <p className="text-sm font-medium">{c.department}</p>
+                  <p className="text-xs text-slate-500">
+                    {c.status === 'CLEARED' && c.clearedBy ? `Cleared by ${c.clearedBy}${c.clearedAt ? ' · ' + formatDate(c.clearedAt) : ''}` : c.blockerReason || 'Awaiting sign-off'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant={c.status === 'CLEARED' ? 'success' : c.status === 'BLOCKED' ? 'destructive' : 'warning'}>{c.status}</Badge>
+                  {c.status !== 'CLEARED' && (
+                    <Button size="sm" variant="outline" loading={markCleared.isPending} onClick={() => markCleared.mutate(c.department)}>
+                      <Check className="h-3.5 w-3.5 mr-1" /> Mark cleared
+                    </Button>
+                  )}
+                </div>
               </div>
             ))}
           </CardContent></Card>

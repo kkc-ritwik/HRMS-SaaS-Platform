@@ -43,16 +43,16 @@ export const lmsService = {
   getCourse: async (id: string) => unwrap(await api.get<Course>(`/api/v1/courses/${id}`)),
   createCourse: async (payload: Partial<Course>) => unwrap(await api.post<Course>('/api/v1/courses', payload)),
 
-  myEnrollments: async () => unwrap(await api.get<Enrollment[]>('/api/v1/learning/enrollments/me')),
-  enroll: async (courseId: string) => unwrap(await api.post<Enrollment>('/api/v1/learning/enroll', { courseId })),
+  myEnrollments: async () => unwrap(await api.get<Enrollment[]>('/api/v1/courses/enrollments')),
+  enroll: async (courseId: string) => unwrap(await api.post<Enrollment>('/api/v1/courses/enrollments', { courseId })),
   updateProgress: async (id: string, progressPercent: number) =>
-    unwrap(await api.patch<Enrollment>(`/api/v1/learning/enrollments/${id}/progress`, { progressPercent })),
+    unwrap(await api.put<Enrollment>(`/api/v1/courses/enrollments/${id}`, { progressPercent })),
   complete: async (id: string, score?: number) =>
-    unwrap(await api.post<Enrollment>(`/api/v1/learning/enrollments/${id}/complete`, { score })),
+    unwrap(await api.put<Enrollment>(`/api/v1/courses/enrollments/${id}`, { status: 'COMPLETED', score })),
 
   listCertifications: async (employeeId?: string) =>
-    unwrap(await api.get<Certification[]>('/api/v1/certifications', { params: { employeeId } })),
-  myCertifications: async () => unwrap(await api.get<Certification[]>('/api/v1/certifications/me')),
+    unwrap(await api.get<Certification[]>('/api/v1/courses/certifications', { params: { employeeId } })),
+  myCertifications: async () => unwrap(await api.get<Certification[]>('/api/v1/courses/certifications')),
   uploadCertification: async (payload: Partial<Certification>) =>
-    unwrap(await api.post<Certification>('/api/v1/certifications', payload)),
+    unwrap(await api.post<Certification>('/api/v1/courses/certifications', payload)),
 }

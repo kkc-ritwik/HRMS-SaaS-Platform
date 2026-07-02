@@ -30,8 +30,7 @@ public interface WorkflowInstanceRepository extends JpaRepository<WorkflowInstan
     Page<WorkflowInstance> findByTenantIdAndStatusAndDeletedFalse(String tenantId, InstanceStatus status, Pageable pageable);
 
     @Query("SELECT w FROM WorkflowInstance w WHERE w.deleted = false " +
-           "AND w.status IN (com.hrms.workflow.entity.WorkflowInstance.InstanceStatus.PENDING, " +
-           "                 com.hrms.workflow.entity.WorkflowInstance.InstanceStatus.IN_PROGRESS) " +
+           "AND w.status IN (PENDING, IN_PROGRESS) " +
            "AND w.slaDueAt IS NOT NULL AND w.slaDueAt < :now")
     List<WorkflowInstance> findOverdue(@Param("now") Instant now);
 }

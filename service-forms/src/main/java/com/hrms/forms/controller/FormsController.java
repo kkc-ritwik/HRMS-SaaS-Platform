@@ -16,6 +16,7 @@ public class FormsController {
 
     private final FormsService svc;
 
+    @GetMapping public java.util.List<FormDefinition> all() { return svc.listAll(); }
     @PostMapping public FormDefinition save(@RequestBody FormDefinition d) { return svc.createOrUpdate(d); }
     @PostMapping("/{id}/publish") public FormDefinition publish(@PathVariable UUID id) { return svc.publish(id); }
     @GetMapping("/by-code/{code}") public FormDefinition byCode(@PathVariable String code) { return svc.latestPublished(code); }

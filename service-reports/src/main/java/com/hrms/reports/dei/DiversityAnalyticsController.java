@@ -150,6 +150,7 @@ public class DiversityAnalyticsController {
             long n = ((Number) r[2]).longValue();
             if (n < MIN_GROUP_SIZE) continue;
             BigDecimal mean = (BigDecimal) r[1];
+            if (mean == null) continue;
             String g = r[0] == null ? "(unspecified)" : r[0].toString();
             means.put(g, mean);
             if (mean.compareTo(maxMean) > 0) { maxMean = mean; maxGroup = g; }
@@ -166,7 +167,12 @@ public class DiversityAnalyticsController {
                 gap.put(e.getKey(), pct);
             }
         }
-        return Map.of("means", means, "baselineGroup", maxGroup, "gapPctVsBaseline", gap, "sampleSize", maxN);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("means", means);
+        result.put("baselineGroup", maxGroup);   // may be null when no group meets the floor
+        result.put("gapPctVsBaseline", gap);
+        result.put("sampleSize", maxN);
+        return result;
     }
 
     private static String safeColumn(String by) {

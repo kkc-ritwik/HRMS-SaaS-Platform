@@ -296,6 +296,18 @@ public class LeaveApplicationService {
                 .map(a -> toResponse(a, leaveTypeOrNull(a.getLeaveTypeId())));
     }
 
+    /** Team/HR view: filter by an explicit employee list, else tenant-wide; optional status. */
+    @Transactional(readOnly = true)
+    public Page<LeaveApplicationDto.Response> listTeamLeaves(String tenantId,
+                                                              List<UUID> teamMemberIds,
+                                                              LeaveApplication.LeaveStatus status,
+                                                              Pageable pageable) {
+        Page<LeaveApplication> page = (teamMemberIds != null && !teamMemberIds.isEmpty())
+                ? applicationRepository.findByTenantIdAndEmployeeIdInAndDeletedFalse(tenantId, teamMemberIds, pageable)
+                : applicationRepository.findByTenantFiltered(tenantId, status, pageable);
+        return page.map(a -> toResponse(a, leaveTypeOrNull(a.getLeaveTypeId())));
+    }
+
     // ── Team calendar ─────────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)

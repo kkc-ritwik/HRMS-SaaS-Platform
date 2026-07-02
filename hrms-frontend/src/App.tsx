@@ -114,6 +114,7 @@ import { RewardsCatalogPage } from '@/pages/engagement/RewardsCatalogPage'
 import { WellnessPage } from '@/pages/engagement/WellnessPage'
 import { StayInterviewsPage } from '@/pages/engagement/StayInterviewsPage'
 import { PollsPage } from '@/pages/engagement/PollsPage'
+import { SurveysPage } from '@/pages/engagement/SurveysPage'
 import { HeatmapPage } from '@/pages/engagement/HeatmapPage'
 
 // Operational
@@ -304,6 +305,7 @@ export default function App() {
         <Route path="/wellness" element={<WellnessPage />} />
         <Route path="/stay-interviews" element={<StayInterviewsPage />} />
         <Route path="/polls" element={<PollsPage />} />
+        <Route path="/surveys" element={<SurveysPage />} />
         <Route path="/heatmap" element={<HeatmapPage />} />
 
         {/* Operational */}

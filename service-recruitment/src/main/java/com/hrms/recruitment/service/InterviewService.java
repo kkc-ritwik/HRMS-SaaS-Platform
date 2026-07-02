@@ -144,6 +144,12 @@ public class InterviewService {
                 .stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<InterviewDto.Response> listAll(String tenantId) {
+        return interviewRepository.findByTenantIdAndDeletedFalseOrderByScheduledAtDesc(tenantId)
+                .stream().map(this::toResponse).toList();
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private InterviewPanelist addPanelistInternal(String tenantId, UUID interviewId,

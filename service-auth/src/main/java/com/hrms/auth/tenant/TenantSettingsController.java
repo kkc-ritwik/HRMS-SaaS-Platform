@@ -27,6 +27,46 @@ public class TenantSettingsController {
 
     private final TenantSettingsRepository repository;
 
+    @GetMapping
+    @Operation(summary = "Get the current tenant's settings (branding + feature flags)")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCurrent() {
+        TenantSettings s = settings();
+        Map<String, Object> out = new HashMap<>();
+        out.put("tenantId", s.getTenantId());
+        out.put("branding", s.getBranding() == null ? new HashMap<>() : s.getBranding());
+        out.put("featureFlags", s.getFeatureFlags() == null ? new HashMap<>() : s.getFeatureFlags());
+        return ResponseEntity.ok(ApiResponse.ok(out));
+    }
+
+    @PutMapping
+    @PreAuthorize("hasAuthority('TENANT:WRITE')")
+    @Operation(summary = "Update the current tenant's settings")
+    @Transactional
+    public ResponseEntity<ApiResponse<Map<String, Object>>> updateCurrent(@RequestBody Map<String, Object> body) {
+        TenantSettings s = settings();
+        Object branding = body.get("branding");
+        if (branding instanceof Map<?, ?> b) {
+            @SuppressWarnings("unchecked") Map<String, Object> bm = (Map<String, Object>) b;
+            Map<String, Object> merged = s.getBranding() == null ? new HashMap<>() : new HashMap<>(s.getBranding());
+            merged.putAll(bm);
+            s.setBranding(merged);
+        }
+        s.setUpdatedBy(currentUserId());
+        TenantSettings saved = repository.save(s);
+        Map<String, Object> out = new HashMap<>();
+        out.put("tenantId", saved.getTenantId());
+        out.put("branding", saved.getBranding());
+        out.put("featureFlags", saved.getFeatureFlags());
+        return ResponseEntity.ok(ApiResponse.ok(out));
+    }
+
+    @GetMapping("/flags")
+    @Operation(summary = "List the current tenant's feature flags")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getFlags() {
+        Map<String, Object> flags = settings().getFeatureFlags();
+        return ResponseEntity.ok(ApiResponse.ok(flags == null ? new HashMap<>() : flags));
+    }
+
     @GetMapping("/branding")
     @Operation(summary = "Get the current tenant's branding")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getBranding() {

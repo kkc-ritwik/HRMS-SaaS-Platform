@@ -32,7 +32,9 @@ public class AdvancedRecruitingAnalyticsController {
 
     @GetMapping("/cost-per-hire")
     @Transactional(readOnly = true)
-    public Map<String, Object> costPerHire(@RequestParam LocalDate from, @RequestParam LocalDate to) {
+    public Map<String, Object> costPerHire(@RequestParam(required = false) LocalDate from, @RequestParam(required = false) LocalDate to) {
+        to = (to != null) ? to : LocalDate.now();
+        from = (from != null) ? from : to.minusMonths(12);
         String tenant = TenantContext.get();
 
         BigDecimal totalSpend = (BigDecimal) em.createNativeQuery(
@@ -46,7 +48,7 @@ public class AdvancedRecruitingAnalyticsController {
         long hires = ((Number) em.createNativeQuery(
                 "SELECT COUNT(*) FROM applications a " +
                 "WHERE a.tenant_id = :t AND a.stage = 'HIRED' AND a.is_deleted = false " +
-                "AND a.stage_changed_at::date BETWEEN :from AND :to")
+                "AND cast(a.stage_changed_at as date) BETWEEN :from AND :to")
                 .setParameter("t", tenant)
                 .setParameter("from", from)
                 .setParameter("to", to)
@@ -65,16 +67,18 @@ public class AdvancedRecruitingAnalyticsController {
 
     @GetMapping("/time-to-fill")
     @Transactional(readOnly = true)
-    public Map<String, Object> timeToFill(@RequestParam LocalDate from, @RequestParam LocalDate to) {
+    public Map<String, Object> timeToFill(@RequestParam(required = false) LocalDate from, @RequestParam(required = false) LocalDate to) {
+        to = (to != null) ? to : LocalDate.now();
+        from = (from != null) ? from : to.minusMonths(12);
         String tenant = TenantContext.get();
 
         Object[] row = (Object[]) em.createNativeQuery(
-                "SELECT AVG(EXTRACT(EPOCH FROM (a.stage_changed_at - r.created_at)) / 86400)::numeric, " +
+                "SELECT cast(AVG(EXTRACT(EPOCH FROM (a.stage_changed_at - r.created_at)) / 86400) as numeric), " +
                 "       COUNT(*) " +
                 "FROM applications a " +
                 "JOIN job_requisitions r ON r.id = a.requisition_id AND r.tenant_id = a.tenant_id " +
                 "WHERE a.tenant_id = :t AND a.stage = 'HIRED' AND a.is_deleted = false " +
-                "AND a.stage_changed_at::date BETWEEN :from AND :to")
+                "AND cast(a.stage_changed_at as date) BETWEEN :from AND :to")
                 .setParameter("t", tenant)
                 .setParameter("from", from)
                 .setParameter("to", to)
@@ -90,7 +94,9 @@ public class AdvancedRecruitingAnalyticsController {
 
     @GetMapping("/offer-acceptance-rate")
     @Transactional(readOnly = true)
-    public Map<String, Object> offerAcceptance(@RequestParam LocalDate from, @RequestParam LocalDate to) {
+    public Map<String, Object> offerAcceptance(@RequestParam(required = false) LocalDate from, @RequestParam(required = false) LocalDate to) {
+        to = (to != null) ? to : LocalDate.now();
+        from = (from != null) ? from : to.minusMonths(12);
         String tenant = TenantContext.get();
         Object[] row = (Object[]) em.createNativeQuery(
                 "SELECT " +
@@ -98,7 +104,7 @@ public class AdvancedRecruitingAnalyticsController {
                 "  COUNT(*) FILTER (WHERE status = 'DECLINED'), " +
                 "  COUNT(*) " +
                 "FROM offer_letters " +
-                "WHERE tenant_id = :t AND issued_at::date BETWEEN :from AND :to AND is_deleted = false")
+                "WHERE tenant_id = :t AND cast(created_at as date) BETWEEN :from AND :to AND is_deleted = false")
                 .setParameter("t", tenant)
                 .setParameter("from", from)
                 .setParameter("to", to)
@@ -148,14 +154,16 @@ public class AdvancedRecruitingAnalyticsController {
     /** Quality-of-hire proxy: percentage of new hires from period N still active 365 days later. */
     @GetMapping("/quality-of-hire")
     @Transactional(readOnly = true)
-    public Map<String, Object> qualityOfHire(@RequestParam LocalDate from, @RequestParam LocalDate to) {
+    public Map<String, Object> qualityOfHire(@RequestParam(required = false) LocalDate from, @RequestParam(required = false) LocalDate to) {
+        to = (to != null) ? to : LocalDate.now();
+        from = (from != null) ? from : to.minusMonths(12);
         String tenant = TenantContext.get();
         Object[] row = (Object[]) em.createNativeQuery(
                 "SELECT " +
-                "  COUNT(*) FILTER (WHERE e.exit_date IS NULL OR e.exit_date - e.hire_date >= 365), " +
+                "  COUNT(*) FILTER (WHERE e.exit_date IS NULL OR e.exit_date - e.join_date >= 365), " +
                 "  COUNT(*) " +
                 "FROM employees e " +
-                "WHERE e.tenant_id = :t AND e.hire_date BETWEEN :from AND :to")
+                "WHERE e.tenant_id = :t AND e.join_date BETWEEN :from AND :to")
                 .setParameter("t", tenant)
                 .setParameter("from", from)
                 .setParameter("to", to)

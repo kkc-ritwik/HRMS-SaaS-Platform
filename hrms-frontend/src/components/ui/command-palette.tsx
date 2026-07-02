@@ -54,6 +54,7 @@ const NAV_TARGETS: NavTarget[] = [
   { label: 'Rewards Catalogue', href: '/rewards-catalog', group: 'Engagement' },
   { label: 'Suggestions', href: '/suggestions', group: 'Engagement' },
   { label: 'Polls', href: '/polls', group: 'Engagement' },
+  { label: 'Surveys', href: '/surveys', group: 'Engagement' },
   { label: 'Pulse Check-in', href: '/pulse', group: 'Engagement' },
   { label: 'Engagement Heatmap', href: '/heatmap', group: 'Engagement' },
   { label: 'Wellness Programs', href: '/wellness', group: 'Engagement' },

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Grid3x3 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -54,8 +54,8 @@ export function NineBoxPage() {
               )}
 
               {[3, 2, 1].map(potBand => (
-                <>
-                  <div key={`label-${potBand}`} className="flex items-center justify-end text-xs font-medium text-slate-500 pr-2">
+                <Fragment key={potBand}>
+                  <div className="flex items-center justify-end text-xs font-medium text-slate-500 pr-2">
                     {potBand === 3 ? 'High Potential' : potBand === 2 ? 'Medium Potential' : 'Low Potential'}
                   </div>
                   {[1, 2, 3].map(perfBand => {
@@ -76,7 +76,7 @@ export function NineBoxPage() {
                       </div>
                     )
                   })}
-                </>
+                </Fragment>
               ))}
             </div>
           </CardContent>

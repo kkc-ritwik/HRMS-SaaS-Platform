@@ -2,6 +2,29 @@ import { api, unwrap } from '@/lib/api'
 
 export type TaxRegime = 'OLD' | 'NEW'
 export type DeclarationStatus = 'DRAFT' | 'SUBMITTED' | 'VERIFIED'
+export type DeclarationProofStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
+
+/** Backend: TaxDeclarationDto.ProofSummary */
+export interface DeclarationProof {
+  id: string
+  section: string
+  description?: string
+  declaredAmount: number
+  proofAmount?: number
+  proofUrl?: string
+  status: DeclarationProofStatus
+  verifiedBy?: string
+  createdAt?: string
+}
+
+/** Backend: TaxDeclarationDto.AddProofRequest */
+export interface AddDeclarationProofRequest {
+  section: string
+  description?: string
+  declaredAmount: number
+  proofAmount?: number
+  proofUrl?: string
+}
 
 export interface TaxDeclaration {
   id: string
@@ -19,6 +42,9 @@ export interface TaxDeclaration {
   otherIncome: number
   previousEmployerIncome: number
   previousEmployerTds: number
+  proofs?: DeclarationProof[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface InvestmentProof {
@@ -60,9 +86,9 @@ export const taxService = {
   // ── Tax declarations (/api/v1/tax/declarations) ─────────────────────────
   myDeclarations: async () =>
     unwrap<TaxDeclaration[]>(await api.get('/api/v1/tax/declarations/me')),
-  myDeclaration: async (fy: string): Promise<TaxDeclaration | undefined> => {
+  myDeclaration: async (fy: string): Promise<TaxDeclaration | null> => {
     const list = unwrap<TaxDeclaration[]>(await api.get('/api/v1/tax/declarations/me'))
-    return (list || []).find(d => d.financialYear === fy)
+    return (list || []).find(d => d.financialYear === fy) ?? null
   },
   getDeclaration: async (declarationId: string) =>
     unwrap<TaxDeclaration>(await api.get(`/api/v1/tax/declarations/me/${declarationId}`)),

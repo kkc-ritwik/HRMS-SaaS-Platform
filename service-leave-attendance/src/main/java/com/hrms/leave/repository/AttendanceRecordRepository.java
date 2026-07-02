@@ -20,8 +20,8 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
     @Query("SELECT ar FROM AttendanceRecord ar " +
            "WHERE ar.tenantId = :tenantId AND ar.employeeId = :employeeId " +
            "AND ar.deleted = false " +
-           "AND FUNCTION('YEAR', ar.attendanceDate) = :year " +
-           "AND FUNCTION('MONTH', ar.attendanceDate) = :month " +
+           "AND EXTRACT(YEAR FROM ar.attendanceDate) = :year " +
+           "AND EXTRACT(MONTH FROM ar.attendanceDate) = :month " +
            "ORDER BY ar.attendanceDate ASC")
     List<AttendanceRecord> findByEmployeeAndMonth(@Param("tenantId") String tenantId,
                                                    @Param("employeeId") UUID employeeId,

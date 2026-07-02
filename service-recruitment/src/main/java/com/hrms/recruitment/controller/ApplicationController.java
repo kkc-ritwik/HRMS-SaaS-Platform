@@ -40,6 +40,13 @@ public class ApplicationController {
                 applicationService.apply(tenantId(), req, currentUserId())));
     }
 
+    @GetMapping
+    @PreAuthorize("hasAuthority('RECRUITMENT:READ')")
+    @Operation(summary = "List all applications for the tenant")
+    public ResponseEntity<ApiResponse<List<ApplicationDto.Response>>> list() {
+        return ResponseEntity.ok(ApiResponse.ok(applicationService.listAll(tenantId())));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('RECRUITMENT:READ')")
     @Operation(summary = "Get an application by ID")

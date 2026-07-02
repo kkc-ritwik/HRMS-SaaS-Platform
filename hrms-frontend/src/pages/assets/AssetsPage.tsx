@@ -1,4 +1,4 @@
-import { Package, Trash2 } from 'lucide-react'
+import { Package, Trash2, Undo2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { ResourcePage } from '@/components/ui/resource-page'
 import { assetService, type Asset } from '@/services/assetService'
@@ -38,6 +38,7 @@ export function AssetsPage() {
       onCreate={v => assetService.create(v as Partial<Asset>)}
       onUpdate={(id, v) => assetService.update(id, v as Partial<Asset>)}
       rowActions={a => [
+        { label: 'Return', icon: <Undo2 className="h-3.5 w-3.5" />, show: a.status === 'ASSIGNED', confirm: 'Mark this asset as returned?', run: () => assetService.returnAsset(a.id, {}) },
         { label: 'Retire', icon: <Trash2 className="h-3.5 w-3.5" />, show: a.status !== 'RETIRED', destructive: true, confirm: 'Retire this asset?', run: () => Catalog.assets.remove(a.id) },
       ]}
     />

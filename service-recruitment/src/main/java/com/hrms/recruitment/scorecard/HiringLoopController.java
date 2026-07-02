@@ -37,7 +37,10 @@ public class HiringLoopController {
         List<InterviewScorecard> forApplication(@Param("t") String tenant, @Param("a") UUID application);
     }
 
-    public interface LoopRepo extends JpaRepository<HiringLoop, UUID> {}
+    public interface LoopRepo extends JpaRepository<HiringLoop, UUID> {
+        @Query("SELECT l FROM HiringLoop l WHERE l.tenantId = :t")
+        List<HiringLoop> byTenant(@Param("t") String tenant);
+    }
 
     private final TemplateRepo templates;
     private final ScorecardRepo scorecards;
@@ -56,6 +59,9 @@ public class HiringLoopController {
     }
 
     // ── Hiring loop ───────────────────────────────────────────────────────────────
+
+    @GetMapping("/hiring-loops")
+    public List<HiringLoop> listLoops() { return loops.byTenant(TenantContext.get()); }
 
     @PostMapping("/hiring-loops")
     public HiringLoop createLoop(@RequestBody HiringLoop l) {

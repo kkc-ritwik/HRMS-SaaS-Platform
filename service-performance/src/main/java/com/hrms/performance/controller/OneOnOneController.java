@@ -57,6 +57,18 @@ public class OneOnOneController {
                 oneOnOneService.complete(tenantId(), id, currentUserId())));
     }
 
+    @GetMapping
+    @PreAuthorize("hasAuthority('PERFORMANCE:READ')")
+    @Operation(summary = "List the current user's 1-on-1 meetings (as employee)")
+    public ResponseEntity<ApiResponse<List<OneOnOneDto.Response>>> list(
+            @PageableDefault(size = 20) Pageable pageable) {
+        String empId = principal().getEmployeeId();
+        if (empId == null) return ResponseEntity.ok(ApiResponse.ok(List.of()));
+        Page<OneOnOneDto.Response> page =
+                oneOnOneService.listForEmployee(tenantId(), UUID.fromString(empId), pageable);
+        return ResponseEntity.ok(ApiResponse.ok(page.getContent(), oneOnOneService.buildMeta(page)));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('PERFORMANCE:READ')")
     @Operation(summary = "Get a 1-on-1 meeting by ID")

@@ -1,5 +1,6 @@
 package com.hrms.corehr.company;
 
+import com.hrms.common.exception.ResourceNotFoundException;
 import com.hrms.security.model.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,7 +31,9 @@ public class LegalEntityController {
     public List<LegalEntity> list() { return repo.findByTenantIdAndActiveTrue(TenantContext.get()); }
 
     @GetMapping("/{id}")
-    public LegalEntity get(@PathVariable UUID id) { return repo.findById(id).orElseThrow(); }
+    public LegalEntity get(@PathVariable UUID id) {
+        return repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("LegalEntity", "id", id));
+    }
 
     @GetMapping("/{parentId}/children")
     public List<LegalEntity> children(@PathVariable UUID parentId) {
@@ -40,7 +43,7 @@ public class LegalEntityController {
     @PutMapping("/{id}")
     @Transactional
     public LegalEntity update(@PathVariable UUID id, @RequestBody LegalEntity updates) {
-        LegalEntity le = repo.findById(id).orElseThrow();
+        LegalEntity le = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("LegalEntity", "id", id));
         updates.setId(id); updates.setTenantId(le.getTenantId());
         return repo.save(updates);
     }

@@ -36,6 +36,13 @@ public class InterviewController {
                 interviewService.schedule(tenantId(), req, currentUserId())));
     }
 
+    @GetMapping
+    @PreAuthorize("hasAuthority('RECRUITMENT:READ')")
+    @Operation(summary = "List all interviews for the tenant")
+    public ResponseEntity<ApiResponse<List<InterviewDto.Response>>> list() {
+        return ResponseEntity.ok(ApiResponse.ok(interviewService.listAll(tenantId())));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('RECRUITMENT:READ')")
     @Operation(summary = "Get an interview by ID (includes panelist scorecards)")

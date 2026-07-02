@@ -63,8 +63,8 @@ export interface MarketBenchmark {
 
 export const compensationService = {
   // Pay grades
-  listGrades: async () => unwrap(await api.get<PayGrade[]>('/api/v1/pay-grades')),
-  createGrade: async (payload: Partial<PayGrade>) => unwrap(await api.post<PayGrade>('/api/v1/pay-grades', payload)),
+  listGrades: async () => unwrap(await api.get<PayGrade[]>('/api/v1/compensation/pay-grades')),
+  createGrade: async (payload: Partial<PayGrade>) => unwrap(await api.post<PayGrade>('/api/v1/compensation/pay-grades', payload)),
 
   // Compensation plans
   listPlans: async (employeeId?: string) =>

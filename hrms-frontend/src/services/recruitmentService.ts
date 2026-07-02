@@ -91,11 +91,18 @@ export const recruitmentService = {
   // ── Interviews (/api/v1/interviews) ──────────────────────────────────────
   interviewsForApplication: async (applicationId: string) =>
     unwrap(await api.get(`/api/v1/interviews/application/${applicationId}`)),
+  listInterviews: async () => unwrap(await api.get('/api/v1/interviews')),
   getInterview: async (id: string) => unwrap(await api.get(`/api/v1/interviews/${id}`)),
   scheduleInterview: async (payload: Record<string, unknown>) => unwrap(await api.post('/api/v1/interviews', payload)),
   setInterviewStatus: async (id: string, status: string) => unwrap(await api.patch(`/api/v1/interviews/${id}/status`, { status })),
   submitInterviewFeedback: async (id: string, payload: Record<string, unknown>) =>
     unwrap(await api.post(`/api/v1/interviews/${id}/feedback`, payload)),
+  addPanelist: async (id: string, payload: { interviewerId: string; role?: string }) =>
+    unwrap(await api.post(`/api/v1/interviews/${id}/panelists`, payload)),
+  removePanelist: async (id: string, panelistId: string) =>
+    unwrap(await api.delete(`/api/v1/interviews/${id}/panelists/${panelistId}`)),
+  submitPanelistFeedback: async (id: string, panelistId: string, payload: { rating: number; feedback?: string }) =>
+    unwrap(await api.post(`/api/v1/interviews/${id}/panelists/${panelistId}/feedback`, payload)),
 
   // ── Offers (/api/v1/offers) ──────────────────────────────────────────────
   offersForApplication: async (applicationId: string) => unwrap(await api.get(`/api/v1/offers/application/${applicationId}`)),

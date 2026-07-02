@@ -1,5 +1,6 @@
 package com.hrms.corehr.customfields;
 
+import com.hrms.common.exception.ResourceNotFoundException;
 import com.hrms.security.model.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -41,7 +42,7 @@ public class CustomFieldController {
     @DeleteMapping("/{id}")
     @Transactional
     public void delete(@PathVariable UUID id) {
-        CustomFieldDefinition d = repo.findById(id).orElseThrow();
+        CustomFieldDefinition d = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("CustomField", "id", id));
         d.setActive(false); repo.save(d);
     }
 }

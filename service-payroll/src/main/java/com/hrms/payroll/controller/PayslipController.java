@@ -36,6 +36,7 @@ public class PayslipController {
     public ResponseEntity<ApiResponse<List<PayslipDto.Summary>>> getMyPayslips(
             @PageableDefault(size = 12) Pageable pageable) {
         UUID employeeId = employeeId();
+        if (employeeId == null) return ResponseEntity.ok(ApiResponse.ok(List.of()));
         Page<PayslipDto.Summary> page = payslipService.getMyPayslips(tenantId(), employeeId, pageable);
         PaginationMeta meta = payslipService.buildMeta(page);
         return ResponseEntity.ok(ApiResponse.ok(page.getContent(), meta));
@@ -82,8 +83,8 @@ public class PayslipController {
     private String tenantId() { return TenantContext.get(); }
 
     private UUID employeeId() {
-        return UUID.fromString(
-                ((UserPrincipal) SecurityContextHolder.getContext()
-                        .getAuthentication().getPrincipal()).getEmployeeId());
+        String eid = ((UserPrincipal) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal()).getEmployeeId();
+        return (eid == null || eid.isBlank()) ? null : UUID.fromString(eid);
     }
 }

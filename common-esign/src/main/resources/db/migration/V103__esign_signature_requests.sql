@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS signature_requests (
     updated_by              VARCHAR(100),
     created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    deleted                 BOOLEAN NOT NULL DEFAULT FALSE
+    is_deleted              BOOLEAN NOT NULL DEFAULT FALSE
 );
 CREATE INDEX IF NOT EXISTS ix_sigreq_status  ON signature_requests (status);
 CREATE INDEX IF NOT EXISTS ix_sigreq_subject ON signature_requests (subject_type, subject_id);

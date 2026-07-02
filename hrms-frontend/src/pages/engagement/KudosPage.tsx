@@ -7,24 +7,39 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/ui/page-header'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { engagementService, type Kudos } from '@/services/engagementService'
+import { useAuthStore } from '@/store/authStore'
 import { formatDate } from '@/lib/utils'
 
 export function KudosPage() {
   const qc = useQueryClient()
   const [giving, setGiving] = useState(false)
-  const { data, isLoading } = useQuery({ queryKey: ['kudos', 'feed'], queryFn: engagementService.myKudosFeed })
+  const [tab, setTab] = useState<'feed' | 'received'>('feed')
+  const user = useAuthStore(s => s.user)
+  const employeeId = user?.employeeId || user?.id || ''
+
+  const feed = useQuery({ queryKey: ['kudos', 'feed'], queryFn: engagementService.myKudosFeed, enabled: tab === 'feed' })
+  const received = useQuery({ queryKey: ['kudos', 'received', employeeId], queryFn: () => engagementService.kudosReceived(employeeId), enabled: tab === 'received' && !!employeeId })
+  const isLoading = tab === 'feed' ? feed.isLoading : received.isLoading
+  const data = tab === 'feed' ? feed.data : received.data
 
   const give = useMutation({
     mutationFn: (v: Record<string, unknown>) => engagementService.giveKudos(v as { recipientId: string; message: string; value?: string; isPublic?: boolean }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['kudos', 'feed'] }); setGiving(false) },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['kudos'] }); setGiving(false) },
   })
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       <PageHeader title="Kudos" description="Public peer recognition"
         action={<Button onClick={() => setGiving(true)}><Plus className="h-4 w-4 mr-1" /> Give Kudos</Button>} />
+      <Tabs value={tab} onValueChange={v => setTab(v as 'feed' | 'received')}>
+        <TabsList>
+          <TabsTrigger value="feed">Public feed</TabsTrigger>
+          <TabsTrigger value="received">Received by me</TabsTrigger>
+        </TabsList>
+      </Tabs>
       {isLoading ? (
         <Skeleton className="h-48" />
       ) : (data as Kudos[] || []).length === 0 ? (

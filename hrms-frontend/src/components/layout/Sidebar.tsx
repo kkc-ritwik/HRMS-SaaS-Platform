@@ -139,6 +139,7 @@ const navGroups: NavGroup[] = [
       { label: 'Rewards Catalogue', href: '/rewards-catalog', icon: Gift },
       { label: 'Suggestions', href: '/suggestions', icon: MessageSquare },
       { label: 'Polls', href: '/polls', icon: BarChart3 },
+      { label: 'Surveys', href: '/surveys', icon: ClipboardList },
       { label: 'Pulse Check-in', href: '/pulse', icon: Heart },
       { label: 'Engagement Heatmap', href: '/heatmap', icon: Activity },
       { label: 'Wellness Programs', href: '/wellness', icon: Heart },

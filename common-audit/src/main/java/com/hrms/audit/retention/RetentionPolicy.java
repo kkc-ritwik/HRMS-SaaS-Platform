@@ -3,7 +3,6 @@ package com.hrms.audit.retention;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +17,6 @@ import java.util.Map;
  * Override via env: HRMS_RETENTION_AUDIT_LOGS_DAYS=3650 etc.
  */
 @Getter @Setter
-@Component
 @ConfigurationProperties(prefix = "hrms.retention")
 public class RetentionPolicy {
 

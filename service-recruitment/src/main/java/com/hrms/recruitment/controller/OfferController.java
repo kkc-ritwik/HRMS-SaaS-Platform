@@ -35,6 +35,13 @@ public class OfferController {
                 offerLetterService.create(tenantId(), req, currentUserId())));
     }
 
+    @GetMapping
+    @PreAuthorize("hasAuthority('RECRUITMENT:READ')")
+    @Operation(summary = "List all offer letters for the tenant")
+    public ResponseEntity<ApiResponse<List<OfferLetterDto.Response>>> list() {
+        return ResponseEntity.ok(ApiResponse.ok(offerLetterService.listAll(tenantId())));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('RECRUITMENT:READ')")
     @Operation(summary = "Get an offer letter by ID")

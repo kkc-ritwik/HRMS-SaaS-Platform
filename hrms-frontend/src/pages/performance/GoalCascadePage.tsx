@@ -1,13 +1,17 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Target, ChevronDown, ChevronRight } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Target, ChevronDown, ChevronRight, RefreshCw } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar } from '@/components/ui/avatar'
 import { PageHeader } from '@/components/ui/page-header'
 import { performanceService } from '@/services/performanceService'
+import { Catalog } from '@/services/catalog'
+import { getErrorMessage } from '@/lib/api'
+import { toast } from 'sonner'
 
 interface GoalNode {
   id: string
@@ -30,7 +34,7 @@ function buildTree(goals: Array<{ id: string; parentId?: string | null; title: s
   return roots
 }
 
-function Node({ n, level }: { n: GoalNode; level: number }) {
+function Node({ n, level, onRollup, rollingUp }: { n: GoalNode; level: number; onRollup: (id: string) => void; rollingUp: string | null }) {
   const [open, setOpen] = useState(true)
   const has = (n.children?.length || 0) > 0
   return (
@@ -59,11 +63,17 @@ function Node({ n, level }: { n: GoalNode; level: number }) {
             <Progress value={n.progress} />
             <p className="text-xs text-right text-slate-500 mt-1">{n.progress}%</p>
           </div>
+          {has && (
+            <Button size="sm" variant="ghost" title="Recompute progress from child goals"
+              loading={rollingUp === n.id} onClick={() => onRollup(n.id)}>
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </CardContent>
       </Card>
       {open && has && (
         <div className="ml-8 space-y-1 border-l-2 border-dashed border-slate-200 pl-4">
-          {n.children!.map(c => <Node key={c.id} n={c} level={level + 1} />)}
+          {n.children!.map(c => <Node key={c.id} n={c} level={level + 1} onRollup={onRollup} rollingUp={rollingUp} />)}
         </div>
       )}
     </div>
@@ -71,17 +81,25 @@ function Node({ n, level }: { n: GoalNode; level: number }) {
 }
 
 export function GoalCascadePage() {
+  const qc = useQueryClient()
   const { data, isLoading } = useQuery({ queryKey: ['goal-cascade'], queryFn: () => performanceService.myGoals() })
   const flat = (data as Array<{ id: string; parentId?: string | null; title: string; employeeName?: string; progress: number; category?: string }>) || []
   const tree = buildTree(flat)
 
+  const rollup = useMutation({
+    mutationFn: (goalId: string) => Catalog.performance.goalCascade.rollup(goalId),
+    onSuccess: () => { toast.success('Progress rolled up from child goals'); qc.invalidateQueries({ queryKey: ['goal-cascade'] }) },
+    onError: e => toast.error(getErrorMessage(e)),
+  })
+  const rollingUp = rollup.isPending ? (rollup.variables as string) : null
+
   return (
     <div className="space-y-6">
-      <PageHeader title="Goal Cascade" description="Org → team → individual goal alignment tree" />
+      <PageHeader title="Goal Cascade" description="Org → team → individual goal alignment tree — roll up progress from child goals" />
       {isLoading ? <Skeleton className="h-96" /> : tree.length === 0 ? (
         <Card><CardContent className="p-10 text-center text-slate-500">No goals to cascade</CardContent></Card>
       ) : (
-        <div className="space-y-2">{tree.map(n => <Node key={n.id} n={n} level={0} />)}</div>
+        <div className="space-y-2">{tree.map(n => <Node key={n.id} n={n} level={0} onRollup={id => rollup.mutate(id)} rollingUp={rollingUp} />)}</div>
       )}
     </div>
   )

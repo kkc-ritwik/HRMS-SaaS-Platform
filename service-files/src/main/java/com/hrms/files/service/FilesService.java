@@ -1,6 +1,7 @@
 package com.hrms.files.service;
 
 import com.hrms.files.entity.*;
+import com.hrms.common.exception.ResourceNotFoundException;
 import com.hrms.security.model.TenantContext;
 import com.hrms.storage.model.StoredFile;
 import com.hrms.storage.service.StorageService;
@@ -74,7 +75,7 @@ public class FilesService {
     }
 
     public String presignedDownload(UUID fileId, int expiry) {
-        FileRecord f = files.findById(fileId).orElseThrow();
+        FileRecord f = files.findById(fileId).orElseThrow(() -> new ResourceNotFoundException("File", "id", fileId));
         return storage.presignedDownloadUrl(f.getStorageUri(), expiry);
     }
 }

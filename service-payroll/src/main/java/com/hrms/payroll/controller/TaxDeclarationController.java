@@ -41,8 +41,10 @@ public class TaxDeclarationController {
     @PreAuthorize("hasAuthority('PAYROLL:READ')")
     @Operation(summary = "List my tax declarations")
     public ResponseEntity<ApiResponse<List<TaxDeclarationDto.Response>>> getMyDeclarations() {
+        UUID empId = employeeId();
+        if (empId == null) return ResponseEntity.ok(ApiResponse.ok(List.of()));
         return ResponseEntity.ok(ApiResponse.ok(
-                taxDeclarationService.getMyDeclarations(tenantId(), employeeId())));
+                taxDeclarationService.getMyDeclarations(tenantId(), empId)));
     }
 
     @GetMapping("/me/{declarationId}")
@@ -118,9 +120,10 @@ public class TaxDeclarationController {
     private String tenantId() { return TenantContext.get(); }
 
     private UUID employeeId() {
-        return UUID.fromString(
-                ((UserPrincipal) SecurityContextHolder.getContext()
-                        .getAuthentication().getPrincipal()).getEmployeeId());
+        String eid = ((UserPrincipal) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal()).getEmployeeId();
+        if (eid == null || eid.isBlank()) return null;
+        return UUID.fromString(eid);
     }
 
     private String currentUserId() {

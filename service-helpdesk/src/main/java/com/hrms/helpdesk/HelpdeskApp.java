@@ -1,5 +1,8 @@
 package com.hrms.helpdesk;
 
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -10,6 +13,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableDiscoveryClient
 @EnableScheduling
 @ComponentScan(basePackages = {"com.hrms.helpdesk", "com.hrms.common", "com.hrms.security", "com.hrms.tenant"})
+@EnableJpaRepositories(basePackages = "com.hrms", considerNestedRepositories = true)
+@EntityScan(basePackages = "com.hrms")
 public class HelpdeskApp {
     public static void main(String[] args) {
         SpringApplication.run(HelpdeskApp.class, args);

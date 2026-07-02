@@ -41,7 +41,7 @@ export const dashboardService = {
       safe(attendanceDashboard(), {} as AttendanceDashboard),
       safe(
         (async () => {
-          const r = unwrap<{ content?: unknown[] } | unknown[]>(await api.get('/api/v1/jobs', { params: { status: 'OPEN', size: 200 } }))
+          const r = unwrap<{ content?: unknown[] } | unknown[]>(await api.get('/api/v1/jobs', { params: { status: 'ACTIVE', size: 200 } }))
           return Array.isArray(r) ? r : (r?.content ?? [])
         })(),
         [] as unknown[],

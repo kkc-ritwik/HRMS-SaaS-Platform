@@ -15,6 +15,8 @@ export function useSse(channel: string | null, handler: (evt: MessageEvent) => v
   useEffect(() => {
     if (!channel) return
     const token = localStorage.getItem('accessToken')
+    // Guard against a missing or literally-"undefined"/"null" token (would spam reconnects).
+    if (!token || token === 'undefined' || token === 'null') return
     const tenant = localStorage.getItem('activeTenant') || config.defaultTenant
     const url = `${config.sseBaseUrl}/api/notifications/sse/dashboard?channel=${encodeURIComponent(channel)}`
       + `&access_token=${encodeURIComponent(token || '')}&tenant=${encodeURIComponent(tenant)}`
@@ -41,8 +43,13 @@ export function useNotificationStream(handler: (msg: WsMessage) => void): { conn
   const [connected, setConnected] = useState(false)
 
   useEffect(() => {
+    // The backend does not currently expose a /ws STOMP endpoint, so opening a socket only
+    // produces a noisy reconnect loop. Enable explicitly via VITE_ENABLE_REALTIME once the
+    // server side exists; notifications otherwise refresh via REST polling.
+    if (import.meta.env.VITE_ENABLE_REALTIME !== 'true') return
     const token = localStorage.getItem('accessToken')
-    if (!token) return
+    // Guard against a missing or literally-"undefined"/"null" token (would spam reconnects).
+    if (!token || token === 'undefined' || token === 'null') return
     const url = `${config.wsUrl}?token=${encodeURIComponent(token)}`
     let ws: WebSocket | null = null
     let stopped = false

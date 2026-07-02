@@ -33,15 +33,15 @@ public interface TicketRepository extends JpaRepository<Ticket, UUID> {
             String tenantId, TicketStatus status, Pageable pageable);
 
     @Query("SELECT t FROM Ticket t WHERE t.deleted = false " +
-           "AND t.status IN (com.hrms.helpdesk.entity.Ticket.TicketStatus.OPEN, " +
-           "                 com.hrms.helpdesk.entity.Ticket.TicketStatus.IN_PROGRESS) " +
+           "AND t.status IN (OPEN, " +
+           "                 IN_PROGRESS) " +
            "AND t.dueBy IS NOT NULL AND t.dueBy < :now")
     List<Ticket> findOverdue(@Param("now") Instant now);
 
     @Query("SELECT t.assigneeId, COUNT(t) FROM Ticket t WHERE t.tenantId = :tenantId " +
            "AND t.deleted = false AND t.assigneeId IS NOT NULL " +
-           "AND t.status IN (com.hrms.helpdesk.entity.Ticket.TicketStatus.OPEN, " +
-           "                 com.hrms.helpdesk.entity.Ticket.TicketStatus.IN_PROGRESS) " +
+           "AND t.status IN (OPEN, " +
+           "                 IN_PROGRESS) " +
            "GROUP BY t.assigneeId")
     List<Object[]> openTicketCountsByAssignee(@Param("tenantId") String tenantId);
 }

@@ -10,10 +10,11 @@ import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.PostUpdate;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.lang.reflect.Field;
 import java.time.OffsetDateTime;
@@ -51,10 +52,6 @@ public class AuditEntityListener {
             if (CTX == null) return;
             Auditable ann = entity.getClass().getAnnotation(Auditable.class);
             if (ann == null) return;
-            ObjectProvider<AuditLogRepository> repo =
-                    CTX.getBeanProvider(AuditLogRepository.class);
-            AuditLogRepository r = repo.getIfAvailable();
-            if (r == null) return;
 
             Set<String> redact = new HashSet<>(Arrays.asList(ann.redactFields().split(",")));
             Map<String, Object> snapshot = serializeEntity(entity, redact);
@@ -63,7 +60,7 @@ public class AuditEntityListener {
             String name = ann.value().isBlank() ? entity.getClass().getSimpleName() : ann.value();
             AuditContext.Snapshot s = AuditContext.get();
 
-            r.save(AuditLog.builder()
+            AuditLog logEntry = AuditLog.builder()
                     .tenantId(tenantId).entityName(name).entityId(entityId).action(action)
                     .actorId(s == null ? null : s.actorId())
                     .actorEmail(s == null ? null : s.actorEmail())
@@ -72,7 +69,25 @@ public class AuditEntityListener {
                     .requestId(s == null ? null : s.requestId())
                     .afterValue(snapshot)
                     .createdAt(OffsetDateTime.now())
-                    .build());
+                    .build();
+
+            // Persisting an AuditLog here (mid-flush, inside @PostPersist/@PostUpdate) would mutate
+            // Hibernate's in-flight ActionQueue and throw ConcurrentModificationException. Defer the
+            // write to AFTER the business transaction commits, in its own transaction.
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        try {
+                            CTX.getBean(AuditLogWriter.class).write(logEntry);
+                        } catch (Exception ex) {
+                            log.warn("Deferred audit write failed for {}: {}", name, ex.getMessage());
+                        }
+                    }
+                });
+            } else {
+                CTX.getBean(AuditLogWriter.class).write(logEntry);
+            }
         } catch (Exception e) {
             log.warn("Audit log write failed for {}: {}", entity.getClass().getSimpleName(), e.getMessage());
         }

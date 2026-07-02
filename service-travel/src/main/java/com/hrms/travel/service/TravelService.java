@@ -3,6 +3,7 @@ package com.hrms.travel.service;
 import com.hrms.events.model.DomainEvent;
 import com.hrms.events.model.Topics;
 import com.hrms.events.publisher.EventPublisher;
+import com.hrms.common.exception.ResourceNotFoundException;
 import com.hrms.security.model.TenantContext;
 import com.hrms.travel.entity.*;
 import com.hrms.travel.repository.TravelRepositories.*;
@@ -76,7 +77,7 @@ public class TravelService {
     }
 
     public TripRequest get(UUID id) {
-        return tripRepo.findById(id).orElseThrow(() -> new RuntimeException("Trip not found"));
+        return tripRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Trip", "id", id));
     }
 
     // ── Itinerary ────────────────────────────────────────────────────────────

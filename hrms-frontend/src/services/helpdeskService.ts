@@ -48,7 +48,8 @@ export interface KbArticle {
 export const helpdeskService = {
   listTickets: async (params: { status?: TicketStatus; assignedTo?: string; category?: string; page?: number; size?: number } = {}) =>
     unwrap(await api.get('/api/v1/tickets', { params })),
-  myTickets: async () => unwrap(await api.get<Ticket[]>('/api/v1/tickets/me')),
+  ticketsByRequester: async (employeeId: string) => unwrap(await api.get<Ticket[]>(`/api/v1/tickets/requester/${employeeId}`)),
+  ticketsByAssignee: async (employeeId: string) => unwrap(await api.get<Ticket[]>(`/api/v1/tickets/assignee/${employeeId}`)),
   getTicket: async (id: string) => unwrap(await api.get<Ticket>(`/api/v1/tickets/${id}`)),
   createTicket: async (payload: Partial<Ticket>) => unwrap(await api.post<Ticket>('/api/v1/tickets', payload)),
   assignTicket: async (id: string, assigneeId: string) =>

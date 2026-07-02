@@ -12,8 +12,12 @@ export function useAuth() {
 
   const loginMutation = useMutation({
     mutationFn: authService.login,
-    onSuccess: data => {
-      const { accessToken, refreshToken, user } = data.data
+    onSuccess: response => {
+      // Backend wraps the payload as { success, data: { accessToken, ... } }, but tolerate an
+      // already-unwrapped shape too so a stale/alternate response never breaks login.
+      const payload = response as unknown as Record<string, any>
+      const tokens = payload?.data?.accessToken ? payload.data : payload
+      const { accessToken, refreshToken, user } = tokens
       store.login(user, accessToken, refreshToken)
       toast.success(`Welcome back, ${user.fullName}!`)
       navigate('/dashboard')

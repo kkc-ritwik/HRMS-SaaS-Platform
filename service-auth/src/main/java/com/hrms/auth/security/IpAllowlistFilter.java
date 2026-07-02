@@ -1,12 +1,12 @@
 package com.hrms.auth.security;
 
+import com.hrms.auth.repository.TenantIpAllowlistRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -14,7 +14,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Rejects login attempts originating from IPs outside the tenant's allowlist.
@@ -26,11 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class IpAllowlistFilter extends OncePerRequestFilter {
 
-    public interface Repo extends JpaRepository<TenantIpAllowlist, UUID> {
-        List<TenantIpAllowlist> findByTenantIdAndActiveTrue(String tenantId);
-    }
-
-    private final Repo repo;
+    private final TenantIpAllowlistRepository repo;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest req, @NonNull HttpServletResponse res,

@@ -16,4 +16,6 @@ public interface InterviewRepository extends JpaRepository<Interview, UUID> {
 
     List<Interview> findByTenantIdAndStatusAndDeletedFalse(
             String tenantId, Interview.InterviewStatus status);
+
+    List<Interview> findByTenantIdAndDeletedFalseOrderByScheduledAtDesc(String tenantId);
 }

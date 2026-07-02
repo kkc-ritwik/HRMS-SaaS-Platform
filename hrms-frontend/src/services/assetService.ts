@@ -64,7 +64,7 @@ export const assetService = {
   categories: async () => unwrap(await api.get('/api/v1/assets/categories')),
 
   // Requests
-  myRequests: async () => unwrap(await api.get<AssetRequest[]>('/api/v1/assets/requests/me')),
+  myRequests: async (employeeId: string) => unwrap(await api.get<AssetRequest[]>(`/api/v1/assets/requests/employee/${employeeId}`)),
   raiseRequest: async (payload: Partial<AssetRequest>) =>
     unwrap(await api.post<AssetRequest>('/api/v1/assets/requests', payload)),
 

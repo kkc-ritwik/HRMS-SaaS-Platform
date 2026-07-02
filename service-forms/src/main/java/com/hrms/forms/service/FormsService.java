@@ -5,6 +5,7 @@ import com.hrms.events.model.Topics;
 import com.hrms.events.publisher.EventPublisher;
 import com.hrms.forms.entity.FormDefinition;
 import com.hrms.forms.entity.FormSubmission;
+import com.hrms.common.exception.ResourceNotFoundException;
 import com.hrms.security.model.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ public class FormsService {
     public interface FormDefRepo extends JpaRepository<FormDefinition, UUID> {
         Optional<FormDefinition> findFirstByTenantIdAndCodeOrderByVersionDesc(String tenantId, String code);
         Page<FormDefinition> findByTenantIdAndStatus(String tenantId, FormDefinition.Status s, Pageable p);
+        List<FormDefinition> findByTenantId(String tenantId);
     }
     public interface SubmissionRepo extends JpaRepository<FormSubmission, UUID> {
         Page<FormSubmission> findByTenantIdAndFormId(String tenantId, UUID formId, Pageable p);
@@ -44,13 +46,13 @@ public class FormsService {
     }
     @Transactional
     public FormDefinition publish(UUID id) {
-        FormDefinition d = defs.findById(id).orElseThrow();
+        FormDefinition d = defs.findById(id).orElseThrow(() -> new ResourceNotFoundException("Form", "id", id));
         d.setStatus(FormDefinition.Status.PUBLISHED); d.setIsActive(true);
         return defs.save(d);
     }
     public FormDefinition latestPublished(String code) {
         return defs.findFirstByTenantIdAndCodeOrderByVersionDesc(TenantContext.get(), code)
-                .orElseThrow(() -> new RuntimeException("Form not found: " + code));
+                .orElseThrow(() -> new ResourceNotFoundException("Form", "code", code));
     }
 
     @Transactional
@@ -65,5 +67,9 @@ public class FormsService {
 
     public Page<FormSubmission> submissions(UUID formId, Pageable p) {
         return subs.findByTenantIdAndFormId(TenantContext.get(), formId, p);
+    }
+
+    public List<FormDefinition> listAll() {
+        return defs.findByTenantId(TenantContext.get());
     }
 }

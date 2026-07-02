@@ -16,7 +16,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /** Long-service awards, spot awards, peer-nominated awards, manager discretionary awards. */
-@Entity
+@Entity(name = "EngagementAward")
 @Table(name = "engagement_awards",
         indexes = @Index(name = "ix_award_recipient", columnList = "tenant_id,recipient_employee_id"))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor

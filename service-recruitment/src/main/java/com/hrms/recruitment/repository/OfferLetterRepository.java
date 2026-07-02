@@ -16,4 +16,6 @@ public interface OfferLetterRepository extends JpaRepository<OfferLetter, UUID> 
 
     List<OfferLetter> findByTenantIdAndStatusAndDeletedFalse(
             String tenantId, OfferLetter.OfferStatus status);
+
+    List<OfferLetter> findByTenantIdAndDeletedFalseOrderByCreatedAtDesc(String tenantId);
 }

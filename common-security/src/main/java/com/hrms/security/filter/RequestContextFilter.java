@@ -20,7 +20,7 @@ import java.io.IOException;
  * After JwtAuthFilter has set the SecurityContext, this filter populates TenantContext
  * and the AuditContext (if common-audit is on the classpath) for downstream listeners.
  */
-@Component
+@Component("hrmsRequestContextFilter")
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class RequestContextFilter extends OncePerRequestFilter {
 
