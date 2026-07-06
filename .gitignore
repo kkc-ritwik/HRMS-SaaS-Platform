@@ -18,3 +18,4 @@ scripts/uitest/*-output.txt
 scripts/uitest/api-audit-after.txt
 scripts/uitest/gaps-current.txt
 scripts/uitest/walk2-recovery.txt
+scripts/uitest/loop-*.txt
